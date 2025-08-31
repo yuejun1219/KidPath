@@ -36,7 +36,17 @@
     <!-- Key Information Cards -->
     <section class="info-cards">
       <div class="container">
-        <div class="card-grid">
+        <!-- loading -->
+        <div class="loading-state" v-if="loading">
+          <p>Loading comfort data...</p>
+        </div>
+
+        <!-- error -->
+        <div class="error-state" v-else-if="error">
+          <p>Failed to load data: {{ error }}</p>
+        </div>
+
+        <div class="card-grid" v-else>
           <!-- UV Index Card -->
           <div class="info-card uv-card">
             <div class="card-header">
@@ -47,74 +57,112 @@
                 <h3>UV Index</h3>
                 <p>Current Level</p>
               </div>
-              <div class="risk-tag very-high">Very High</div>
+                <div class="risk-tag" :class="uvLevel.toLowerCase().replace(' ', '-')">{{ uvLevel }}
+                </div>
             </div>
             
             <div class="card-main-data">
               <div class="main-value">
-                <span class="number">9</span>
+                <!-- UV Index number -->
+                <span class="number">{{ uvIndex !== null ? uvIndex : '--' }}</span>
                 <span class="scale">/11+</span>
               </div>
               
               <div class="risk-bar-section">
                 <div class="risk-label">Risk Level</div>
                 <div class="risk-bar">
-                  <div class="risk-fill uv-fill"></div>
+                  <div
+                    class="risk-fill"
+                    :style="{
+                      width: uvIndex !== null ? Math.min((uvIndex / 11) * 100, 100) + '%' : '0%',
+                      background: uvIndex >= 8
+                        ? 'linear-gradient(90deg, #ff6b6b, #d32f2f)'       // Very High
+                        : uvIndex >= 6
+                        ? 'linear-gradient(90deg, #ffb74d, #f57c00)'       // High
+                        : uvIndex >= 3
+                        ? 'linear-gradient(90deg, #fff176, #fdd835)'       // Moderate
+                        : 'linear-gradient(90deg, #aed581, #81c784)'       // Low
+                    }"
+                  ></div>
                 </div>
-                <div class="risk-percentage">82%</div>
+                <div class="risk-percentage">{{ uvIndex !== null ? Math.min((uvIndex / 11) * 100, 100).toFixed(0) + '%' : '--' }}</div>
               </div>
             </div>
             
             <div class="advice-content">
-              <p>"Hats, sunscreen SPF 50+, and shade are critical for children"</p>
+              <p>{{ uvAdvice }}</p>
             </div>
             
             <div class="card-footer">
               <div class="update-info">
-                <span>Updated 5 min ago</span>
+                <span>{{ formattedUvTime }}</span>
               </div>
-              <div class="data-source">Bureau of Meteorology</div>
+              <div class="data-source">Open-Meteo Weather</div>
             </div>
           </div>
 
-          <!-- Pollen Risk Card -->
-          <div class="info-card pollen-card">
+          <!-- Wind speed Card -->
+          <div class="info-card wind-card">
             <div class="card-header">
               <div class="icon-container">
                 <img src="../images/5.png" alt="Flower icon" class="icon-image" />
               </div>
               <div class="card-title">
-                <h3>Pollen Risk</h3>
+                <h3>Wind Speed</h3>
                 <p>Current Level</p>
               </div>
-              <div class="risk-tag high">High ↗</div>
+              <div class="risk-tag" :class="windLevel.toLowerCase().replace(' ', '-')">{{ windLevel }}</div>
             </div>
             
             <div class="card-main-data">
               <div class="main-value">
-                <span class="text-value">High</span>
+                <span
+                  class="number-wind"
+                  :style="{ color: getWindTextColor(windLevel) }"
+                >
+                  {{ windSpeed !== null ? windSpeed.toFixed(1) : '--' }}
+                </span>
+                <span class="scale">km/h</span>
               </div>
               
               <div class="risk-bar-section">
-                <div class="risk-label">Pollen Count</div>
+                <div class="risk-label">Wind Intensity</div>
                 <div class="risk-bar">
-                  <div class="risk-fill pollen-fill"></div>
+                    <div
+                      class="risk-fill"
+                      :style="{
+                        width: windSpeed ? Math.min((windSpeed / 50) * 100, 100) + '%' : '0%',
+                        background: windColor
+                      }"
+                    ></div>
                 </div>
-                <div class="pollen-count">710 grains/m³</div>
+                <div class="risk-percentage">{{ windSpeed ? Math.min((windSpeed / 50) * 100, 100).toFixed(0) + '%' : '--' }}</div>
               </div>
             </div>
             
             <div class="advice-section">
               <div class="advice-content">
-                <p>"Keep children's outdoor play short, consider indoor activities"</p>
+                <p>
+                  {{
+                    windLevel === 'Very Strong'
+                      ? 'Avoid outdoor activities, especially with children.'
+                      : windLevel === 'Strong'
+                      ? 'Windy conditions—be cautious with children and hats!'
+                      : windLevel === 'Moderate'
+                      ? 'Consider windproof clothing for kids.'
+                      : windLevel === 'Low'
+                      ? 'Ideal for outdoor play.'
+                      : ''
+                  }}
+                </p>
               </div>
             </div>
             
             <div class="card-footer">
               <div class="update-info">
-                <span>Updated 12 min ago</span>
+                <span>{{ formattedWindTime }}</span>
               </div>
-              <div class="data-source">Melbourne Pollen Count</div>
+              <div class="data-source">Open-Meteo Weather</div>
             </div>
           </div>
         </div>
@@ -265,8 +313,79 @@
 </template>
 
 <script setup>
-// Component logic can be added here
+import { onMounted, computed } from 'vue'
+import { useComfortData } from '@/composables/useComfortData'
+import { format } from 'date-fns'
+
+const {
+  uvIndex,
+  windSpeed,
+  windLevel,
+  uvTimestamp,
+   windTimestamp,
+  loading,
+  error,
+  init
+} = useComfortData()
+
+onMounted(() => init())
+
+// UV risk level
+const uvLevel = computed(() => {
+  if (uvIndex.value === null) return 'Unknown'
+  if (uvIndex.value >= 8) return 'Very High'
+  if (uvIndex.value >= 6) return 'High'
+  if (uvIndex.value >= 3) return 'Moderate'
+  return 'Low'
+})
+
+const uvAdvice = computed(() => {
+  if (uvIndex.value >= 8) {
+    return 'Seek full shade. SPF 50+, long sleeves, and hat essential.'
+  } else if (uvIndex.value >= 6) {
+    return 'Stay in shade during midday hours. Use SPF 30+ sunscreen.'
+  } else if (uvIndex.value >= 3) {
+    return 'Wear sunglasses and use sunscreen if staying outside.'
+  } else {
+    return 'Low risk. Minimal protection needed.'
+  }
+})
+
+const getWindTextColor = computed(() => (level) => {
+  switch (level) {
+    case 'Very Strong': return '#000080'  
+    case 'Strong': return '#0d47a1'        
+    case 'Moderate': return '#1976d2'     
+    case 'Low': return '#4fc3f7'          
+    default: return '#666'                
+  }
+})
+
+const windColor = computed(() => {
+switch (windLevel.value) {
+case 'Very Strong':
+return 'linear-gradient(90deg, rgba(0,0,255,1), rgba(138,43,226,1))'
+case 'Strong':
+return 'linear-gradient(90deg, #4fc3f7, rgba(0,0,255,1))'
+case 'Moderate':
+return 'linear-gradient(90deg, rgba(0,255,255,1), #4fc3f7)'
+case 'Low':
+return 'linear-gradient(90deg, rgba(173,216,230,1), rgba(100,149,237,1))'
+default:
+return 'linear-gradient(90deg, #ccc, #eee)'
+}
+})
+
+const formattedUvTime = computed(() => {
+  return uvTimestamp.value ? format(new Date(uvTimestamp.value), 'yyyy-MM-dd HH:mm') : 'No time available'
+})
+
+const formattedWindTime = computed(() => {
+  return windTimestamp.value ? format(new Date(windTimestamp.value), 'yyyy-MM-dd HH:mm') : 'No time available'
+})
+
 </script>
+
 
 <style scoped>
 .homepage {
@@ -463,6 +582,18 @@
   filter: hue-rotate(280deg) saturate(1.8);
 }
 
+.loading-state,
+.error-state {
+  text-align: center;
+  padding: 40px 20px;
+  font-size: 1.1rem;
+  color: #87a615;
+}
+
+.error-state {
+  color: #f490f2;
+}
+
 .card-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
@@ -597,6 +728,18 @@
   border: 1px solid rgba(255, 152, 0, 0.3);
 }
 
+.risk-tag.moderate {
+  background: rgba(255, 225, 0, 0.1);
+  color: rgba(255, 225, 0);
+  border: 1px solid rgba(255, 255, 0, 0.3);
+}
+
+.risk-tag.low {
+  background: rgba(76, 175, 172, 0.1);
+  color: rgba(76, 175, 172);
+  border: 1px solid rgba(76, 175, 172, 0.3);
+}
+
 .card-main-data {
   margin-bottom: 10px;
   position: relative;
@@ -625,13 +768,9 @@
   font-family: 'Segoe UI', sans-serif;
 }
 
-.text-value {
-  font-size: 3rem;
+.number-wind {
+  font-size: 3.5rem;
   font-weight: 800;
-  background: linear-gradient(135deg, #4caf50, #ff9800);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
   font-family: 'Segoe UI', sans-serif;
 }
 
@@ -663,17 +802,12 @@
   transition: width 0.3s ease;
 }
 
-.uv-fill {
-  width: 82%;
-  background: linear-gradient(90deg, #ff9800, #ff4444);
-}
-
 .pollen-fill {
   width: 75%;
   background: linear-gradient(90deg, #4caf50, #ff9800);
 }
 
-.risk-percentage, .pollen-count {
+.risk-percentage, .risk-percentage{
   font-size: 0.9rem;
   color: #666;
   font-weight: 600;
