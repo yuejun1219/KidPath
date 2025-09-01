@@ -128,19 +128,21 @@ const listsBySeason = {
       name: 'Royal Park',
       tags: ['Shade', 'Playground', 'Walk paths'],
       desc: 'Largest inner-city park with extensive canopy cover. Shaded playgrounds and open lawns make it ideal for summer family outings.',
-      photo: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=800&auto=format&fit=crop',
+      photo: 'https://commons.wikimedia.org/wiki/Special:FilePath/Royal_Park_Melbourne.jpg?width=1200',
       lat: -37.787, lng: 144.951
     },
     {
       name: 'Fitzroy Gardens',
       tags: ['Dense trees', 'Family-friendly', 'Tram nearby'],
       desc: 'Consistently shaded lawns with tall elm trees. Shady paths and children’s play spaces help keep kids cool in hot weather.',
+      photo: 'https://commons.wikimedia.org/wiki/Special:FilePath/Fitzroy_Gardens.jpg?width=1200',
       lat: -37.813, lng: 144.980
     },
     {
       name: 'Flagstaff Gardens',
       tags: ['Tree cover', 'Playground', 'Near transport'],
       desc: 'Central city park with shaded lawns and covered seating areas. Easy to reach via tram/train, good for short outdoor play.',
+      photo: 'https://commons.wikimedia.org/wiki/Special:FilePath/Flagstaff_Gardens_Melbourne.jpg?width=1200',
       lat: -37.811, lng: 144.955
     }
   ],
@@ -149,18 +151,21 @@ const listsBySeason = {
       name: 'Birrarung Marr',
       tags: ['Sunny lawns', 'Riverside', 'Open space'],
       desc: 'Open riverside spaces with plenty of winter sun exposure. Great for short walks and scooter time.',
+      photo: 'https://commons.wikimedia.org/wiki/Special:FilePath/AUS%20Melbourne%2C%20Central%20Business%20District%2C%20Birrarung%20Marr%20004.jpg?width=1200',
       lat: -37.818, lng: 144.974
     },
     {
       name: 'Carlton Gardens',
       tags: ['Sun exposure', 'Museum nearby'],
       desc: 'Wide open lawns receive ample sunlight in winter daytime, with nearby amenities for families.',
+      photo: 'https://upload.wikimedia.org/wikipedia/commons/f/fe/Carlton_Gardens%2C_Melbourne.jpg',
       lat: -37.805, lng: 144.972
     },
     {
       name: 'Queen Victoria Gardens',
       tags: ['Sunny paths', 'Picnic'],
       desc: 'Long open paths and lawns that warm up quickly on clear winter days.',
+      photo: 'https://upload.wikimedia.org/wikipedia/commons/f/f9/Floral_Clock_at_Queen_Victoria_Gardens%2C_Melbourne.jpg',
       lat: -37.820, lng: 144.971
     }
   ],
@@ -169,18 +174,21 @@ const listsBySeason = {
       name: 'Royal Botanic Gardens',
       tags: ['Lower pollen pockets', 'Shaded routes'],
       desc: 'Choose lakeside and dense-canopy tracks to reduce pollen exposure during peak periods.',
+      photo: 'https://commons.wikimedia.org/wiki/Special:FilePath/Royal%20Botanic%20Gardens%20View%20Melbourne.JPG?width=1200',
       lat: -37.830, lng: 144.979
     },
     {
       name: 'Princes Park (North)',
       tags: ['Breeze corridor', 'Open loop'],
       desc: 'Use perimeter loop on low-count hours; avoid mowing days. Good visibility and exits.',
+      photo: 'https://upload.wikimedia.org/wikipedia/commons/d/de/Princes_Park%2C_Carlton_North%2C_Victoria%2C_Australia.jpg',
       lat: -37.778, lng: 144.961
     },
     {
       name: 'Docklands Promenade',
       tags: ['Sea breeze', 'Lower grass'],
       desc: 'Hardscape waterfront with fewer grass areas helps reduce exposure for sensitive kids.',
+      photo: 'https://upload.wikimedia.org/wikipedia/commons/6/64/Docklands_%2C_Melbourne.jpg',
       lat: -37.816, lng: 144.946
     }
   ]
