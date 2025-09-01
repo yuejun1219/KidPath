@@ -133,43 +133,65 @@
       </div>
     </section>
 
-    <!-- Related Articles -->
-    <section class="articles">
-      <div class="container">
-        <h2 class="section-title">Latest Insights</h2>
-        <div class="article-grid">
-          <div class="article-card">
-            <div class="article-image">
-              <img src="../images/500-trees.png" alt="Trees in field" class="article-img" />
-            </div>
-            <div class="article-content">
-              <h3>500,000 Trees to Shade Parks and Playgrounds</h3>
-              <p>Discover how urban greening initiatives are creating safer outdoor spaces for children.</p>
-            </div>
-          </div>
-
-          <div class="article-card">
-            <div class="article-image">
-              <img src="../images/winter.png" alt="Family walking" class="article-img" />
-            </div>
-            <div class="article-content">
-              <h3>Winter Ideas to Get Kids Outdoors</h3>
-              <p>Fun and safe outdoor activities to keep your children active during colder months.</p>
-            </div>
-          </div>
-
-          <div class="article-card">
-            <div class="article-image">
-              <img src="../images/hot.png" alt="Child drinking water" class="article-img" />
-            </div>
-            <div class="article-content">
-              <h3>Hot Weather Safety for Children</h3>
-              <p>Essential tips to keep your kids safe and comfortable during hot weather.</p>
-            </div>
-          </div>
+<!-- Related Articles -->
+<section class="articles">
+  <div class="container">
+    <h2 class="section-title">Latest Insights</h2>
+    <div class="article-grid">
+      <!-- Card 1 -->
+      <a
+        class="article-card link-card"
+        href="https://www.ausleisure.com.au/news/500000-trees-to-shade-parks-and-enhance-wildlife-habitats-in-melbournes-west/"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Open article: 500,000 Trees to Shade Parks and Playgrounds (opens in a new tab)"
+      >
+        <div class="article-image">
+          <img src="../images/500-trees.png" alt="Tree planting program" class="article-img" />
         </div>
-      </div>
-    </section>
+        <div class="article-content">
+          <h3>500,000 Trees to Shade Parks and Playgrounds</h3>
+          <p>Discover how urban greening initiatives are creating safer outdoor spaces for children.</p>
+        </div>
+      </a>
+
+      <!-- Card 2 -->
+      <a
+        class="article-card link-card"
+        href="https://www.parks.vic.gov.au/news/2023/07/19/02/37/winter-ideas-to-get-kids-outdoors?utm_source=chatgpt.com"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Open article: Winter Ideas to Get Kids Outdoors (opens in a new tab)"
+      >
+        <div class="article-image">
+          <img src="../images/winter.png" alt="Kids playing in snow" class="article-img" />
+        </div>
+        <div class="article-content">
+          <h3>Winter Ideas to Get Kids Outdoors</h3>
+          <p>Fun and safe outdoor activities to keep your children active during colder months.</p>
+        </div>
+      </a>
+
+      <!-- Card 3 -->
+      <a
+        class="article-card link-card"
+        href="https://www.sydney.edu.au/news-opinion/news/2025/07/10/hot-weather-causes-children-to-sweat-at-the-same-rate-as-adults-study-shows.html?utm_source=chatgpt.com"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Open article: Hot Weather Safety for Children (opens in a new tab)"
+      >
+        <div class="article-image">
+          <img src="../images/hot.png" alt="Child drinking water on a hot day" class="article-img" />
+        </div>
+        <div class="article-content">
+          <h3>Hot Weather Safety for Children</h3>
+          <p>Essential tips to keep your kids safe and comfortable during hot weather.</p>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
 
     <!-- Seasonal Comfort Section -->
     <section class="seasonal-comfort">
