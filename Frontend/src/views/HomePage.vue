@@ -13,7 +13,7 @@
             Discover the safest and most comfortable outdoor experiences for your little ones
           </p>
           <p class="season-text">season by season</p>
-          
+
           <!-- Feature Highlights -->
           <div class="feature-highlights">
             <div class="feature-item">
@@ -60,14 +60,14 @@
                 <div class="risk-tag" :class="uvLevel.toLowerCase().replace(' ', '-')">{{ uvLevel }}
                 </div>
             </div>
-            
+
             <div class="card-main-data">
               <div class="main-value">
                 <!-- UV Index number -->
                 <span class="number">{{ uvIndex !== null ? uvIndex : '--' }}</span>
                 <span class="scale">/11+</span>
               </div>
-              
+
               <div class="risk-bar-section">
                 <div class="risk-label">Risk Level</div>
                 <div class="risk-bar">
@@ -88,11 +88,11 @@
                 <div class="risk-percentage">{{ uvIndex !== null ? Math.min((uvIndex / 11) * 100, 100).toFixed(0) + '%' : '--' }}</div>
               </div>
             </div>
-            
+
             <div class="advice-content">
               <p>{{ uvAdvice }}</p>
             </div>
-            
+
             <div class="card-footer">
               <div class="update-info">
                 <span>{{ formattedUvTime }}</span>
@@ -113,7 +113,7 @@
               </div>
               <div class="risk-tag" :class="windLevel.toLowerCase().replace(' ', '-')">{{ windLevel }}</div>
             </div>
-            
+
             <div class="card-main-data">
               <div class="main-value">
                 <span
@@ -124,7 +124,7 @@
                 </span>
                 <span class="scale">km/h</span>
               </div>
-              
+
               <div class="risk-bar-section">
                 <div class="risk-label">Wind Intensity</div>
                 <div class="risk-bar">
@@ -139,7 +139,7 @@
                 <div class="risk-percentage">{{ windSpeed ? Math.min((windSpeed / 50) * 100, 100).toFixed(0) + '%' : '--' }}</div>
               </div>
             </div>
-            
+
             <div class="advice-section">
               <div class="advice-content">
                 <p>
@@ -157,7 +157,7 @@
                 </p>
               </div>
             </div>
-            
+
             <div class="card-footer">
               <div class="update-info">
                 <span>{{ formattedWindTime }}</span>
@@ -173,7 +173,7 @@
           <div class="fact-box">
             <div class="fact-icon">🌿</div>
             <div class="fact-text">
-              <strong>Did You Know?</strong> Australian parents worry about their children's health during extreme heat. 
+              <strong>Did You Know?</strong> Australian parents worry about their children's health during extreme heat.
               Last summer, heatwaves forced nearly 10% of Victorian schools to close.
             </div>
           </div>
@@ -271,10 +271,10 @@
       <div class="container">
         <h2 class="section-title">Why KidPath? 🌱</h2>
         <p class="section-description">
-          Our research-backed platform combines environmental data with family-friendly insights 
+          Our research-backed platform combines environmental data with family-friendly insights
           to create a more comfortable urban experience.
         </p>
-        
+
         <div class="features-grid">
           <div class="feature-card">
             <div class="feature-icon">
@@ -283,7 +283,7 @@
             <h3>Weather-Smart Routes</h3>
             <p>Find the most comfortable paths based on seasonal conditions</p>
           </div>
-          
+
           <div class="feature-card">
             <div class="feature-icon">
               <img src="../images/10.png" alt="Sustainability icon" class="feature-img" />
@@ -291,7 +291,7 @@
             <h3>Urban Sustainability</h3>
             <p>Promoting green spaces and sustainable urban living</p>
           </div>
-          
+
           <div class="feature-card">
             <div class="feature-icon">
               <img src="../images/family.jpg" alt="Family icon" class="feature-img" />
@@ -353,11 +353,11 @@ const uvAdvice = computed(() => {
 
 const getWindTextColor = computed(() => (level) => {
   switch (level) {
-    case 'Very Strong': return '#000080'  
-    case 'Strong': return '#0d47a1'        
-    case 'Moderate': return '#1976d2'     
-    case 'Low': return '#4fc3f7'          
-    default: return '#666'                
+    case 'Very Strong': return '#000080'
+    case 'Strong': return '#0d47a1'
+    case 'Moderate': return '#1976d2'
+    case 'Low': return '#4fc3f7'
+    default: return '#666'
   }
 })
 
@@ -1497,48 +1497,48 @@ const formattedWindTime = computed(() => {
   .hero {
     min-height: 500px;
   }
-  
+
   .title-line-1 {
     font-size: 2.5rem;
   }
-  
+
   .title-line-2 {
     font-size: 3rem;
   }
-  
+
   .feature-highlights {
     flex-direction: column;
     gap: 20px;
   }
-  
+
   .card-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .info-card {
     padding: 25px;
     flex-direction: column;
     text-align: center;
   }
-  
+
   .card-icon {
     margin-bottom: 15px;
   }
-  
+
   .did-you-know {
     flex-direction: column;
     text-align: center;
   }
-  
+
   .spots-content {
     flex-direction: column;
     text-align: center;
   }
-  
+
   .comfort-options {
     grid-template-columns: 1fr;
   }
-  
+
   .features-grid {
     grid-template-columns: 1fr;
   }
