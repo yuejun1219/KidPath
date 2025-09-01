@@ -6,7 +6,7 @@
       <div class="hero-overlay">
         <h1 class="hero-title">Seasonal Comfort Explorer</h1>
         <p class="hero-sub">
-          Find the safest and most comfortable outdoor routes for your family – shade in summer, sun in winter, and safe lighting at night.
+          Find the safest and most comfortable outdoor routes for your family – shade in summer, sun in winter, and pollen in spring.
         </p>
 
         <!-- 季节切换按钮 -->
@@ -44,7 +44,6 @@
 
         <!-- 地图容器（待接后端） -->
         <div class="map-wrap">
-          <!-- 这个 div 预留给后端/前端地图渲染 -->
           <div id="shade-map" class="map-placeholder">
             <div class="map-skeleton">
               <div class="sk-row"></div>
@@ -119,62 +118,70 @@
 
 <script setup>
 import { ref, onMounted, watch } from 'vue'
-import NavBar from '../components/NavBar.vue'
 
 const season = ref('summer')
 
-/* ====== 推荐数据（先写死，后续可从后端按季节返回）====== */
+/* ====== 推荐数据（示例：为便于测试导航，补充了部分 lat/lng 字段） ====== */
 const listsBySeason = {
   summer: [
     {
       name: 'Royal Park',
       tags: ['Shade', 'Playground', 'Walk paths'],
       desc: 'Largest inner-city park with extensive canopy cover. Shaded playgrounds and open lawns make it ideal for summer family outings.',
-      photo: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=800&auto=format&fit=crop'
+      photo: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=800&auto=format&fit=crop',
+      lat: -37.787, lng: 144.951
     },
     {
       name: 'Fitzroy Gardens',
       tags: ['Dense trees', 'Family-friendly', 'Tram nearby'],
-      desc: 'Consistently shaded lawns with tall elm trees. Shady paths and children’s play spaces help keep kids cool in hot weather.'
+      desc: 'Consistently shaded lawns with tall elm trees. Shady paths and children’s play spaces help keep kids cool in hot weather.',
+      lat: -37.813, lng: 144.980
     },
     {
       name: 'Flagstaff Gardens',
       tags: ['Tree cover', 'Playground', 'Near transport'],
-      desc: 'Central city park with shaded lawns and covered seating areas. Easy to reach via tram/train, good for short outdoor play.'
+      desc: 'Central city park with shaded lawns and covered seating areas. Easy to reach via tram/train, good for short outdoor play.',
+      lat: -37.811, lng: 144.955
     }
   ],
   winter: [
     {
       name: 'Birrarung Marr',
       tags: ['Sunny lawns', 'Riverside', 'Open space'],
-      desc: 'Open riverside spaces with plenty of winter sun exposure. Great for short walks and scooter time.'
+      desc: 'Open riverside spaces with plenty of winter sun exposure. Great for short walks and scooter time.',
+      lat: -37.818, lng: 144.974
     },
     {
       name: 'Carlton Gardens',
       tags: ['Sun exposure', 'Museum nearby'],
-      desc: 'Wide open lawns receive ample sunlight in winter daytime, with nearby amenities for families.'
+      desc: 'Wide open lawns receive ample sunlight in winter daytime, with nearby amenities for families.',
+      lat: -37.805, lng: 144.972
     },
     {
       name: 'Queen Victoria Gardens',
       tags: ['Sunny paths', 'Picnic'],
-      desc: 'Long open paths and lawns that warm up quickly on clear winter days.'
+      desc: 'Long open paths and lawns that warm up quickly on clear winter days.',
+      lat: -37.820, lng: 144.971
     }
   ],
   pollen: [
     {
       name: 'Royal Botanic Gardens',
       tags: ['Lower pollen pockets', 'Shaded routes'],
-      desc: 'Choose lakeside and dense-canopy tracks to reduce pollen exposure during peak periods.'
+      desc: 'Choose lakeside and dense-canopy tracks to reduce pollen exposure during peak periods.',
+      lat: -37.830, lng: 144.979
     },
     {
       name: 'Princes Park (North)',
       tags: ['Breeze corridor', 'Open loop'],
-      desc: 'Use perimeter loop on low-count hours; avoid mowing days. Good visibility and exits.'
+      desc: 'Use perimeter loop on low-count hours; avoid mowing days. Good visibility and exits.',
+      lat: -37.778, lng: 144.961
     },
     {
       name: 'Docklands Promenade',
       tags: ['Sea breeze', 'Lower grass'],
-      desc: 'Hardscape waterfront with fewer grass areas helps reduce exposure for sensitive kids.'
+      desc: 'Hardscape waterfront with fewer grass areas helps reduce exposure for sensitive kids.',
+      lat: -37.816, lng: 144.946
     }
   ]
 }
@@ -209,7 +216,6 @@ onMounted(() => {
 })
 
 watch(season, (s) => {
-  // 切换季节时请求并刷新图层
   refreshMap(s)
 })
 
@@ -219,9 +225,20 @@ function refreshMap(s) {
   // updateLegendScaleIfNeeded()
 }
 
-/** 示例点击跳转（现用 alert 代替） */
-function goTo(item) {
-  alert(`Navigate to ${item.name}`)
+/** ✅ Google Maps 导航（优先 place_id -> lat/lng -> name） */
+function goTo(item, mode = 'walking') {
+  const travelmode = String(mode).toUpperCase() // WALKING | DRIVING | TRANSIT | BICYCLING
+  let url = `https://www.google.com/maps/dir/?api=1&origin=Current+Location&travelmode=${travelmode}`
+
+  if (item.place_id) {
+    url += `&destination_place_id=${encodeURIComponent(item.place_id)}`
+  } else if (item.lat != null && item.lng != null) {
+    url += `&destination=${item.lat},${item.lng}`
+  } else {
+    url += `&destination=${encodeURIComponent(item.name)}`
+  }
+
+  window.open(url, '_blank', 'noopener')
 }
 </script>
 
