@@ -205,7 +205,7 @@
               <p>Fun and safe outdoor activities to keep your children active during colder months.</p>
             </div>
           </div>
-
+          
           <div class="article-card">
             <div class="article-image">
               <img src="../images/hot.png" alt="Child drinking water" class="article-img" />
@@ -214,7 +214,7 @@
               <h3>Hot Weather Safety for Children</h3>
               <p>Essential tips to keep your kids safe and comfortable during hot weather.</p>
             </div>
-          </div>
+          </div> 
         </div>
       </div>
     </section>
