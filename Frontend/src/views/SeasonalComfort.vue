@@ -6,7 +6,7 @@
       <div class="hero-overlay">
         <h1 class="hero-title">Seasonal Comfort Explorer</h1>
         <p class="hero-sub">
-          Find the safest and most comfortable outdoor routes for your family – shade in summer, sun in winter, and pollen in spring.
+          Find the safest and most comfortable outdoor routes for your family – shade in summer and sun in winter.
         </p>
 
         <!-- 季节切换按钮 -->

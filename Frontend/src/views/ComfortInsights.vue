@@ -11,8 +11,8 @@ const tab = ref('canopy') // 'canopy' | 'water' | 'nearby'
   <div class="comfort-insights-page">
 
     <div class="content">
-      <h1>Data Insights</h1>
-      <p>Page For Data Visualization!</p>
+      <h1>City Comfort Explorer</h1>
+      <p>Explore the comfort levels of different city areas!</p>
 
       <div class="tabs">
         <button class="tab" :class="{ active: tab==='canopy' }" @click="tab='canopy'">🌳 Tree Canopy</button>
