@@ -14,7 +14,16 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "@deck.gl/core": "^9.1.14",
+    "@deck.gl/layers": "^9.1.14",
+    "@deck.gl/mapbox": "^9.1.14",
+    "@turf/turf": "^7.2.0",
+    "d3-dsv": "^3.0.1",
+    "d3-scale": "^4.0.2",
     "date-fns": "^4.1.0",
+    "maplibre-gl": "^5.7.0",
+    "node-fetch": "^3.3.2",
+    "shpjs": "^6.1.0",
     "vue": "^3.5.18",
     "vue-router": "^4.5.1"
   },
