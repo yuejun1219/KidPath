@@ -25,13 +25,13 @@
             aria-label="Winter"
             title="Winter"
           >❄️ Winter</button>
-          <button
+          <!-- <button
             class="tab"
             :class="{ active: season === 'pollen' }"
             @click="season = 'pollen'"
             aria-label="Pollen"
             title="Pollen"
-          >🌸 Pollen</button>
+          >🌸 Pollen</button> -->
         </div>
       </div>
     </section>
@@ -169,29 +169,29 @@ const listsBySeason = {
       lat: -37.820, lng: 144.971
     }
   ],
-  pollen: [
-    {
-      name: 'Royal Botanic Gardens',
-      tags: ['Lower pollen pockets', 'Shaded routes'],
-      desc: 'Choose lakeside and dense-canopy tracks to reduce pollen exposure during peak periods.',
-      photo: 'https://commons.wikimedia.org/wiki/Special:FilePath/Royal%20Botanic%20Gardens%20View%20Melbourne.JPG?width=1200',
-      lat: -37.830, lng: 144.979
-    },
-    {
-      name: 'Princes Park (North)',
-      tags: ['Breeze corridor', 'Open loop'],
-      desc: 'Use perimeter loop on low-count hours; avoid mowing days. Good visibility and exits.',
-      photo: 'https://upload.wikimedia.org/wikipedia/commons/d/de/Princes_Park%2C_Carlton_North%2C_Victoria%2C_Australia.jpg',
-      lat: -37.778, lng: 144.961
-    },
-    {
-      name: 'Docklands Promenade',
-      tags: ['Sea breeze', 'Lower grass'],
-      desc: 'Hardscape waterfront with fewer grass areas helps reduce exposure for sensitive kids.',
-      photo: 'https://upload.wikimedia.org/wikipedia/commons/6/64/Docklands_%2C_Melbourne.jpg',
-      lat: -37.816, lng: 144.946
-    }
-  ]
+  // pollen: [
+  //   {
+  //     name: 'Royal Botanic Gardens',
+  //     tags: ['Lower pollen pockets', 'Shaded routes'],
+  //     desc: 'Choose lakeside and dense-canopy tracks to reduce pollen exposure during peak periods.',
+  //     photo: 'https://commons.wikimedia.org/wiki/Special:FilePath/Royal%20Botanic%20Gardens%20View%20Melbourne.JPG?width=1200',
+  //     lat: -37.830, lng: 144.979
+  //   },
+  //   {
+  //     name: 'Princes Park (North)',
+  //     tags: ['Breeze corridor', 'Open loop'],
+  //     desc: 'Use perimeter loop on low-count hours; avoid mowing days. Good visibility and exits.',
+  //     photo: 'https://upload.wikimedia.org/wikipedia/commons/d/de/Princes_Park%2C_Carlton_North%2C_Victoria%2C_Australia.jpg',
+  //     lat: -37.778, lng: 144.961
+  //   },
+  //   {
+  //     name: 'Docklands Promenade',
+  //     tags: ['Sea breeze', 'Lower grass'],
+  //     desc: 'Hardscape waterfront with fewer grass areas helps reduce exposure for sensitive kids.',
+  //     photo: 'https://upload.wikimedia.org/wikipedia/commons/6/64/Docklands_%2C_Melbourne.jpg',
+  //     lat: -37.816, lng: 144.946
+  //   }
+  // ]
 }
 
 /* ====== 左侧说明/标签随季节切换 ====== */
@@ -199,22 +199,22 @@ const titleMap = { summer: 'SUMMER', winter: 'WINTER', pollen: 'POLLEN' }
 const barLabelMap = {
   summer: 'Tree Shade (relative)',
   winter: 'Sun Exposure (relative)',
-  pollen: 'Pollen Index (relative)'
+  // pollen: 'Pollen Index (relative)'
 }
 const captionMap = {
   summer: 'This map shows where you can find shade in Melbourne’s CBD.',
   winter: 'This map highlights sun-friendly spots for warmer winter walks.',
-  pollen: 'This map visualises relative pollen exposure across the CBD.'
+  // pollen: 'This map visualises relative pollen exposure across the CBD.'
 }
 const legendMoreMap = {
   summer: 'More tree cover: cooler and safer for kids to play or walk',
   winter: 'More sun exposure: warmer and brighter for winter play',
-  pollen: 'Lower pollen exposure: better for sensitive kids'
+  // pollen: 'Lower pollen exposure: better for sensitive kids'
 }
 const legendLessMap = {
   summer: 'less tree cover: hotter and less comfortable',
   winter: 'less sun exposure: colder and dimmer paths',
-  pollen: 'higher pollen exposure: avoid during peak hours'
+  // pollen: 'higher pollen exposure: avoid during peak hours'
 }
 
 /* ===== 地图占位：把后端/地图 SDK 接口挂在这里 ===== */
