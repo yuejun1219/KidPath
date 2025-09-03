@@ -8,6 +8,8 @@ WORKDIR /app
 # This allows Docker to cache 'npm install' step if dependencies don't change
 COPY package*.json ./
 
+COPY certs ./certs
+
 # Install project dependencies
 RUN npm install
 

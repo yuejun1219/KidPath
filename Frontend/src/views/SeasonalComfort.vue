@@ -156,7 +156,7 @@ const map = ref(null)
 const playgroundLayer = ref(null)
 
 // local dev backend URL
-const API_BASE = 'http://localhost:3000/api/v1'
+const API_BASE = import.meta.env.VITE_API_BASE;
 // const API_BASE = 'https://your-production-backend.com/api/v1' // production backend URL
 
 const titleMap = { summer: 'SUMMER', winter: 'WINTER' }
