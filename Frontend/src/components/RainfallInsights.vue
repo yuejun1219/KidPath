@@ -13,7 +13,7 @@ import {
 Chart.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend)
 
 const props = defineProps({
-  csvUrl: { type: String, default: '' },  // url to CSV
+  csvUrl: { type: String, default: 'https://weather-data-kidpath.s3.ap-southeast-2.amazonaws.com/Rainfall_Data_2014-2025(July).csv' },  // url to CSV
   rows:   { type: Array,  default: () => [] }, // optional: pass preloaded rows
   defaultYearsWindow: { type: Number, default: 10 } // 5 or 10
 })
