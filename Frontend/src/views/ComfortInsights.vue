@@ -12,8 +12,8 @@ const tab = ref('canopy')
 
 // Point these at your data files.
 // If your CSVs are in /src/data/, this resolves at build time:
-const rainfallCsvUrl = new URL('../data/Rainfall_Data_2014-2025(July).csv', import.meta.url).href
-const windCsvUrl      = new URL('../data/Wind_Data.csv', import.meta.url).href
+const rainfallCsvUrl = new URL('https://weather-data-kidpath.s3.ap-southeast-2.amazonaws.com/Rainfall_Data_2014-2025(July).csv', import.meta.url).href
+const windCsvUrl      = new URL('https://weather-data-kidpath.s3.ap-southeast-2.amazonaws.com/Wind_Data.csv', import.meta.url).href
 // If you host via /public/data/, replace with:
 // const rainfallCsvUrl = '/data/Rainfall_Data_2014-2025(July).csv'
 // const windCsvUrl     = '/data/Wind_Data.csv'
