@@ -3,24 +3,21 @@ import { ref } from 'vue'
 
 import Canopy3DMap from '../components/Canopy3DMap.vue'
 import WaterAccess from '../components/WaterAccess.vue'
-import NearbyFountains from '../components/NearbyFountains.vue'
-import RainfallInsights from '../components/RainfallInsights.vue'  // ⬅️ new
-import WindInsights from '../components/WindInsights.vue'          // ⬅️ new
+import NearbyFountains from '../components/NearbyFountains.vue'  // ⬅️ existing
+import RainfallInsights from '../components/RainfallInsights.vue' // ⬅️ new
+import WindInsights from '../components/WindInsights.vue'         // ⬅️ new
 
 // tabs: 'canopy' | 'water' | 'nearby' | 'rainfall' | 'wind'
 const tab = ref('canopy')
 
-// Point these at your data files.
-// If your CSVs are in /src/data/, this resolves at build time:
-const rainfallCsvUrl = new URL('https://weather-data-kidpath.s3.ap-southeast-2.amazonaws.com/Rainfall_Data_2014-2025(July).csv', import.meta.url).href
-const windCsvUrl      = new URL('https://weather-data-kidpath.s3.ap-southeast-2.amazonaws.com/Wind_Data.csv', import.meta.url).href
-// If you host via /public/data/, replace with:
-// const rainfallCsvUrl = '/data/Rainfall_Data_2014-2025(July).csv'
-// const windCsvUrl     = '/data/Wind_Data.csv'
+// Remote CSVs (use plain strings for absolute URLs)
+const rainfallCsvUrl = 'https://weather-data-kidpath.s3.ap-southeast-2.amazonaws.com/Rainfall_Data_2014-2025(July).csv'
+const windCsvUrl     = 'https://weather-data-kidpath.s3.ap-southeast-2.amazonaws.com/Wind_Data.csv'
 </script>
 
 <template>
   <div class="comfort-insights-page">
+
     <div class="content">
       <h1>Data Insights</h1>
       <p>Page For Data Visualization!</p>
@@ -29,8 +26,8 @@ const windCsvUrl      = new URL('https://weather-data-kidpath.s3.ap-southeast-2.
         <button class="tab" :class="{ active: tab==='canopy' }"    @click="tab='canopy'">🌳 Tree Canopy</button>
         <button class="tab" :class="{ active: tab==='water' }"     @click="tab='water'">🚰 Water Access</button>
         <button class="tab" :class="{ active: tab==='nearby' }"    @click="tab='nearby'">📍 Nearby</button>
-        <button class="tab" :class="{ active: tab==='rainfall' }"  @click="tab='rainfall'">🌧️ Rainfall</button>
-        <button class="tab" :class="{ active: tab==='wind' }"      @click="tab='wind'">🌬️ Wind</button>
+        <button class="tab" :class="{ active: tab==='rainfall' }"  @click="tab='rainfall'">🌧️ Rainfall</button>  <!-- ⬅️ new -->
+        <button class="tab" :class="{ active: tab==='wind' }"      @click="tab='wind'">🌬️ Wind</button>        <!-- ⬅️ new -->
       </div>
 
       <section class="viz">
@@ -44,7 +41,7 @@ const windCsvUrl      = new URL('https://weather-data-kidpath.s3.ap-southeast-2.
             :default-years-window="10"
           />
           <WindInsights
-            v-else
+            v-else-if="tab==='wind'"
             :csv-url="windCsvUrl"
             :default-years-window="10"
             default-metric="windspeed"
