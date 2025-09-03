@@ -129,8 +129,8 @@ import { csvParse } from 'd3-dsv'
 // import 'maplibre-gl/dist/maplibre-gl.css'  // ensure this is in main.js once
 
 // -------------------- PATHS --------------------
-const GEOJSON_PATH = '/datasets/Boundaries_Victoria/georef-australia-state-suburb.geojson'
-const CSV_PATH     = '/datasets/suburb-treeVegetation.csv'
+const GEOJSON_PATH = 'https://kidpath-geojson.s3.ap-southeast-2.amazonaws.com/georef-australia-state-suburb.geojson'
+const CSV_PATH     = 'https://kidpath-geojson.s3.ap-southeast-2.amazonaws.com/suburb-treeVegetation.csv'
 
 // -------------------- JOIN KEYS ----------------
 let BOUNDARY_JOIN_KEY = 'scc_name'
