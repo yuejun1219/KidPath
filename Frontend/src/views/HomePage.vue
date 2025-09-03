@@ -852,7 +852,7 @@ const formattedWindTime = computed(() => {
 .advice-content p {
   font-family: "Sour Gummy", cursive;
   font-size: 1.2rem;
-  color: #e491d9;
+  color: #f4a3ee;
   line-height: 1.5;
   margin-bottom: 20px;
   font-weight: 200;
