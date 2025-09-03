@@ -1,0 +1,19 @@
+version: '3'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    volumes:
+      - ./certs:/certs:ro   
+    depends_on:
+      - check-db
+
+  check-db:
+    image: postgres:15-alpine
+    command: ["echo", "Skip running DB"]
