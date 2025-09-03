@@ -4,57 +4,41 @@
     <div v-if="loading" class="loading">Loading fountains…</div>
     <div ref="mapEl" class="map"></div>
 
-    <div class="panel">
-      <h3>Water Access (Drinking Fountains)</h3>
-
-      <div class="row">
-        <label class="muted small">
-          Data loaded from local file (OSM export). Last loaded: {{ lastSyncLabel }}
-        </label>
+    <!-- Graphic control panel -->
+    <div class="panel fancy">
+      <h3 class="section-title">🚰 Water Access (Drinking Fountains)</h3>
+       <!-- Toggle icons -->
+      <div class="row wrap">
+        <button class="btn ghost" :class="{active: showIcons}" @click="showIcons = !showIcons">
+          {{ showIcons ? '🙈 Hide icons' : '💧 Show icons' }}
+        </button>
+      </div>
+      <!-- Data sync -->
+      <div class="row small muted">
+        Last updated: {{ lastSyncLabel }}
       </div>
 
-      <!-- Progress while computing counts -->
+      <!-- Progress -->
       <div class="row" v-if="counting">
-        <div class="progress"><div class="bar" :style="{ width: Math.round(countProgress*100)+'%'}"></div></div>
+        <div class="progress"><div class="bar" :style="{ width: Math.round(countProgress*100)+'%' }"></div></div>
         <span class="small muted">{{ Math.round(countProgress*100) }}%</span>
       </div>
 
-      <div class="legend">
-        <div class="legend-title">Suburb colouring</div>
-        <div class="legend-desc small">
-          Shaded by fountain count (higher = darker). Tooltip shows exact count.
-        </div>
+      <!-- Legend -->
+      <div class="legend-card">
+        <div class="legend-title">Legend</div>
+        <div class="legend-desc small">💧 Darker blue = more fountains<br/>Hover for exact counts</div>
       </div>
 
-      <!-- ===== RANKING ===== -->
+      <!-- Ranking -->
       <div class="section">
-        <div class="section-title">
-          Explore suburbs
-          <span class="muted" v-if="rankedTotal > 0">· {{ rankedTotal }} found</span>
-        </div>
+        <div class="section-title">🏆 Explore Suburbs <span class="muted" v-if="rankedTotal>0">· {{ rankedTotal }} found</span></div>
 
         <div class="controls">
-          <input
-            class="search"
-            v-model.trim="search"
-            placeholder="Search suburb…"
-            @keydown.stop
-          />
+          <input class="search" v-model.trim="search" placeholder="🔍 Search suburb…" @keydown.stop />
           <div class="toggle">
-            <button
-              class="chip"
-              :class="{active: sortMode==='desc'}"
-              @click="sortMode='desc'"
-            >
-              Most fountains
-            </button>
-            <button
-              class="chip"
-              :class="{active: sortMode==='asc'}"
-              @click="sortMode='asc'"
-            >
-              Least fountains
-            </button>
+            <button class="chip" :class="{active: sortMode==='desc'}" @click="sortMode='desc'">⬆️ Most</button>
+            <button class="chip" :class="{active: sortMode==='asc'}" @click="sortMode='asc'">⬇️ Least</button>
           </div>
           <div class="slider-row">
             <span>Show</span>
@@ -71,7 +55,6 @@
             :class="{selected: isSelected(item.id)}"
             @click="toggleSelect(item.id)"
             @dblclick.stop="zoomToItems([item.id])"
-            title="Click to select; double-click to zoom"
           >
             <div class="rank-name">
               <span class="bullet" :style="{background: item.color}"></span>
@@ -79,34 +62,31 @@
             </div>
             <div class="rank-value">{{ item.count }}</div>
           </div>
-          <div v-if="!loading && rankedLimited.length===0" class="muted">No suburbs match that search.</div>
+          <div v-if="!loading && rankedLimited.length===0" class="muted">No suburbs match search.</div>
         </div>
       </div>
 
-      <!-- ===== SELECTED SUMMARY ===== -->
+      <!-- Selection summary -->
       <div class="section" v-if="selectedIds.length">
-        <div class="section-title">Selected suburb</div>
+        <div class="section-title">📍 Selected</div>
         <div class="selection">
-          <div v-for="sid in selectedIds" :key="sid" class="pill">
-            {{ idToName.get(sid) || sid }}
-          </div>
+          <div v-for="sid in selectedIds" :key="sid" class="pill">{{ idToName.get(sid) || sid }}</div>
         </div>
-        <div class="row">
-          <button class="btn" @click="zoomToItems(selectedIds)">Zoom to selected</button>
+        <div class="row wrap">
+          <button class="btn" @click="zoomToItems(selectedIds)">🔎 Zoom</button>
           <button class="btn ghost" @click="clearSelection">Clear</button>
         </div>
-        <div class="empty-note" v-if="selectedZeroCount">
-          No fountains recorded in the selected suburb.
-        </div>
+        <div class="empty-note" v-if="selectedZeroCount">🚱 No fountains recorded here.</div>
       </div>
 
-      <div class="hint">Tip: hover a suburb for its name and fountain count. Click a fountain icon to zoom & select its suburb.</div>
+      <div class="hint">💡 Tip: Hover suburbs for names & counts. Click icons to zoom & select.</div>
     </div>
   </div>
 </template>
 
+
 <script setup>
-import { onMounted, onBeforeUnmount, ref, computed, nextTick, watch } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
 import { Map as MapLibreMap } from 'maplibre-gl'
 import { MapboxOverlay } from '@deck.gl/mapbox'
 import { GeoJsonLayer, IconLayer } from '@deck.gl/layers'
@@ -114,8 +94,8 @@ import { AmbientLight, DirectionalLight, LightingEffect } from '@deck.gl/core'
 import * as turf from '@turf/turf'
 
 // -------------------- PATHS --------------------
-const GEOJSON_PATH = '/datasets/Boundaries_Victoria/georef-australia-state-suburb.geojson'
-const FOUNTAINS_PATH = '/datasets/osm_fountains_metro_melb.geojson'
+const GEOJSON_PATH = 'https://kidpath-geojson.s3.ap-southeast-2.amazonaws.com/georef-australia-state-suburb.geojson'
+const FOUNTAINS_PATH = 'https://kidpath-geojson.s3.ap-southeast-2.amazonaws.com/osm_fountains_metro_melb.geojson'
 const FOUNTAIN_ICON_URL = '/icons/fountain.png' // put a 32px PNG here
 
 // -------------------- JOIN KEYS ----------------
@@ -151,6 +131,8 @@ const selectedIds = ref([])
 // Progress for counting
 const counting = ref(false)
 const countProgress = ref(0) // 0..1
+
+const showIcons = ref(true)   // NEW toggle for fountain icons
 
 // -------------------- COLOR SCALE (BLUE) --------------
 const START = [227, 242, 253]  // light blue (#E3F2FD)
@@ -408,13 +390,15 @@ function buildFountainLayer () {
 }
 function setDeckLayers() {
   if (!deckOverlay) return
+  const layers = [buildPolygonLayer()]
+
+  if (showIcons.value) {
+    layers.push(buildFountainLayer())
+  }
+
   deckOverlay.setProps({
-    layers: [
-      buildPolygonLayer(),
-      buildFountainLayer()
-    ],
+    layers,
     effects: [lighting],
-    // show pointer when hovering clickable features
     getCursor: ({isHovering}) => isHovering ? 'pointer' : 'default',
     getTooltip: ({ object, layer }) => {
       if (!object) return null
@@ -423,7 +407,7 @@ function setDeckLayers() {
       }
       const name = getName(object.properties)
       const cnt = object.properties?.__fountainCount ?? 0
-      const line = cnt>0 ? `Fountains: ${cnt}` : 'No fountains recorded'
+      const line = cnt > 0 ? `Fountains: ${cnt}` : 'No fountains recorded'
       return { text: `${name ?? 'Suburb'}\n${line}\nClick to select` }
     }
   })
@@ -489,29 +473,25 @@ onBeforeUnmount(() => {
 })
 
 // Re-render layers on selection / data changes
-watch([selectedIds, () => fountains.value, () => features.value?.length], () => setDeckLayers())
+watch(
+  [selectedIds, () => fountains.value, () => features.value?.length, showIcons],
+  () => setDeckLayers()
+)
 </script>
 
 <style scoped>
-.map-wrap { position: relative; height: 75vh; border-radius: 16px; overflow: hidden; box-shadow: 0 14px 32px rgba(0,0,0,0.12); background: #eef2f3; }
+.map-wrap { position: relative; height: 75vh; border-radius: 18px; overflow: hidden; box-shadow: 0 16px 36px rgba(0,0,0,0.12); background: #eef2f3; }
 .map { height: 100%; width: 100%; }
 
 .loading { position: absolute; z-index: 3; top: 12px; left: 50%; transform: translateX(-50%); background: rgba(255,255,255,0.95); padding: 8px 12px; border-radius: 10px; font-size: .9rem; color: #1565c0; box-shadow: 0 6px 18px rgba(0,0,0,0.08); }
 
-.panel { position: absolute; top: 12px; left: 12px; background: rgba(255,255,255,0.94); backdrop-filter: blur(6px); border-radius: 14px; padding: 14px 16px; box-shadow: 0 10px 24px rgba(0,0,0,0.12); font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; width: 340px; max-height: calc(100% - 24px); overflow: auto; }
-.panel h3 { font-size: 1.05rem; margin: 0 0 8px; color: #0d47a1; letter-spacing: .2px; }
+/* Panel */
+.panel.fancy { position: absolute; top: 12px; left: 12px; background: rgba(255,255,255,0.95); backdrop-filter: blur(6px); border-radius: 16px; padding: 16px; box-shadow: 0 12px 28px rgba(0,0,0,0.12); width: 360px; max-height: calc(100% - 24px); overflow: auto; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; border: 1px solid rgba(0,0,0,0.08); }
+.section-title { font-size: 1.05rem; font-weight: 700; margin: 0 0 8px; color: #0d47a1; display: flex; align-items: center; gap: 6px; }
+.legend-card { background:#e3f2fd; border:1px solid #bbdefb; border-radius:12px; padding:8px 10px; margin:10px 0; }
+.legend-title { font-weight: 700; color:#0d47a1; margin-bottom: 2px; }
 
-.row { display: flex; align-items: center; gap: 10px; font-size: .92rem; margin: 8px 0; }
-.row.wrap { flex-wrap: wrap; gap: 8px 10px; }
-.row label { color: #333; flex: 1; }
-.small { font-size: .8rem; }
-.legend { margin: 10px 0 6px; }
-.legend-title { font-size: .85rem; color: #333; margin-bottom: 4px; }
-.legend-desc { color: #555; }
-
-.section { margin-top: 12px; }
-.section-title { font-size: .9rem; font-weight: 700; color: #0d47a1; margin-bottom: 6px; }
-
+/* Controls */
 .controls { display: grid; gap: 8px; }
 .search { width: 100%; padding: 6px 8px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.15); font-size: .9rem; }
 .toggle { display: flex; gap: 6px; }
@@ -519,25 +499,29 @@ watch([selectedIds, () => fountains.value, () => features.value?.length], () => 
 .chip.active { background: #e3f2fd; border-color: #0d47a1; color: #0d47a1; }
 .slider-row { display: flex; align-items: center; gap: 8px; font-size: .85rem; }
 
-.rank-list { margin-top: 6px; border-top: 1px dashed rgba(0,0,0,0.12); padding-top: 6px; max-height: 240px; overflow: auto; }
-.rank-item { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 8px; padding: 6px 4px; border-radius: 8px; cursor: pointer; }
+/* Ranking */
+.rank-list { margin-top: 6px; border-top: 1px dashed rgba(0,0,0,0.12); padding-top: 6px; max-height: 220px; overflow: auto; }
+.rank-item { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 8px; padding: 6px 4px; border-radius: 8px; cursor: pointer; transition: background .15s; }
 .rank-item:hover { background: rgba(0,0,0,0.05); }
 .rank-item.selected { background: #e3f2fd; outline: 1px solid #bbdefb; }
 .rank-name { display: flex; align-items: center; gap: 8px; }
 .bullet { width: 14px; height: 10px; border-radius: 4px; border: 1px solid rgba(0,0,0,0.1); }
 .rank-value { font-weight: 700; color: #0d47a1; }
-.muted { color: #666; font-size: .85rem; }
 
+/* Selection */
 .selection { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0; }
 .pill { background: #e3f2fd; color: #0d47a1; border: 1px solid #bbdefb; padding: 2px 8px; border-radius: 999px; font-size: .8rem; }
 
-.btn { background: #0d47a1; color: #fff; border: none; padding: 6px 10px; border-radius: 8px; font-size: .85rem; cursor: pointer; }
-.btn:hover { filter: brightness(1.05); }
-.btn:disabled { opacity: .6; cursor: default; }
+/* Buttons */
+.btn { background: #0d47a1; color: #fff; border: none; padding: 6px 12px; border-radius: 8px; font-size: .85rem; cursor: pointer; transition: transform .1s ease; }
+.btn:hover { transform: scale(1.04); }
 .btn.ghost { background: transparent; color: #0d47a1; border: 1px solid #0d47a1; }
+.btn:disabled { opacity: .6; cursor: default; }
 
-.hint { margin-top: 8px; font-size: .78rem; color: #555; }
-
+/* Misc */
+.small { font-size: .8rem; }
+.muted { color: #555; }
+.hint { margin-top: 10px; font-size: .78rem; color: #555; }
 .empty-note { margin-top: 8px; background: #fff3e0; border: 1px solid #ffe0b2; color: #e65100; padding: 8px; border-radius: 8px; font-size: .85rem; }
 
 .progress { flex: 1; height: 6px; background: #e0e0e0; border-radius: 999px; overflow: hidden; }
