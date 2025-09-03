@@ -762,6 +762,18 @@ const formattedWindTime = computed(() => {
   border: 1px solid rgba(76, 175, 172, 0.3);
 }
 
+.risk-tag.very-strong {
+  background: #4466ff1c;
+  color: #4466ff;
+  border: 1px solid #4466ff47;
+}
+
+.risk-tag.strong {
+  background: #0d03911e;
+  color: #0d0391;
+  border: 1px solid #0d039168;
+}
+
 .card-main-data {
   margin-bottom: 10px;
   position: relative;
@@ -1176,7 +1188,7 @@ const formattedWindTime = computed(() => {
   overflow: hidden;
 }
 
-/* 背景装饰点 - 使用 dot3/4/7/6 搭配 */
+/* background dots - dot3/4/7/6 */
 .articles::before {
   content: '';
   position: absolute;
