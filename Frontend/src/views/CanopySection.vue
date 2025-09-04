@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted, onBeforeUnmount, nextTick, ref } from 'vue'
 import Canopy3DMap from '../components/Canopy3DMap.vue'
 
 // Props you can pass down from your parent if you want dynamic values
@@ -13,10 +13,52 @@ const chips = computed(() => ([
   { label: 'Most shaded',   value: props.topSuburb },
   { label: 'Least shaded',  value: props.bottomSuburb },
 ]))
+
+/* ------- reliability nudges so the map renders on reload ------- */
+const rootEl = ref(null)
+
+function nudgeResize(times = 2){
+  // fire a couple of times to catch layout + GPU init
+  let i = 0
+  const tick = () => {
+    window.dispatchEvent(new Event('resize'))
+    if (++i < times) requestAnimationFrame(tick)
+  }
+  requestAnimationFrame(tick)
+}
+
+const onPageShow = () => nudgeResize(2)
+let io // IntersectionObserver
+
+onMounted(async () => {
+  // 1) First paint nudge
+  await nextTick()
+  nudgeResize(2)
+
+  // 2) If the page is restored from bfcache (back/forward), maps still size right
+  window.addEventListener('pageshow', onPageShow)
+
+  // 3) One-shot resize when this section first becomes visible
+  if (rootEl.value) {
+    io = new IntersectionObserver((entries) => {
+      const hit = entries.find(e => e.isIntersecting)
+      if (hit) {
+        nudgeResize(2)
+        io.disconnect()
+      }
+    }, { root: null, rootMargin: '0px', threshold: [0.1, 0.25] })
+    io.observe(rootEl.value)
+  }
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('pageshow', onPageShow)
+  if (io) io.disconnect()
+})
 </script>
 
 <template>
-  <section id="canopy-section" class="canopy-block">
+  <section id="canopy-section" class="canopy-block" ref="rootEl">
     <!-- Left: Text + design -->
     <aside class="info">
       <h2 class="kicker">Tree Canopy</h2>
@@ -73,7 +115,7 @@ const chips = computed(() => ([
   display: grid;
   grid-template-columns: 1.1fr 1.9fr;   /* text | map */
   gap: 20px;
-  max-width: 1200px;
+  max-width: 1800px;
   margin: 0 auto;
   padding: 18px 16px 12px;
 }

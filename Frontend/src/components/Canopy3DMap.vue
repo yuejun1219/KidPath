@@ -3,7 +3,14 @@
     <div v-if="loading" class="loading">Loading suburbs…</div>
     <div ref="mapEl" class="map"></div>
 
-    <div class="panel">
+    <div
+  class="panel"
+  :style="collapsed && isNarrow ? 'transform: translateY(calc(100% - 44px)); max-height: 44px;' : ''"
+>
+ <button class="sheet-toggle" @click="collapsed = true" aria-label="Collapse panel">
+      ▼
+    </button>
+
       <h3>Tree Canopy</h3>
 
       <div class="row">
@@ -115,6 +122,14 @@
 
       <div class="hint">Hover a suburb for its name and tree cover.</div>
     </div>
+      <button
+    v-if="isNarrow && collapsed"
+    class="sheet-fab"
+    @click="collapsed = false"
+    aria-label="Expand panel"
+  >
+    ▲
+  </button>
   </div>
 </template>
 
@@ -192,6 +207,42 @@ function colorForValue(v){
   return [r,g,b,235]
 }
 
+// -------------------- STATE --------------------
+
+const collapsed = ref(false)
+function togglePanel(){
+  collapsed.value = !collapsed.value
+  // optional: nudge the camera so nothing hides under the sheet
+
+}
+
+// NEW: track if we’re on a narrow screen
+const isNarrow = ref(false)
+function updateNarrow () {
+  isNarrow.value = window.matchMedia('(max-width: 720px)').matches
+}
+onMounted(() => {
+  updateNarrow()
+  window.addEventListener('resize', updateNarrow, { passive: true })
+})
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', updateNarrow)
+})
+
+
+
+
+
+// helper for responsive map padding
+function sheetPadding () {
+  if (isNarrow.value) {
+    // shorter bottom reserve when the sheet is collapsed
+    const bottom = collapsed.value ? 56 : 180
+    return { top: 16, right: 16, bottom, left: 16 }
+  }
+  return { top: 60, right: 40, bottom: 60, left: 320 }
+}
+
 // -------------------- DATA ---------------------
 // ✅ make features reactive so ranking/comparison update
 const joinedFeatures = ref([])     // was: let joinedFeatures = []
@@ -246,13 +297,13 @@ function fitToDataByIds(ids, animate=true) {
   const feats = joinedFeatures.value.filter(f => set.has(getId(f.properties)))
   if (!feats.length) return
   const bounds = computeBounds(feats)
-  map.fitBounds(bounds, { padding: { top: 60, right: 40, bottom: 60, left: 320 }, duration: animate ? 1000 : 0 })
+  map.fitBounds(bounds, { padding: sheetPadding(), duration: animate ? 1000 : 0 })
 }
 function fitToAllMatched() {
   const matched = joinedFeatures.value.filter(f => Number.isFinite(f.properties?.__canopyPct))
   const fts = matched.length ? matched : joinedFeatures.value
   const bounds = computeBounds(fts)
-  map.fitBounds(bounds, { padding: { top: 60, right: 40, bottom: 60, left: 320 }, duration: 1000 })
+  map.fitBounds(bounds, { padding: sheetPadding(), duration: 1000 })
 }
 function saveView() {
   const c = map.getCenter()
@@ -528,4 +579,81 @@ watch([extrudeX, selectedIds], () => setDeckLayers())
 .delta.down { color: #b00020; }
 .compare-actions { display: flex; gap: 8px; margin-top: 6px; }
 .hint { margin-top: 8px; font-size: .78rem; color: #555; }
+
+/* --- Mobile bottom sheet panel --- */
+@media (max-width: 720px){
+  .map-wrap{ height: 68vh; }               /* give a bit more room to the panel */
+  .panel{
+    left: 8px; right: 8px;
+    top: auto; bottom: 8px;                 /* move to bottom */
+    width: auto; max-height: 46vh;          /* turn into a sheet */
+    padding: 12px 12px 10px;
+    border-radius: 14px;
+    box-shadow: 0 12px 28px rgba(0,0,0,.18);
+  }
+  .rank-list{ max-height: 160px; }          /* prevent super tall lists on phones */
+  .controls .slider-row{ font-size: .8rem; }
+}
+/* Make MapLibre controls not hide behind the sheet */
+:deep(.maplibregl-ctrl-bottom-right){ bottom: 10px; right: 10px; }
+
+/* Toggle button */
+.sheet-toggle{
+  position: sticky; top: 0; left: 0; width: 100%;
+  display: grid; place-items: center;
+  background: transparent; border: 0; padding: 4px 0 6px; cursor: pointer;
+  color: #2e7d32; font-weight: 700; font-size: 12px;
+}
+
+
+/* Mobile bottom sheet behaviour */
+@media (max-width: 720px){
+  .map-wrap{ height: 68vh; }
+  .panel{
+    left: 8px; right: 8px; top: auto; bottom: 8px;
+    width: auto; max-height: 46vh; padding: 8px 12px 10px;
+    border-radius: 14px; box-shadow: 0 12px 28px rgba(0,0,0,.18);
+    transition: transform .24s ease, max-height .24s ease;
+    overscroll-behavior: contain;
+  }
+  /* collapsed state – show just the header/handle */
+  .panel:has(.sheet-toggle) + .dummy{} /* noop to keep :has scoped-friendly */
+}
+
+/* Inside-panel toggle (for closing) */
+.sheet-toggle{
+  position: sticky; top: 0;
+  width: 100%; display: grid; place-items: center;
+  background: transparent; border: 0; padding: 4px 0 6px; cursor: pointer;
+  color: #2e7d32; font-weight: 700; font-size: 12px;
+}
+
+@media (max-width: 720px){
+  .panel{
+    position: absolute; left: 8px; right: 8px; bottom: 8px;
+    width: auto; max-height: 46vh; overflow: hidden;
+    background: rgba(255,255,255,0.94);
+    border-radius: 14px; box-shadow: 0 12px 28px rgba(0,0,0,.18);
+    transition: transform .24s ease, max-height .24s ease;
+  }
+  .panel.collapsed{
+    transform: translateY(calc(100% - 44px));
+    max-height: 44px; /* shows only the handle area */
+  }
+
+  /* Floating expand button (always visible when collapsed) */
+  .sheet-fab{
+    position: absolute; z-index: 6;  /* higher than panel */
+    left: 50%; bottom: 14px; transform: translateX(-50%);
+    padding: 6px 10px; border-radius: 999px;
+    background: #fff; border: 1px solid rgba(0,0,0,.15);
+    box-shadow: 0 8px 18px rgba(0,0,0,.12);
+    color: #2e7d32; font-weight: 700; font-size: 12px; cursor: pointer;
+  }
+}
+
+/* Keep MapLibre controls clear of the sheet */
+:deep(.maplibregl-ctrl-bottom-right){ bottom: 10px; right: 10px; }
+
+
 </style>
