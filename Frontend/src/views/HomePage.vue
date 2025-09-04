@@ -254,8 +254,8 @@
             <h3>Winter Sun Exposure</h3>
             <p>Discover sunny spots for winter warmth</p>
           </div>
-          <div class="comfort-option pollen">
-            <h3>Comfortable Playgrounds Explore</h3>
+          <div class="comfort-option playground">
+            <h3>Best Playgrounds Explore</h3>
             <p>Discover season-friendly playgrounds - shade in summer, sun in winter</p>
           </div>
         </div>
@@ -509,7 +509,7 @@ const formattedWindTime = computed(() => {
   letter-spacing: 0.3px;
 }
 
-/* Feature Highlights - 简约清爽设计 */
+/* Feature Highlights */
 .feature-highlights {
   display: flex;
   gap: 40px;
@@ -565,7 +565,7 @@ const formattedWindTime = computed(() => {
   margin-bottom: 50px;
 }
 
-/* Info Cards - 童趣简约清爽设计 */
+/* Info Cards */
 .info-cards {
   padding: 80px, 0px, 70px, 0px;
   background: white;
@@ -573,7 +573,7 @@ const formattedWindTime = computed(() => {
   overflow: hidden;
 }
 
-/* 背景装饰点 - 更明显大气 */
+/* background-dots decoration */
 .info-cards::before {
   content: '';
   position: absolute;
@@ -638,7 +638,7 @@ const formattedWindTime = computed(() => {
   margin-top: 100px;
 }
 
-/* 卡片背景装饰 - 更明显 */
+/* card decoration - dots */
 .info-card::before {
   content: '';
   position: absolute;
@@ -660,7 +660,7 @@ const formattedWindTime = computed(() => {
   background: rgba(255, 255, 255, 0.95);
 }
 
-/* 新的卡片组件样式 */
+/* card */
 .card-header {
   display: flex;
   align-items: flex-start;
@@ -1014,7 +1014,7 @@ const formattedWindTime = computed(() => {
   box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
 }
 
-/* Did You Know 背景装饰 - 更明显 */
+/* Did You Know background */
 .did-you-know::before {
   content: '';
   position: absolute;
@@ -1106,7 +1106,7 @@ const formattedWindTime = computed(() => {
   animation: fadeInUp 1s ease-out both;
 }
 
-/* 动画关键帧定义 */
+/* animation */
 @keyframes slideInUp {
   from {
     transform: translateY(50px);
@@ -1219,7 +1219,7 @@ const formattedWindTime = computed(() => {
   filter: hue-rotate(320deg) saturate(1.6);
 }
 
-/* 额外的装饰点 */
+/* dots decoration */
 .articles .container::before {
   content: '';
   position: absolute;
@@ -1283,17 +1283,17 @@ const formattedWindTime = computed(() => {
   object-fit: cover;
 }
 
-/* 为不同图片设置不同的定位 */
+/* photos for articles */
 .article-card:nth-child(1) .article-img {
-  object-position: center 30%; /* 500-trees.png - 显示树木的中上部 */
+  object-position: center 30%; /* 500-trees.png */
 }
 
 .article-card:nth-child(2) .article-img {
-  object-position: center 3%; /* winter.png - 显示雪地玩耍场景的中部 */
+  object-position: center 3%; /* winter.png */
 }
 
 .article-card:nth-child(3) .article-img {
-  object-position: center 22%; /* hot.png - 显示喝水场景的上部，避免头部被切 */
+  object-position: center 22%; /* hot.png */
 }
 
 .article-content {
@@ -1353,7 +1353,7 @@ const formattedWindTime = computed(() => {
 
 .summer h3 { color: #ff6f00; }
 .winter h3 { color: #5e35b1; }
-.pollen h3 { color: #f57c00; }
+.playground h3 { color: #f57c00; }
 
 .explore-button {
   background: linear-gradient(135deg, #5e35b1, #7b1fa2);

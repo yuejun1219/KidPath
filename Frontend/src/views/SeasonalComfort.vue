@@ -139,6 +139,13 @@
         </div>
       </aside>
     </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="container">
+        <p>&copy; 2025 KidPath. Helping families explore safely.</p>
+      </div>
+    </footer>    
   </div>
 </template>
 
@@ -955,5 +962,18 @@ input:checked + .toggle-slider:before {
   border-radius: 4px;
   cursor: pointer;
   font-size: 12px;
+}
+
+/* Footer */
+.footer {
+  background: #2e7d32;
+  color: white;
+  text-align: center;
+  padding: 30px 0;
+}
+
+.footer p {
+  margin: 0;
+  font-size: 1rem;
 }
 </style>

@@ -124,6 +124,12 @@ onBeforeUnmount(() => { if (obs) obs.disconnect() })
         />
       </div>
     </section>
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="container">
+        <p>&copy; 2025 KidPath. Helping families explore safely.</p>
+      </div>
+    </footer>
   </main>
 </template>
 
@@ -243,6 +249,19 @@ section{ scroll-margin-top: calc(var(--site-header-h) + 10px); } /* fix anchor j
 
 /* 3) ROUTE: keep compact */
 .route-card :deep(.cool-route-wrap){ height: 54vh; }
+
+/* Footer */
+.footer {
+  background: #2e7d32;
+  color: white;
+  text-align: center;
+  padding: 30px 0;
+}
+
+.footer p {
+  margin: 0;
+  font-size: 1rem;
+}
 
 /* Responsive */
 @media (max-width: 1200px){
