@@ -65,7 +65,7 @@ onBeforeUnmount(() => {
 
       <h3 class="hero-copy">
         <span class="shine">Shade changes everything.</span><br />
-        Pick cooler streets & parks—at a glance.
+        Pick cooler streets & parks, at a glance.
       </h3>
 
       <div class="chips">

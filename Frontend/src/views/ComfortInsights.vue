@@ -241,7 +241,7 @@ function switchWaterMode(mode) {
     <section id="climate" class="section-grid stack-first">
       <aside class="aside reveal">
         <h2 class="title-underline">Local climate</h2>
-        <p class="muted lead">Quick glance at rain & wind — without making the page long.</p>
+        <p class="muted lead">Quick glance at rain & wind</p>
       </aside>
       <div class="content card reveal">
         <WeatherInsights
@@ -525,7 +525,6 @@ function switchWaterMode(mode) {
 .fountains-card :deep(.map-wrap){ height: 62vh !important; }
 .route-card     :deep(.cool-route-wrap){ height: 52vh !important; }
 
-<<<<<<< HEAD
 /* 2) WATER: side-by-side on desktop */
 .water-grid{
   display: grid;
@@ -556,8 +555,6 @@ function switchWaterMode(mode) {
 }
 
 /* Responsive */
-=======
->>>>>>> avirukth
 @media (max-width: 1200px){
   .shade-card     :deep(.map-wrap){ height: 50vh !important; }
   .water-card     :deep(.map-wrap){ height: 46vh !important; }
