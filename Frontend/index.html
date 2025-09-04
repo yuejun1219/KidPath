@@ -1,6 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <!-- Simple client-side gate: remember once via localStorage -->
+    <script>
+      (function () {
+        var KEY = 'kidpath_site_unlocked';
+        var PASS = 'Demo123!'; 
+
+        try {
+          if (!localStorage.getItem(KEY)) {
+            var ok = false;
+            while (!ok) {
+              var input = window.prompt('Password:');
+              if (input === null) {
+                document.write('<style>body{display:none;}</style>');
+                return;
+              }
+              if (input === PASS) {
+                localStorage.setItem(KEY, '1');
+                ok = true;
+              } else {
+                alert('Wrong password');
+              }
+            }
+          }
+        } catch (e) {
+          var input = window.prompt('Password:');
+          if (input !== PASS) {
+            document.write('<style>body{display:none;}</style>');
+          }
+        }
+      })();
+    </script>
+
     <meta charset="UTF-8">
     <link rel="icon" href="/favicon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +40,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Otomanopee+One&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Sour+Gummy&display=swap" rel="stylesheet">
-     <link href="https://fonts.googleapis.com/css2?family=Knewave&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Knewave&display=swap" rel="stylesheet">
     <title>KidPath - Helping Families Walk with Confidence</title>
   </head>
   <body>
