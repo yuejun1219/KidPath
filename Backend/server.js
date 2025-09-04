@@ -11,7 +11,17 @@ const app = express();
 const port = process.env.PORT || DEFAULT_CONFIG.PORT;
 
 // middleware
-app.use(cors());
+app.use(cors({
+  origin: [
+    'http://localhost:5173',      // local test
+    'https://www.kidpath.me',     // Vercel
+    'https://kidpath.me'          // root
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+}));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
