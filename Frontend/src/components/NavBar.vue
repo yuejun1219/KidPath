@@ -6,14 +6,21 @@
         <router-link to="/" class="logo-text">KidPath</router-link>
       </div>
       
-      <div class="nav-links">
-        <router-link to="/" class="nav-link" active-class="active">
+      <!-- Mobile menu button -->
+      <button class="mobile-menu-btn" @click="toggleMobileMenu">
+        <span class="hamburger"></span>
+        <span class="hamburger"></span>
+        <span class="hamburger"></span>
+      </button>
+      
+      <div class="nav-links" :class="{ 'mobile-open': mobileMenuOpen }">
+        <router-link to="/" class="nav-link" active-class="active" @click="closeMobileMenu">
           <span>HOME</span>
         </router-link>
-        <router-link to="/comfort-insights" class="nav-link" active-class="active">
+        <router-link to="/comfort-insights" class="nav-link" active-class="active" @click="closeMobileMenu">
           <span>Comfort Insights</span>
         </router-link>
-        <router-link to="/seasonal-comfort" class="nav-link" active-class="active">
+        <router-link to="/seasonal-comfort" class="nav-link" active-class="active" @click="closeMobileMenu">
           <span>Seasonal Comfort</span>
         </router-link>
       </div>
@@ -22,7 +29,17 @@
 </template>
 
 <script setup>
-// Component logic can be added here
+import { ref } from 'vue'
+
+const mobileMenuOpen = ref(false)
+
+const toggleMobileMenu = () => {
+  mobileMenuOpen.value = !mobileMenuOpen.value
+}
+
+const closeMobileMenu = () => {
+  mobileMenuOpen.value = false
+}
 </script>
 
 <style scoped>
@@ -139,6 +156,29 @@
   font-weight: 600;
 }
 
+/* Mobile menu button */
+.mobile-menu-btn {
+  display: none;
+  flex-direction: column;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+  gap: 4px;
+}
+
+.hamburger {
+  width: 25px;
+  height: 3px;
+  background: #acbd65;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+.mobile-menu-btn:hover .hamburger {
+  background: #6d830b;
+}
+
 /* 响应式设计 */
 @media (max-width: 768px) {
   .nav-container {
@@ -151,34 +191,66 @@
     line-height: 22px;
   }
   
+  .mobile-menu-btn {
+    display: flex;
+  }
+  
   .nav-links {
-    gap: 20px;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: rgb(250, 237, 220);
+    flex-direction: column;
+    gap: 0;
+    padding: 20px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    transform: translateY(-100%);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+  }
+  
+  .nav-links.mobile-open {
+    transform: translateY(0);
+    opacity: 1;
+    visibility: visible;
   }
   
   .nav-link {
-    padding: 10px 15px;
-    font-size: 0.85rem;
+    padding: 15px 20px;
+    font-size: 1rem;
+    border-bottom: 1px solid rgba(172, 189, 101, 0.2);
+    width: 100%;
+    text-align: center;
+  }
+  
+  .nav-link:last-child {
+    border-bottom: none;
   }
   
   .nav-link::before {
-    width: 50px;
-    height: 50px;
+    display: none;
   }
 }
 
 @media (max-width: 480px) {
+  .nav-container {
+    padding: 0 10px;
+  }
+  
+  .logo-text {
+    font-size: 24px;
+    line-height: 20px;
+  }
+  
   .nav-links {
-    gap: 15px;
+    padding: 15px;
   }
   
   .nav-link {
-    padding: 8px 12px;
-    font-size: 0.8rem;
-  }
-  
-  .nav-link::before {
-    width: 45px;
-    height: 45px;
+    padding: 12px 15px;
+    font-size: 0.9rem;
   }
 }
 </style>

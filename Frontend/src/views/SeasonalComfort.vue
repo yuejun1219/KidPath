@@ -628,7 +628,55 @@ input:checked + .toggle-slider:before {
   align-items: start;
 }
 @media (max-width: 980px) {
-  .main { grid-template-columns: 1fr; }
+  .main { 
+    grid-template-columns: 1fr;
+    padding: 30px 20px 20px 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .main {
+    padding: 20px 15px 20px 15px;
+    gap: 20px;
+  }
+  
+  .map-container {
+    height: 400px;
+  }
+  
+  .map-panel {
+    min-height: 450px;
+  }
+}
+
+@media (max-width: 480px) {
+  .main {
+    padding: 15px 10px 15px 10px;
+    gap: 15px;
+  }
+  
+  .map-container {
+    height: 350px;
+  }
+  
+  .map-panel {
+    min-height: 400px;
+    padding: 12px;
+  }
+  
+  .season-toggle-container {
+    margin-bottom: 12px;
+  }
+  
+  .rec-title {
+    font-size: 16px;
+    padding: 8px 12px;
+  }
+  
+  .rec-subtitle {
+    font-size: 12px;
+    margin-bottom: 12px;
+  }
 }
 
 /* map container */
