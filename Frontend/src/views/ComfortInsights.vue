@@ -6,6 +6,7 @@ import CanopySection from './CanopySection.vue'
 import WaterAccess from '@/components/WaterAccess.vue'
 import NearbyFountains from '@/components/NearbyFountains.vue'
 import CoolRoute from '@/components/CoolRoute.vue'
+import WeatherInsights from '@/components/WeatherInsights.vue'
 
 /* ---------- cross-section plumbing ---------- */
 const selectedSuburbs = ref([])
@@ -234,6 +235,19 @@ function switchWaterMode(mode) {
 
       <div class="content card shade-card reveal">
         <CanopySection v-if="ready" @planCoolRoute="onPlanCoolRoute" />
+      </div>
+    </section>
+    <!-- CLIMATE (compact!) -->
+    <section id="climate" class="section-grid stack-first">
+      <aside class="aside reveal">
+        <h2 class="title-underline">Local climate</h2>
+        <p class="muted lead">Quick glance at rain & wind — without making the page long.</p>
+      </aside>
+      <div class="content card reveal">
+        <WeatherInsights
+          rainfallUrl="https://weather-data-kidpath.s3.ap-southeast-2.amazonaws.com/Rainfall_Data_2014-2025(July).csv"
+          windUrl="https://weather-data-kidpath.s3.ap-southeast-2.amazonaws.com/Wind_Data.csv"
+        />
       </div>
     </section>
 
