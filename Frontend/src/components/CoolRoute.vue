@@ -189,24 +189,67 @@ async function fetchAlternatives(startLngLat, endLngLat){
   const controller = new AbortController()
   const t = setTimeout(() => controller.abort('timeout'), 8000) // 8s
 
-  // Try alternatives first
+  // 1) Try OSRM alternatives
   let url = `https://router.project-osrm.org/route/v1/foot/${startLngLat[0]},${startLngLat[1]};${endLngLat[0]},${endLngLat[1]}?alternatives=true&steps=false&geometries=geojson&overview=full`
   try {
     const r = await fetch(url, { signal: controller.signal })
     clearTimeout(t)
     if (r.ok) {
       const json = await r.json()
-      if (json.routes?.length) return json.routes
+      if (json.routes?.length > 1) return json.routes
+      if (json.routes?.length === 1) {
+        // keep OSRM’s main route, but also synthesize alts
+        return await synthesizeAlternatives(startLngLat, endLngLat, json.routes[0])
+      }
     }
   } catch { /* fall through */ }
 
-  // Fallback: single route (faster)
+  // 2) Fallback: single route only
   const r2 = await fetch(
     `https://router.project-osrm.org/route/v1/foot/${startLngLat[0]},${startLngLat[1]};${endLngLat[0]},${endLngLat[1]}?alternatives=false&steps=false&geometries=geojson&overview=full`
   )
   if (!r2.ok) throw new Error('OSRM route fetch failed')
   const j2 = await r2.json()
-  return j2.routes || []
+  if (!j2.routes?.length) return []
+
+  return await synthesizeAlternatives(startLngLat, endLngLat, j2.routes[0])
+}
+
+// helper: build fake alternatives by inserting offset midpoints
+async function synthesizeAlternatives(startLngLat, endLngLat, baseRoute){
+  const mid = turf.midpoint(turf.point(startLngLat), turf.point(endLngLat))
+  const bearing = turf.bearing(turf.point(startLngLat), turf.point(endLngLat))
+
+  const offsets = [200, 350] // meters
+  const candidates = []
+  for (const m of offsets){
+    const left  = turf.destination(mid, m/1000, bearing - 90, {units:'kilometers'})
+    const right = turf.destination(mid, m/1000, bearing + 90, {units:'kilometers'})
+    candidates.push(left, right)
+  }
+
+  const alts = []
+  for (const c of candidates){
+    try {
+      const a = await fetch(`https://router.project-osrm.org/route/v1/foot/${startLngLat[0]},${startLngLat[1]};${c.geometry.coordinates[0]},${c.geometry.coordinates[1]}?alternatives=false&steps=false&geometries=geojson&overview=full`).then(r=>r.json())
+      const b = await fetch(`https://router.project-osrm.org/route/v1/foot/${c.geometry.coordinates[0]},${c.geometry.coordinates[1]};${endLngLat[0]},${endLngLat[1]}?alternatives=false&steps=false&geometries=geojson&overview=full`).then(r=>r.json())
+      if (a.routes?.length && b.routes?.length){
+        alts.push({
+          distance: a.routes[0].distance + b.routes[0].distance,
+          duration: a.routes[0].duration + b.routes[0].duration,
+          geometry: { type:'LineString', coordinates:[...a.routes[0].geometry.coordinates, ...b.routes[0].geometry.coordinates] }
+        })
+      }
+    } catch { /* skip failed leg */ }
+  }
+
+  // dedup + combine with base
+  const all = [baseRoute, ...alts]
+  const uniq = []
+  for (const r of all){
+    if (!uniq.find(u => Math.abs(u.distance - r.distance) < 25)) uniq.push(r)
+  }
+  return uniq
 }
 
 async function computeRoutes(){
@@ -314,6 +357,19 @@ async function initMap(){
   })
 }
 
+// add below existing refs/computed
+function applyPreset(name){
+  if (name==='fast'){ shadeWeight.value = 0.2; parkWeight.value = 0.4 }
+  else if (name==='balanced'){ shadeWeight.value = 0.6; parkWeight.value = 0.6 }
+  else if (name==='cool'){ shadeWeight.value = 0.9; parkWeight.value = 0.5 }
+}
+
+function selectBest(id){
+  bestRouteId.value = id
+  const best = routes.value.find(r => r.id===id)
+  setSourceData('route-best', best ? { type:'FeatureCollection', features:[best.feature] } : turf.featureCollection([]))
+}
+
 function useMyLocation(){
   if (!navigator.geolocation) return alert('Geolocation not available')
   navigator.geolocation.getCurrentPosition(
@@ -370,33 +426,62 @@ watch([shadeWeight, parkWeight], () => {
         <strong>coolest</strong> using nearby parks & street trees.
       </p>
 
-      <div class="controls">
-        <div class="row">
-          <label>Pick</label>
-          <div class="seg">
-            <button :class="{active: picking==='start'}" @click="picking='start'">Start</button>
-            <button :class="{active: picking==='end'}"   @click="picking='end'">End</button>
-          </div>
-          <div class="seg small">
-            <button class="link" @click="useMyLocation">Use my location</button>
-            <button class="link" @click="swapPoints" :disabled="!start || !end">Swap</button>
-            <button class="link" @click="clearPoints" :disabled="!start && !end">Clear</button>
-          </div>
-        </div>
+     <div class="controls">
 
-        <div class="row">
-          <label>Prefer coolness</label>
-          <input type="range" min="0" max="1" step="0.05" v-model.number="shadeWeight" />
-          <span class="mono">{{ Math.round(shadeWeight*100) }}%</span>
-        </div>
+  <!-- Step chips -->
+  <div class="steps">
+    <button :class="{on: picking==='start'}" @click="picking='start'">① Set Start</button>
+    <button :class="{on: picking==='end'}"   @click="picking='end'">② Set End</button>
+    <button class="ghost" @click="useMyLocation">Use my location</button>
+    <button class="ghost" @click="swapPoints" :disabled="!start || !end">Swap</button>
+    <button class="ghost" @click="clearPoints" :disabled="!start && !end">Clear</button>
+  </div>
 
-        <div class="row">
-          <label>Shade mix</label>
-          <div class="tiny">Parks</div>
-          <input type="range" min="0" max="1" step="0.05" v-model.number="parkWeight" />
-          <div class="tiny">Trees</div>
-        </div>
-      </div>
+  <!-- Presets -->
+  <div class="presets">
+    <span class="label">Quick presets</span>
+    <div class="pill-row">
+      <button @click="applyPreset('fast')">Fastest</button>
+      <button @click="applyPreset('balanced')">Balanced</button>
+      <button @click="applyPreset('cool')">Max shade</button>
+    </div>
+  </div>
+
+  <!-- Coolness vs Speed -->
+  <div class="field">
+    <div class="label">
+      Prefer coolness
+      <span class="help-dot" title="Blend of shade vs distance. Higher = more shade, lower = quicker route.">?</span>
+    </div>
+    <div class="slider-wrap">
+      <span class="tick">Faster</span>
+      <input type="range" min="0" max="1" step="0.05" v-model.number="shadeWeight" />
+      <span class="tick">Cooler</span>
+      <span class="value">{{ Math.round(shadeWeight*100) }}%</span>
+    </div>
+  </div>
+
+  <!-- Mix: Parks vs Street trees -->
+  <div class="field">
+    <div class="label">
+      Shade comes from…
+      <span class="hint" title="How we score shade: inside parks vs near street trees.">?</span>
+    </div>
+    <div class="slider-wrap two">
+      <span class="tick">Parks</span>
+      <input type="range" min="0" max="1" step="0.05" v-model.number="parkWeight" />
+      <span class="tick">Street trees</span>
+      <span class="value">{{ Math.round(parkWeight*100) }}% parks</span>
+    </div>
+    <div class="mini-legend">
+      <span class="chip park">Parks</span>
+      <span class="chip tree">Street trees</span>
+    </div>
+  </div>
+</div>
+
+
+
 
       <div v-if="loading" class="loading">{{ loadingMsg }}</div>
       <div v-if="error" class="err">⚠️ {{ error }}</div>
@@ -479,4 +564,52 @@ watch([shadeWeight, parkWeight], () => {
   width:100%; height:100%; border-radius:16px;
   overflow:hidden; box-shadow:0 14px 32px rgba(0,0,0,.08)
 }
+
+.steps{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:6px }
+.steps button{ padding:6px 10px; border-radius:10px; border:1px solid rgba(0,0,0,.12); background:#fff; }
+.steps button.on{ background:#e9f7ef; border-color:#1b5e20; color:#1b5e20 }
+.steps .ghost{ background:transparent; border:0; color:#2962ff }
+
+.presets .label{ font-size:.85rem; color:#556; margin-bottom:4px; display:block }
+.pill-row{ display:flex; gap:8px; }
+.pill-row button{ border:1px solid rgba(0,0,0,.1); background:#fafafa; border-radius:999px; padding:4px 10px; }
+
+.field{ margin-top:8px }
+.label{ font-weight:600; display:flex; align-items:center; gap:6px }
+.hint{ display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; border-radius:50%; background:#eef; color:#334; cursor:help; font-size:.8rem }
+
+.slider-wrap{ display:grid; grid-template-columns:auto 1fr auto auto; align-items:center; gap:8px }
+.slider-wrap.two{ grid-template-columns:auto 1fr auto auto }
+.tick{ color:#667; font-size:.86rem }
+.value{ font-family:ui-monospace, Menlo, monospace; color:#334 }
+
+.mini-legend{ display:flex; gap:8px; margin-top:6px }
+.chip{ font-size:.78rem; padding:2px 8px; border-radius:999px; border:1px solid rgba(0,0,0,.1); }
+.chip.park{ background:#e8f5e9; color:#1b5e20 }
+.chip.tree{ background:#ecf7ec; color:#2e7d32 }
+
+.bar{ display:flex; height:8px; border-radius:6px; overflow:hidden; background:#f0f3f0; margin-top:8px }
+.bar .park{ background:#a5d6a7 }
+.bar .tree{ background:#66bb6a }
+.bar-legend{ font-size:.75rem; color:#6a6a6a; margin-top:2px }
+/* tiny ? bubble */
+.help-dot{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:18px; height:18px; border-radius:50%;
+  background:#eef; color:#334; cursor:help; font-size:.8rem;
+}
+
+/* empty-state paragraph */
+div.hint{
+  display:block; width:auto; background:transparent; color:#445;
+  font-size:.95rem; line-height:1.4; margin-top:8px;
+}
+.label > .hint{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:18px; height:18px; border-radius:50%;
+  background:#eef; color:#334; cursor:help; font-size:.8rem;
+}
+div.hint{ display:block; width:auto; background:transparent; color:#445; font-size:.95rem; line-height:1.4; margin-top:8px; }
+
+
 </style>
