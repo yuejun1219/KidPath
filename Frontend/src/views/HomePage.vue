@@ -255,8 +255,8 @@
             <p>Discover sunny spots for winter warmth</p>
           </div>
           <div class="comfort-option pollen">
-            <h3>Avoiding Pollen Risks</h3>
-            <p>Plan routes to minimize allergy triggers</p>
+            <h3>Comfortable Playgrounds Explore</h3>
+            <p>Discover season-friendly playgrounds - shade in summer, sun in winter</p>
           </div>
         </div>
         <router-link to="/seasonal-comfort" class="explore-button">
