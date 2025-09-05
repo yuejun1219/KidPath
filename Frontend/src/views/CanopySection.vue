@@ -90,10 +90,8 @@ onBeforeUnmount(() => {
       </div>
 
       <div class="cta-row">
-        <button class="btn-primary" @click="$emit('planCoolRoute')">Plan a cool route</button>
-        <button class="btn-ghost" @click="document.querySelector('#water-section')?.scrollIntoView({behavior:'smooth'})">
-          Jump to water ↓
-        </button>
+        <button class="btn-primary" @click="$emit('planCoolRoute')">Jump to water ↓</button>
+       
       </div>
     </aside>
 

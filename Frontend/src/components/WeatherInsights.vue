@@ -484,17 +484,43 @@ watch(showWind, async (open) => {
     await nextTick()
     await new Promise(r => requestAnimationFrame(r))
     safeDestroy(windFull)
-    if (windFullEl.value){
+
+    if (windFullEl.value) {
       windFull = new Chart(windFullEl.value.getContext('2d'), {
-        type:'polarArea',
-        data:{ labels:['N','NE','E','SE','S','SW','W','NW'],
-               datasets:[{ data: windBins.value,
-                           backgroundColor:['#2e7d32','#388e3c','#43a047','#66bb6a','#81c784','#a5d6a7','#c8e6c9','#e8f5e9'],
-                           borderColor:'#fff', borderWidth:1.5 }] },
-        options:{ responsive:true, maintainAspectRatio:false, resizeDelay:150,
-                  plugins:{ legend:{ position:'bottom' } },
-                  scales:{ r:{ beginAtZero:true, grid:{ color:'rgba(0,0,0,.06)' }, angleLines:{ color:'rgba(0,0,0,.06)' } } } }
+        type: 'polarArea',
+        data: {
+          labels: ['N','NE','E','SE','S','SW','W','NW'],
+          datasets: [{
+            data: windBins.value,
+            backgroundColor: ['#2e7d32','#388e3c','#43a047','#66bb6a','#81c784','#a5d6a7','#c8e6c9','#e8f5e9'],
+            borderColor: '#fff',
+            borderWidth: 1.5
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          resizeDelay: 150,
+          layout: { padding: { top: 18, bottom: 36 } },
+          plugins: { legend: { position: 'bottom' } },
+          scales: {
+            r: {
+              beginAtZero: true,
+              grid: { color: 'rgba(0,0,0,.08)' },
+              angleLines: { color: 'rgba(0,0,0,.08)' },
+              ticks: {
+                z: 10,                        // draw over petals
+                showLabelBackdrop: true,
+                backdropColor: 'rgba(255,255,255,.96)',
+                backdropPadding: 3,
+                color: '#36454F',
+                font: { size: 12, weight: 600 }
+              }
+            }
+          }
+        }
       })
+
       requestAnimationFrame(() => windFull?.resize())
     }
   } else {
@@ -502,6 +528,7 @@ watch(showWind, async (open) => {
     if (windDlg.value?.open) windDlg.value.close()
   }
 })
+
 
 
 onBeforeUnmount(() => { [rainMini, windMini, rainFull, windFull].forEach(safeDestroy) })

@@ -46,7 +46,7 @@
       </div>
 
       <div class="cta-row">
-        <button class="btn" @click="jumpToMap">Jump to map ↓</button>
+        
         <button class="btn ghost" @click="toggleIcons">
           {{ showIcons ? '🙈 Hide icons' : '💧 Show icons' }}
         </button>
