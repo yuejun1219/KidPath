@@ -768,4 +768,13 @@ onMounted(() => { load() })
 .explainer{ margin-top:8px; }
 .explainer summary{ cursor:pointer; font-weight:700; }
 .explainer p{ margin:6px 0; }
+.callout ul{
+  list-style-position: inside; /* bullets inside the padding box */
+  margin: 0;
+  padding: 0;
+}
+.callout li{
+  line-height: 1.3; /* optional: nicer spacing */
+}
+
 </style>
