@@ -684,6 +684,7 @@ const scrollToAdvice = () => {
   height: calc(100vh - 90px);
   margin-top: 90px;
   background: transparent;
+  overflow: hidden;
 }
 
 /* Left Section */
@@ -1606,25 +1607,51 @@ const scrollToAdvice = () => {
     padding: 15px 20px;
   }
   
+  .main-content {
+    grid-template-columns: 1fr;
+    height: auto;
+    min-height: calc(100vh - 90px);
+    overflow-y: auto;
+  }
+  
   .left-section {
-    padding: 40px 20px;
+    padding: 30px 20px;
+    min-height: 50vh;
+  }
+  
+  .right-section {
+    padding: 20px;
+    min-height: 50vh;
   }
   
   .main-title {
-    font-size: 36px;
+    font-size: 28px;
   }
   
   .main-description {
-    font-size: 16px;
+    font-size: 14px;
   }
   
-  .weather-card {
-    padding: 30px;
+  .weather-stats {
+    margin-top: 20px;
+    gap: 15px;
   }
   
-  .card-content {
-    grid-template-columns: 1fr;
-    gap: 30px;
+  .stat-card {
+    padding: 12px;
+  }
+  
+  .game-container {
+    padding: 15px;
+  }
+  
+  .game-area {
+    height: 200px;
+  }
+  
+  .control-btn {
+    padding: 6px 10px;
+    font-size: 7px;
   }
   
   .nav-menu {
@@ -1635,19 +1662,36 @@ const scrollToAdvice = () => {
 
 @media (max-width: 480px) {
   .main-title {
-    font-size: 28px;
+    font-size: 24px;
   }
   
-  .weather-card {
-    padding: 20px;
+  .main-description {
+    font-size: 12px;
   }
   
-  .game-card {
-    padding: 20px;
+  .left-section {
+    padding: 20px 15px;
+  }
+  
+  .right-section {
+    padding: 15px;
+  }
+  
+  .stat-card {
+    padding: 10px;
+  }
+  
+  .game-container {
+    padding: 10px;
   }
   
   .game-area {
-    height: 160px;
+    height: 180px;
+  }
+  
+  .control-btn {
+    padding: 5px 8px;
+    font-size: 6px;
   }
 }
 </style>
