@@ -80,93 +80,223 @@
 
       <!-- Right Section - Comprehensive Game -->
       <div class="right-section">
-        <div class="game-container">
+        <div class="game-container" :class="{ 'game-mode-pacman': gameMode === 'pacman' }">
           <div class="game-header">
-            <h2 class="game-title">WEATHER DEFENDER</h2>
-            <div class="game-stats">
-              <div class="game-stat">
-                <span class="stat-label">SCORE</span>
-                <span class="stat-value">{{ gameScore }}</span>
-            </div>
-              <div class="game-stat">
-                <span class="stat-label">LIVES</span>
-                <span class="stat-value">{{ lives }}</span>
+            <div class="game-header-top">
+              <div class="game-mode-toggle">
+                <button 
+                  class="mode-btn" 
+                  :class="{ active: gameMode === 'defender' }"
+                  @click="switchGameMode('defender')"
+                >
+                  DEFENDER
+                </button>
+                <button 
+                  class="mode-btn" 
+                  :class="{ active: gameMode === 'pacman' }"
+                  @click="switchGameMode('pacman')"
+                >
+                  PAC-MAN
+                </button>
               </div>
-              <div class="game-stat">
-                <span class="stat-label">LEVEL</span>
-                <span class="stat-value">{{ currentLevel }}</span>
+              <h2 class="game-title">{{ gameMode === 'defender' ? 'WEATHER DEFENDER' : 'WEATHER PAC-MAN' }}</h2>
+            </div>
+            <div class="game-header-bottom">
+              <div class="game-stats">
+              <!-- Defender Mode Stats -->
+              <template v-if="gameMode === 'defender'">
+                <div class="game-stat">
+                  <span class="stat-label">SCORE</span>
+                  <span class="stat-value">{{ gameScore }}</span>
+                </div>
+                <div class="game-stat">
+                  <span class="stat-label">LIVES</span>
+                  <span class="stat-value">{{ lives }}</span>
+                </div>
+                <div class="game-stat">
+                  <span class="stat-label">LEVEL</span>
+                  <span class="stat-value">{{ currentLevel }}</span>
+                </div>
+                <div class="game-stat" v-if="combo > 0">
+                  <span class="stat-label">COMBO</span>
+                  <span class="stat-value combo-text">{{ Math.floor(combo) }}x{{ multiplier }}</span>
+                </div>
+                <div class="game-stat" v-if="bossActive">
+                  <span class="stat-label">BOSS</span>
+                  <span class="stat-value boss-health">{{ bossHealth }}</span>
+                </div>
+              </template>
+              
+              <!-- Pac-Man Mode Stats -->
+              <template v-if="gameMode === 'pacman'">
+                <div class="game-stat">
+                  <span class="stat-label">SCORE</span>
+                  <span class="stat-value">{{ pacmanScore }}</span>
+                </div>
+                <div class="game-stat">
+                  <span class="stat-label">LIVES</span>
+                  <span class="stat-value">{{ pacmanLives }}</span>
+                </div>
+                <div class="game-stat">
+                  <span class="stat-label">ITEMS</span>
+                  <span class="stat-value">{{ collectedItems }}/{{ totalItems }}</span>
+                </div>
+                <div class="game-stat">
+                  <span class="stat-label">GOAL</span>
+                  <span class="stat-value goal-distance">{{ Math.floor(getDistanceToGoal()) }}m</span>
+                </div>
+              </template>
+              </div>
             </div>
           </div>
-            </div>
 
           <div class="game-area" @click="handleGameClick" ref="gameBoard">
-            <!-- Player Ship -->
-            <div class="player-ship" :style="{ left: playerPosition + 'px' }">
-              <div class="ship-body">🚀</div>
+            <!-- Defender Mode Content -->
+            <template v-if="gameMode === 'defender'">
+              <!-- Player Ship -->
+              <div class="player-ship" :style="{ left: playerPosition + 'px' }">
+                <div class="ship-body">🚀</div>
               </div>
 
-            <!-- Enemies -->
-                    <div
-              v-for="(enemy, index) in enemies" 
-              :key="enemy.id"
-              class="enemy"
-                      :style="{
-                left: enemy.x + 'px', 
-                top: enemy.y + 'px',
-                '--enemy-type': enemy.type
-              }"
-            >
-              <div class="enemy-sprite">{{ getEnemyIcon(enemy.type) }}</div>
-        </div>
+              <!-- Enemies -->
+              <div
+                v-for="(enemy, index) in enemies" 
+                :key="enemy.id"
+                class="enemy"
+                :style="{
+                  left: enemy.x + 'px', 
+                  top: enemy.y + 'px',
+                  '--enemy-type': enemy.type
+                }"
+              >
+                <div class="enemy-sprite">{{ getEnemyIcon(enemy.type) }}</div>
+              </div>
+                
+              <!-- Projectiles -->
+              <div 
+                v-for="(projectile, index) in projectiles" 
+                :key="projectile.id"
+                class="projectile"
+                :style="{ 
+                  left: projectile.x + 'px', 
+                  top: projectile.y + 'px'
+                }"
+              >
+                <div class="projectile-sprite">💥</div>
+              </div>
+                
+              <!-- Power-ups -->
+              <div 
+                v-for="(powerup, index) in powerups" 
+                :key="powerup.id"
+                class="powerup"
+                :style="{ 
+                  left: powerup.x + 'px', 
+                  top: powerup.y + 'px'
+                }"
+              >
+                <div class="powerup-sprite">{{ getPowerupIcon(powerup.type) }}</div>
+              </div>
+            </template>
             
-            <!-- Projectiles -->
-            <div 
-              v-for="(projectile, index) in projectiles" 
-              :key="projectile.id"
-              class="projectile"
-              :style="{ 
-                left: projectile.x + 'px', 
-                top: projectile.y + 'px'
-              }"
-            >
-              <div class="projectile-sprite">💥</div>
-        </div>
+            <!-- Pac-Man Mode Content -->
+            <template v-if="gameMode === 'pacman'">
+              <!-- Pac-Man Player -->
+              <div class="pacman-player" :style="{ left: pacmanX + 'px', top: pacmanY + 'px' }">
+                <div class="pacman-sprite">😊</div>
+              </div>
+              
+              <!-- Weather Hazards -->
+              <div 
+                v-for="hazard in weatherHazards" 
+                :key="hazard.id"
+                class="weather-hazard"
+                :style="{ 
+                  left: hazard.x + 'px', 
+                  top: hazard.y + 'px',
+                  backgroundColor: hazard.color
+                }"
+              >
+                <div class="hazard-sprite">{{ getHazardIcon(hazard.type) }}</div>
+              </div>
+              
+              <!-- Collectible Items -->
+              <div 
+                v-for="item in getCollectibleItems()" 
+                :key="item.id"
+                class="collectible-item"
+                :style="{ 
+                  left: item.x + 'px', 
+                  top: item.y + 'px'
+                }"
+              >
+                <div class="item-sprite">⭐</div>
+              </div>
+              
+              <!-- Goal Point -->
+              <div class="goal-point" :style="{ left: goalX + 'px', top: goalY + 'px' }">
+                <div class="goal-sprite">🏁</div>
+              </div>
+            </template>
             
-            <!-- Power-ups -->
-            <div 
-              v-for="(powerup, index) in powerups" 
-              :key="powerup.id"
-              class="powerup"
-              :style="{ 
-                left: powerup.x + 'px', 
-                top: powerup.y + 'px'
-              }"
-            >
-              <div class="powerup-sprite">{{ getPowerupIcon(powerup.type) }}</div>
-        </div>
+            <!-- Game Over Overlay -->
+            <div class="game-over-overlay" v-if="gameOver">
+              <div class="game-over-content">
+                <p class="game-over-text">GAME OVER!</p>
+                <p class="final-score">Final Score: {{ gameMode === 'pacman' ? pacmanScore : gameScore }}</p>
+                <button class="restart-btn" @click="restartGame">PLAY AGAIN</button>
+              </div>
+            </div>
             
-            <!-- Explosions -->
+            <!-- Explosions (shared between both modes) -->
             <div class="explosion" v-for="explosion in explosions" :key="explosion.id" 
                  :style="{ left: explosion.x + 'px', top: explosion.y + 'px' }">
               {{ explosion.symbol }}
-          </div>
+            </div>
+            
+            <!-- Particles (shared between both modes) -->
+            <div 
+              v-for="particle in particles" 
+              :key="particle.id"
+              class="particle"
+            :style="{ 
+              left: particle.x + 'px', 
+              top: particle.y + 'px',
+              backgroundColor: particle.color,
+              opacity: particle.alpha,
+              transform: `scale(${particle.alpha})`
+            }"
+          ></div>
           </div>
           
           <div class="game-controls">
-            <div class="control-buttons">
-              <button class="control-btn" @click="moveLeft">←</button>
-              <button class="control-btn action" @click="shoot">FIRE</button>
-              <button class="control-btn" @click="moveRight">→</button>
-            </div>
-            <div class="game-actions">
-              <button class="control-btn reset-btn" @click="resetGame" v-if="gameOver || lives <= 0">RESET</button>
-              <button class="control-btn start-btn" @click="initializeGame" v-if="!gameStarted && !gameOver">START</button>
-            </div>
-            <p class="game-instructions">Defend against weather hazards! Use arrow keys or buttons to move and shoot.</p>
-            <div class="game-status" v-if="gameOver">
-              <p class="game-over-text">GAME OVER!</p>
-              <p class="final-score">Final Score: {{ gameScore }}</p>
-          </div>
+            <!-- Defender Mode Controls -->
+            <template v-if="gameMode === 'defender'">
+              <div class="control-buttons">
+                <button class="control-btn" @click="moveLeft">←</button>
+                <button class="control-btn action" @click="shoot">FIRE</button>
+                <button class="control-btn" @click="moveRight">→</button>
+              </div>
+              <div class="game-actions">
+                <button class="control-btn start-btn" @click="initializeGame" v-if="!gameStarted && !gameOver">START</button>
+              </div>
+              <p class="game-instructions">Defend against weather hazards! Use arrow keys or buttons to move and shoot.</p>
+            </template>
+            
+            <!-- Pac-Man Mode Controls -->
+            <template v-if="gameMode === 'pacman'">
+              <div class="control-buttons">
+                <button class="control-btn" @click="movePacmanLeft">←</button>
+                <button class="control-btn" @click="movePacmanUp">↑</button>
+                <button class="control-btn" @click="movePacmanDown">↓</button>
+                <button class="control-btn" @click="movePacmanRight">→</button>
+              </div>
+              <div class="game-actions">
+                <button class="control-btn start-btn" @click="initializePacmanGame" v-if="!gameStarted && !gameOver">START</button>
+              </div>
+              <p class="game-instructions">Collect all stars and reach the goal! Use arrow keys or WASD to move.</p>
+            </template>
+            
           </div>
         </div>
       </div>
@@ -236,6 +366,7 @@ const enemies = ref([])
 const projectiles = ref([])
 const powerups = ref([])
 const explosions = ref([])
+const particles = ref([])
 const gameBoard = ref(null)
 const gameLoop = ref(null)
 const lastEnemyTime = ref(0)
@@ -245,6 +376,34 @@ const enemyId = ref(0)
 const projectileId = ref(0)
 const powerupId = ref(0)
 const explosionId = ref(0)
+const particleId = ref(0)
+
+// Advanced game mechanics
+const combo = ref(0)
+const maxCombo = ref(0)
+const multiplier = ref(1)
+const shield = ref(false)
+const rapidFire = ref(false)
+const doubleShot = ref(false)
+const invulnerable = ref(false)
+const screenShake = ref(false)
+const gameSpeed = ref(1)
+const bossHealth = ref(0)
+const bossActive = ref(false)
+const waveEnemies = ref(0)
+const waveComplete = ref(false)
+
+// Game mode toggle
+const gameMode = ref('defender') // 'defender' or 'pacman'
+const pacmanX = ref(150)
+const pacmanY = ref(150)
+const goalX = ref(250)
+const goalY = ref(50)
+const pacmanScore = ref(0)
+const pacmanLives = ref(3)
+const weatherHazards = ref([])
+const collectedItems = ref(0)
+const totalItems = ref(10)
 
 
 // Scroll detection
@@ -333,10 +492,26 @@ const initializeGame = () => {
   projectiles.value = []
   powerups.value = []
   explosions.value = []
+  particles.value = []
   playerPosition.value = 150
   lastEnemyTime.value = 0
   lastPowerupTime.value = 0
   lastShotTime.value = 0
+  
+  // Reset advanced mechanics
+  combo.value = 0
+  maxCombo.value = 0
+  multiplier.value = 1
+  shield.value = false
+  rapidFire.value = false
+  doubleShot.value = false
+  invulnerable.value = false
+  screenShake.value = false
+  gameSpeed.value = 1
+  bossHealth.value = 0
+  bossActive.value = false
+  waveEnemies.value = 0
+  waveComplete.value = false
   
   // Start game loop
   startGameLoop()
@@ -349,13 +524,36 @@ const startGameLoop = () => {
   gameLoop.value = setInterval(() => {
     if (!gameStarted.value || gameOver.value) return
     
+    // Spawn enemies with wave system
+    spawnEnemies()
+    
+    // Spawn powerups
+    spawnPowerups()
+    
+    // Update game objects
     updateEnemies()
     updateProjectiles()
     updatePowerups()
     updateExplosions()
-    spawnEnemies()
-    spawnPowerups()
+    updateParticles()
+    
+    // Check collisions
     checkCollisions()
+    
+    // Update combo system
+    updateCombo()
+    
+    // Check boss spawning
+    checkBossSpawn()
+    
+    // Check level progression
+    checkLevelProgression()
+    
+    // Update screen shake
+    if (screenShake.value) {
+      screenShake.value = false
+    }
+    
   }, 50) // 20 FPS
 }
 
@@ -438,9 +636,18 @@ const checkCollisions = () => {
   // Check projectile-enemy collisions
   projectiles.value.forEach((projectile, pIndex) => {
     enemies.value.forEach((enemy, eIndex) => {
-      if (Math.abs(projectile.x - enemy.x) < 20 && Math.abs(projectile.y - enemy.y) < 20) {
+      // Calculate distance between projectile and enemy
+      const dx = projectile.x - enemy.x
+      const dy = projectile.y - enemy.y
+      const distance = Math.sqrt(dx * dx + dy * dy)
+      
+      // Use a larger collision radius for better hit detection
+      const collisionRadius = 25
+      
+      if (distance < collisionRadius) {
         // Hit!
-        gameScore.value += 10
+        gameScore.value += 10 * multiplier.value
+        combo.value += 1
         createExplosion(enemy.x, enemy.y)
         projectiles.value.splice(pIndex, 1)
         enemies.value.splice(eIndex, 1)
@@ -450,27 +657,49 @@ const checkCollisions = () => {
   
   // Check enemy-player collisions
   enemies.value.forEach((enemy, index) => {
-    if (Math.abs(enemy.x - playerPosition.value) < 30 && Math.abs(enemy.y - 150) < 30) {
+    // Calculate distance between enemy and player
+    const dx = enemy.x - playerPosition.value
+    const dy = enemy.y - 150 // Player Y position
+    const distance = Math.sqrt(dx * dx + dy * dy)
+    
+    // Use a reasonable collision radius for player
+    const playerCollisionRadius = 35
+    
+    if (distance < playerCollisionRadius) {
       // Player hit!
-      lives.value--
-      createExplosion(enemy.x, enemy.y)
-      enemies.value.splice(index, 1)
-      
-      // Add screen shake effect
-      document.querySelector('.game-area')?.classList.add('screen-shake')
-      setTimeout(() => {
-        document.querySelector('.game-area')?.classList.remove('screen-shake')
-      }, 200)
-      
-      if (lives.value <= 0) {
-        endGame()
+      if (!invulnerable.value) {
+        lives.value--
+        combo.value = 0 // Reset combo on hit
+        createExplosion(enemy.x, enemy.y)
+        enemies.value.splice(index, 1)
+        
+        // Add screen shake effect
+        screenShake.value = true
+        
+        // Make player invulnerable briefly
+        invulnerable.value = true
+        setTimeout(() => {
+          invulnerable.value = false
+        }, 1000)
+        
+        if (lives.value <= 0) {
+          endGame()
+        }
       }
     }
   })
   
   // Check powerup-player collisions
   powerups.value.forEach((powerup, index) => {
-    if (Math.abs(powerup.x - playerPosition.value) < 30 && Math.abs(powerup.y - 150) < 30) {
+    // Calculate distance between powerup and player
+    const dx = powerup.x - playerPosition.value
+    const dy = powerup.y - 150 // Player Y position
+    const distance = Math.sqrt(dx * dx + dy * dy)
+    
+    // Use a reasonable collision radius for powerups
+    const powerupCollisionRadius = 30
+    
+    if (distance < powerupCollisionRadius) {
       // Collect powerup
       collectPowerup(powerup.type)
       createExplosion(powerup.x, powerup.y)
@@ -479,16 +708,6 @@ const checkCollisions = () => {
   })
 }
 
-// Create explosion
-const createExplosion = (x, y) => {
-  explosions.value.push({
-    id: explosionId.value++,
-    x: x,
-    y: y,
-    symbol: '💥',
-    life: 20
-  })
-}
 
 // Collect powerup
 const collectPowerup = (type) => {
@@ -582,10 +801,357 @@ const resetGame = () => {
   projectiles.value = []
   powerups.value = []
   explosions.value = []
+  particles.value = []
   playerPosition.value = 150
   lastEnemyTime.value = 0
   lastPowerupTime.value = 0
   lastShotTime.value = 0
+  
+  // Reset advanced mechanics
+  combo.value = 0
+  maxCombo.value = 0
+  multiplier.value = 1
+  shield.value = false
+  rapidFire.value = false
+  doubleShot.value = false
+  invulnerable.value = false
+  screenShake.value = false
+  gameSpeed.value = 1
+  bossHealth.value = 0
+  bossActive.value = false
+  waveEnemies.value = 0
+  waveComplete.value = false
+  
+  // Reset Pac-Man specific variables
+  pacmanX.value = 150
+  pacmanY.value = 150
+  pacmanScore.value = 0
+  pacmanLives.value = 3
+  weatherHazards.value = []
+  collectibleItems.value = []
+  collectedItems.value = 0
+}
+
+// Restart game (reset and start automatically)
+const restartGame = () => {
+  resetGame()
+  
+  // Start the appropriate game mode
+  if (gameMode.value === 'pacman') {
+    initializePacmanGame()
+  } else {
+    initializeGame()
+  }
+}
+
+// Advanced game functions
+const updateParticles = () => {
+  particles.value = particles.value.filter(particle => {
+    particle.life--
+    particle.x += particle.vx
+    particle.y += particle.vy
+    particle.alpha = particle.life / particle.maxLife
+    return particle.life > 0
+  })
+}
+
+const createParticle = (x, y, type = 'explosion') => {
+  const particle = {
+    id: particleId.value++,
+    x: x,
+    y: y,
+    vx: (Math.random() - 0.5) * 4,
+    vy: (Math.random() - 0.5) * 4,
+    life: 30,
+    maxLife: 30,
+    alpha: 1,
+    type: type,
+    color: type === 'explosion' ? '#ff6b6b' : '#4ecdc4'
+  }
+  particles.value.push(particle)
+}
+
+const updateCombo = () => {
+  if (combo.value > maxCombo.value) {
+    maxCombo.value = combo.value
+  }
+  
+  // Combo decay
+  if (combo.value > 0) {
+    combo.value = Math.max(0, combo.value - 0.1)
+  }
+  
+  // Update multiplier based on combo
+  multiplier.value = Math.min(5, 1 + Math.floor(combo.value / 5))
+}
+
+const checkBossSpawn = () => {
+  if (!bossActive.value && currentLevel.value > 0 && currentLevel.value % 3 === 0) {
+    if (enemies.value.length === 0 && !waveComplete.value) {
+      spawnBoss()
+    }
+  }
+}
+
+const spawnBoss = () => {
+  bossActive.value = true
+  bossHealth.value = 50 + (currentLevel.value * 10)
+  
+  const boss = {
+    id: enemyId.value++,
+    x: Math.random() * 200 + 50,
+    y: 20,
+    type: 'boss',
+    health: bossHealth.value,
+    maxHealth: bossHealth.value,
+    speed: 1,
+    size: 40,
+    color: '#ff0000',
+    lastShot: 0
+  }
+  enemies.value.push(boss)
+}
+
+const checkLevelProgression = () => {
+  if (enemies.value.length === 0 && !bossActive.value) {
+    if (waveComplete.value) {
+      currentLevel.value++
+      gameSpeed.value = Math.min(3, 1 + currentLevel.value * 0.1)
+      waveComplete.value = false
+      waveEnemies.value = 0
+      
+      // Level up effects
+      createParticle(150, 100, 'levelup')
+      screenShake.value = true
+    }
+  }
+}
+
+const createExplosion = (x, y, size = 20) => {
+  const explosion = {
+    id: explosionId.value++,
+    x: x,
+    y: y,
+    size: size,
+    maxSize: size,
+    life: 20,
+    maxLife: 20
+  }
+  explosions.value.push(explosion)
+  
+  // Create particle burst
+  for (let i = 0; i < 8; i++) {
+    createParticle(x, y, 'explosion')
+  }
+}
+
+// Game mode switching
+const switchGameMode = (mode) => {
+  // Stop any existing game loop
+  if (gameLoop.value) {
+    clearInterval(gameLoop.value)
+    gameLoop.value = null
+  }
+  
+  gameMode.value = mode
+  resetGame()
+  
+  // Initialize the selected game mode
+  if (mode === 'pacman') {
+    initializePacmanGame()
+  } else {
+    initializeGame()
+  }
+}
+
+// Pac-Man game functions
+const initializePacmanGame = () => {
+  // Reset all game states
+  gameStarted.value = true
+  gameOver.value = false
+  pacmanX.value = 150
+  pacmanY.value = 150
+  pacmanScore.value = 0
+  pacmanLives.value = 3
+  collectedItems.value = 0
+  weatherHazards.value = []
+  
+  // Clear any existing game loop
+  if (gameLoop.value) {
+    clearInterval(gameLoop.value)
+    gameLoop.value = null
+  }
+  
+  // Spawn initial weather hazards
+  spawnWeatherHazards()
+  
+  // Initialize collectible items
+  initializeCollectibleItems()
+  
+  // Start Pac-Man game loop
+  startPacmanGameLoop()
+}
+
+const spawnWeatherHazards = () => {
+  const hazardTypes = ['sunlight', 'rain', 'wind']
+  const colors = ['#ffeb3b', '#2196f3', '#9c27b0']
+  
+  for (let i = 0; i < 5; i++) {
+    const hazard = {
+      id: `hazard-${i}`,
+      x: Math.random() * 280 + 10,
+      y: Math.random() * 200 + 10,
+      type: hazardTypes[Math.floor(Math.random() * hazardTypes.length)],
+      color: colors[Math.floor(Math.random() * colors.length)],
+      speed: (Math.random() - 0.5) * 2, // Can be positive or negative
+      direction: Math.random() * Math.PI * 2 // Random initial direction
+    }
+    weatherHazards.value.push(hazard)
+  }
+}
+
+const getHazardIcon = (type) => {
+  const icons = {
+    sunlight: '☀️',
+    rain: '🌧️',
+    wind: '💨'
+  }
+  return icons[type] || '❓'
+}
+
+// Store collectible items as a reactive array
+const collectibleItems = ref([])
+
+const initializeCollectibleItems = () => {
+  collectibleItems.value = []
+  for (let i = 0; i < totalItems.value; i++) {
+    collectibleItems.value.push({
+      id: `item-${i}`,
+      x: Math.random() * 280 + 10,
+      y: Math.random() * 200 + 10,
+      collected: false
+    })
+  }
+}
+
+const getCollectibleItems = () => {
+  return collectibleItems.value.filter(item => !item.collected)
+}
+
+const getDistanceToGoal = () => {
+  const dx = goalX.value - pacmanX.value
+  const dy = goalY.value - pacmanY.value
+  return Math.sqrt(dx * dx + dy * dy)
+}
+
+const startPacmanGameLoop = () => {
+  if (gameLoop.value) clearInterval(gameLoop.value)
+  
+  gameLoop.value = setInterval(() => {
+    if (!gameStarted.value || gameOver.value) return
+    
+    updateWeatherHazards()
+    checkPacmanCollisions()
+    checkPacmanVictory()
+  }, 50)
+}
+
+const updateWeatherHazards = () => {
+  weatherHazards.value.forEach(hazard => {
+    // Use direction-based movement for more realistic motion
+    const moveX = Math.cos(hazard.direction) * Math.abs(hazard.speed)
+    const moveY = Math.sin(hazard.direction) * Math.abs(hazard.speed)
+    
+    hazard.x += moveX
+    hazard.y += moveY
+    
+    // Keep hazards within bounds with bounce effect
+    if (hazard.x < 10) {
+      hazard.x = 10
+      hazard.direction = Math.PI - hazard.direction // Bounce off left wall
+    } else if (hazard.x > 290) {
+      hazard.x = 290
+      hazard.direction = Math.PI - hazard.direction // Bounce off right wall
+    }
+    
+    if (hazard.y < 10) {
+      hazard.y = 10
+      hazard.direction = -hazard.direction // Bounce off top wall
+    } else if (hazard.y > 210) {
+      hazard.y = 210
+      hazard.direction = -hazard.direction // Bounce off bottom wall
+    }
+    
+    // Occasionally change direction completely for more random movement
+    if (Math.random() < 0.02) {
+      hazard.direction = Math.random() * Math.PI * 2
+      hazard.speed = (Math.random() - 0.5) * 2
+    }
+    
+    // Add slight random drift
+    hazard.direction += (Math.random() - 0.5) * 0.1
+  })
+}
+
+const checkPacmanCollisions = () => {
+  // Check weather hazard collisions
+  weatherHazards.value.forEach((hazard, index) => {
+    const dx = hazard.x - pacmanX.value
+    const dy = hazard.y - pacmanY.value
+    const distance = Math.sqrt(dx * dx + dy * dy)
+    
+    if (distance < 25) {
+      // Hit by weather hazard
+      pacmanLives.value--
+      createExplosion(pacmanX.value, pacmanY.value)
+      screenShake.value = true
+      
+      if (pacmanLives.value <= 0) {
+        gameOver.value = true
+        gameStarted.value = false
+        if (gameLoop.value) {
+          clearInterval(gameLoop.value)
+          gameLoop.value = null
+        }
+      }
+    }
+  })
+  
+  // Check collectible item collisions
+  collectibleItems.value.forEach((item, index) => {
+    if (item.collected) return
+    
+    const dx = item.x - pacmanX.value
+    const dy = item.y - pacmanY.value
+    const distance = Math.sqrt(dx * dx + dy * dy)
+    
+    if (distance < 20) {
+      // Collect item
+      item.collected = true
+      collectedItems.value++
+      pacmanScore.value += 10
+      createExplosion(item.x, item.y)
+    }
+  })
+}
+
+const checkPacmanVictory = () => {
+  if (collectedItems.value >= totalItems.value) {
+    const dx = goalX.value - pacmanX.value
+    const dy = goalY.value - pacmanY.value
+    const distance = Math.sqrt(dx * dx + dy * dy)
+    
+    if (distance < 30) {
+      // Victory!
+      pacmanScore.value += 100
+      gameOver.value = true
+      gameStarted.value = false
+      if (gameLoop.value) {
+        clearInterval(gameLoop.value)
+        gameLoop.value = null
+      }
+    }
+  }
 }
 
 // Handle game click
@@ -598,24 +1164,76 @@ const handleGameClick = (event) => {
 const handleKeyPress = (event) => {
   if (!gameStarted.value || gameOver.value) return
   
-  switch (event.key) {
-    case 'ArrowLeft':
-    case 'a':
-    case 'A':
-      moveLeft()
-      break
-    case 'ArrowRight':
-    case 'd':
-    case 'D':
-      moveRight()
-      break
-    case ' ':
-    case 'Enter':
-      event.preventDefault()
-      shoot()
-      break
-    default:
-      return
+  if (gameMode.value === 'defender') {
+    switch (event.key) {
+      case 'ArrowLeft':
+      case 'a':
+      case 'A':
+        moveLeft()
+        break
+      case 'ArrowRight':
+      case 'd':
+      case 'D':
+        moveRight()
+        break
+      case ' ':
+      case 'Enter':
+        event.preventDefault()
+        shoot()
+        break
+      default:
+        return
+    }
+  } else if (gameMode.value === 'pacman') {
+    switch (event.key) {
+      case 'ArrowLeft':
+      case 'a':
+      case 'A':
+        movePacmanLeft()
+        break
+      case 'ArrowRight':
+      case 'd':
+      case 'D':
+        movePacmanRight()
+        break
+      case 'ArrowUp':
+      case 'w':
+      case 'W':
+        movePacmanUp()
+        break
+      case 'ArrowDown':
+      case 's':
+      case 'S':
+        movePacmanDown()
+        break
+      default:
+        return
+    }
+  }
+}
+
+// Pac-Man movement functions
+const movePacmanLeft = () => {
+  if (pacmanX.value > 10) {
+    pacmanX.value -= 5
+  }
+}
+
+const movePacmanRight = () => {
+  if (pacmanX.value < 290) {
+    pacmanX.value += 5
+  }
+}
+
+const movePacmanUp = () => {
+  if (pacmanY.value > 10) {
+    pacmanY.value -= 5
+  }
+}
+
+const movePacmanDown = () => {
+  if (pacmanY.value < 210) {
+    pacmanY.value += 5
   }
 }
 
@@ -648,7 +1266,11 @@ onMounted(() => {
   
   // Initialize game after weather data is loaded
   setTimeout(() => {
-    initializeGame()
+    if (gameMode.value === 'pacman') {
+      initializePacmanGame()
+    } else {
+      initializeGame()
+    }
   }, 2000)
   
   // Listen for nav menu and music panel state changes
@@ -1180,29 +1802,48 @@ input:focus {
 
 .game-header {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  gap: 15px;
   margin-bottom: 20px;
-  padding: 10px;
+  padding: 15px;
   background: rgba(0, 255, 65, 0.1);
   border-radius: 8px;
   border: 1px solid rgba(0, 255, 65, 0.3);
 }
 
+.game-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.game-header-bottom {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 .game-title {
-  font-size: 12px;
+  font-size: 10px;
   background: linear-gradient(45deg, #00ff41, #ff6b6b, #4ecdc4);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   margin: 0;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
   text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+  text-align: center;
+  line-height: 1.2;
 }
 
 .game-stats {
   display: flex;
-  gap: 15px;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
 }
 
 .game-stat {
@@ -1210,22 +1851,39 @@ input:focus {
   flex-direction: column;
   align-items: center;
   gap: 2px;
+  min-width: 50px;
+  padding: 5px 8px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+  border: 1px solid rgba(0, 255, 65, 0.2);
 }
 
 .game-stat .stat-label {
-  font-size: 6px;
-  color: #ffffff;
-  letter-spacing: 1px;
+  font-size: 7px;
+  color: #4ecdc4;
+  letter-spacing: 0.5px;
+  font-weight: bold;
+  text-transform: uppercase;
 }
 
 .game-stat .stat-value {
-  font-size: 10px;
+  font-size: 9px;
   background: linear-gradient(45deg, #ffff00, #ff6b6b, #4ecdc4);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   font-weight: bold;
   text-shadow: 0 0 5px rgba(255, 255, 0, 0.5);
+}
+
+.combo-text {
+  color: #ffff00 !important;
+  animation: combo-glow 0.5s ease-in-out infinite alternate;
+}
+
+.boss-health {
+  color: #ff0000 !important;
+  animation: boss-pulse 1s ease-in-out infinite;
 }
 
 .game-area {
@@ -1341,10 +1999,257 @@ input:focus {
   pointer-events: none;
 }
 
+.particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  z-index: 6;
+  pointer-events: none;
+}
+
+.game-area.screen-shake {
+  animation: screen-shake 0.1s ease-in-out;
+}
+
 @keyframes explosion-burst {
   0% { transform: scale(0); opacity: 1; }
   50% { transform: scale(1.5); opacity: 0.8; }
   100% { transform: scale(2); opacity: 0; }
+}
+
+@keyframes combo-glow {
+  0% { text-shadow: 0 0 5px #ffff00; }
+  100% { text-shadow: 0 0 15px #ffff00, 0 0 25px #ffff00; }
+}
+
+@keyframes boss-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+@keyframes screen-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-2px); }
+  75% { transform: translateX(2px); }
+}
+
+/* Game Mode Toggle */
+.game-mode-toggle {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+  justify-content: center;
+}
+
+.mode-btn {
+  padding: 6px 12px;
+  background: linear-gradient(135deg, #4ecdc4, #45b7d1);
+  border: 2px solid #ffffff;
+  color: #000000;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px;
+  transition: all 0.3s ease;
+  min-width: 70px;
+}
+
+.mode-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(78, 205, 196, 0.3);
+}
+
+.mode-btn.active {
+  background: linear-gradient(135deg, #00ff41, #4ecdc4);
+  box-shadow: 0 0 15px rgba(0, 255, 65, 0.5);
+}
+
+/* Pac-Man Game Elements */
+.pacman-player {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  z-index: 10;
+  animation: pacman-pulse 1s ease-in-out infinite;
+  transition: all 0.1s ease;
+}
+
+.pacman-sprite {
+  font-size: 20px;
+  animation: pacman-chomp 0.3s ease-in-out infinite;
+  display: block;
+  text-align: center;
+  line-height: 20px;
+}
+
+.weather-hazard {
+  position: absolute;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  z-index: 5;
+  animation: hazard-float 2s ease-in-out infinite;
+  transition: all 0.1s ease;
+}
+
+.hazard-sprite {
+  font-size: 20px;
+  text-align: center;
+  line-height: 25px;
+  display: block;
+}
+
+.collectible-item {
+  position: absolute;
+  width: 15px;
+  height: 15px;
+  z-index: 8;
+  animation: item-twinkle 1s ease-in-out infinite;
+  transition: all 0.1s ease;
+}
+
+.item-sprite {
+  font-size: 15px;
+  text-align: center;
+  line-height: 15px;
+  display: block;
+}
+
+.goal-point {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  z-index: 9;
+  animation: goal-pulse 2s ease-in-out infinite;
+  transition: all 0.1s ease;
+}
+
+.goal-sprite {
+  font-size: 25px;
+  text-align: center;
+  line-height: 30px;
+  display: block;
+}
+
+.goal-distance {
+  color: #00ff41 !important;
+  animation: distance-glow 1s ease-in-out infinite alternate;
+}
+
+/* Pac-Man Animations */
+@keyframes pacman-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+@keyframes pacman-chomp {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(15deg); }
+}
+
+@keyframes hazard-float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
+}
+
+@keyframes item-twinkle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(0.9); }
+}
+
+@keyframes goal-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}
+
+@keyframes distance-glow {
+  0% { text-shadow: 0 0 5px #00ff41; }
+  100% { text-shadow: 0 0 15px #00ff41, 0 0 25px #00ff41; }
+}
+
+/* Game Over Overlay */
+.game-over-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+  backdrop-filter: blur(5px);
+}
+
+.game-over-content {
+  text-align: center;
+  padding: 20px;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), rgba(26, 26, 46, 0.9));
+  border: 2px solid #ff6b6b;
+  border-radius: 8px;
+  box-shadow: 0 0 20px rgba(255, 107, 107, 0.5);
+  animation: game-over-pulse 2s ease-in-out infinite;
+  max-width: 250px;
+}
+
+.game-over-text {
+  font-size: 18px;
+  color: #ff6b6b;
+  margin: 0 0 10px 0;
+  font-family: 'Press Start 2P', monospace;
+  text-shadow: 0 0 10px rgba(255, 107, 107, 0.8);
+  animation: game-over-flash 1s ease-in-out infinite alternate;
+}
+
+.final-score {
+  font-size: 10px;
+  color: #ffffff;
+  margin: 0 0 15px 0;
+  font-family: 'Press Start 2P', monospace;
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+}
+
+.restart-btn {
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #00ff41, #4ecdc4);
+  border: 2px solid #ffffff;
+  color: #000000;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+}
+
+.restart-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 255, 65, 0.4);
+  background: linear-gradient(135deg, #4ecdc4, #00ff41);
+}
+
+@keyframes game-over-pulse {
+  0%, 100% { 
+    box-shadow: 0 0 30px rgba(255, 107, 107, 0.5);
+    transform: scale(1);
+  }
+  50% { 
+    box-shadow: 0 0 50px rgba(255, 107, 107, 0.8);
+    transform: scale(1.02);
+  }
+}
+
+@keyframes game-over-flash {
+  0% { 
+    color: #ff6b6b;
+    text-shadow: 0 0 10px rgba(255, 107, 107, 0.8);
+  }
+  100% { 
+    color: #ff0000;
+    text-shadow: 0 0 20px rgba(255, 0, 0, 1);
+  }
 }
 
 .game-controls {
@@ -1356,6 +2261,56 @@ input:focus {
   gap: 10px;
   justify-content: center;
   margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+/* Pac-Man specific controls layout */
+.game-mode-pacman .control-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  max-width: 120px;
+  margin: 0 auto 10px auto;
+}
+
+/* Responsive game header */
+@media (max-width: 768px) {
+  .game-header {
+    padding: 10px;
+    gap: 10px;
+  }
+  
+  .game-header-top {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .game-stats {
+    gap: 15px;
+  }
+  
+  .game-stat {
+    min-width: 45px;
+    padding: 4px 6px;
+  }
+  
+  .game-stat .stat-label {
+    font-size: 6px;
+  }
+  
+  .game-stat .stat-value {
+    font-size: 8px;
+  }
+  
+  .mode-btn {
+    padding: 5px 10px;
+    font-size: 6px;
+    min-width: 60px;
+  }
+  
+  .game-title {
+    font-size: 9px;
+  }
 }
 
 .control-btn {
@@ -1402,17 +2357,6 @@ input:focus {
   margin: 10px 0;
 }
 
-.reset-btn {
-  background: #ff6b6b !important;
-  border-color: #ff6b6b !important;
-  color: #ffffff !important;
-  animation: reset-pulse 2s ease-in-out infinite;
-}
-
-@keyframes reset-pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-}
 
 .start-btn {
   background: #4caf50 !important;
@@ -1426,35 +2370,6 @@ input:focus {
   50% { box-shadow: 0 0 20px rgba(76, 175, 80, 0.6); }
 }
 
-.game-status {
-  text-align: center;
-  margin-top: 15px;
-  padding: 10px;
-  background: rgba(255, 0, 0, 0.1);
-  border: 1px solid #ff6b6b;
-  border-radius: 8px;
-}
-
-.game-over-text {
-  font-size: 10px;
-  color: #ff6b6b;
-  margin: 0 0 5px 0;
-  font-weight: bold;
-  text-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
-  animation: game-over-flash 1s ease-in-out infinite;
-}
-
-@keyframes game-over-flash {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-
-.final-score {
-  font-size: 8px;
-  color: #ffffff;
-  margin: 0;
-  font-family: 'Orbitron', monospace;
-}
 
 /* Weather Card */
 .weather-card {
