@@ -2321,30 +2321,32 @@ input:focus {
 /* Extra small mobile screens */
 @media (max-width: 480px) {
   .weather-stats {
-    flex-direction: column;
-    gap: 15px;
+    flex-direction: row;
+    gap: 8px;
+    justify-content: space-between;
   }
   
   .stat-card {
     width: 100%;
     flex: 1;
     min-width: 0;
+    padding: 10px;
   }
   
   .stat-card .stat-icon {
-    font-size: 20px;
+    font-size: 18px;
   }
   
   .stat-card .stat-value {
-    font-size: 14px;
+    font-size: 12px;
   }
   
   .stat-card .stat-label {
-    font-size: 10px;
+    font-size: 9px;
   }
   
   .quick-decision {
-    font-size: 10px;
+    font-size: 9px;
   }
 }
 
@@ -2901,17 +2903,17 @@ input:focus {
     max-width: 100%;
     overflow-x: hidden;
     box-sizing: border-box;
-    flex-wrap: wrap;
-    justify-content: center;
+    flex-direction: row;
+    justify-content: space-between;
   }
   
   .stat-card {
     padding: 12px;
-    width: calc(50% - 5px);
+    width: 100%;
     min-width: 0;
     max-width: 100%;
     box-sizing: border-box;
-    flex: 0 0 calc(50% - 5px);
+    flex: 1;
   }
   
   .game-container {
