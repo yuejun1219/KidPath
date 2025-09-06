@@ -127,10 +127,34 @@ onUnmounted(() => {
 
 .logo-text {
   font-family: 'Press Start 2P', monospace;
-  font-size: 18px;
-  color: #00ff41;
-  text-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
-  letter-spacing: 2px;
+  font-size: 22px;
+  background: linear-gradient(45deg, #00ff41, #4ecdc4, #45b7d1, #ff6b6b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 4px;
+  position: relative;
+  transition: all 0.3s ease;
+  text-shadow: 
+    2px 2px 0px #00cc33,
+    4px 4px 0px #009922;
+}
+
+.logo-text::before {
+  content: 'KIDPATH';
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: linear-gradient(45deg, #ff6b6b, #ee5a24, #ff6b6b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  z-index: -1;
+  transform: translate(2px, 2px);
+  text-shadow: 
+    2px 2px 0px #cc3300,
+    4px 4px 0px #992200;
+  opacity: 0.4;
 }
 
 .contact-btn {
