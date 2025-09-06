@@ -84,7 +84,6 @@ onUnmounted(() => {
   padding: 20px 40px;
   background: rgba(0, 0, 0, 0.9);
   backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .hamburger {
@@ -189,7 +188,8 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   gap: 30px;
-  border-right: 2px solid #00ff41;
+  border-right: 2px solid transparent;
+  border-image: linear-gradient(180deg, #00ff41, #ff6b6b, #4ecdc4, #45b7d1) 1;
 }
 
 .nav-overlay.nav-open .nav-menu {
@@ -202,11 +202,11 @@ onUnmounted(() => {
   right: 20px;
   width: 40px;
   height: 40px;
-  background: transparent;
-  border: 2px solid #00ff41;
+  background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+  border: 2px solid transparent;
   border-radius: 4px;
   font-size: 18px;
-  color: #00ff41;
+  color: #ffffff;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -216,7 +216,9 @@ onUnmounted(() => {
 }
 
 .nav-close:hover {
-  background: rgba(0, 255, 65, 0.1);
+  background: linear-gradient(135deg, #ee5a24, #ff6b6b);
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(255, 107, 107, 0.5);
 }
 
 .nav-logo {
@@ -228,13 +230,19 @@ onUnmounted(() => {
 
 .nav-logo-icon {
   font-size: 24px;
-  color: #00ff41;
+  background: linear-gradient(45deg, #00ff41, #4ecdc4, #45b7d1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .nav-logo-text {
   font-family: 'Press Start 2P', monospace;
   font-size: 14px;
-  color: #00ff41;
+  background: linear-gradient(45deg, #00ff41, #4ecdc4, #45b7d1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   letter-spacing: 1px;
 }
 
@@ -256,7 +264,10 @@ onUnmounted(() => {
 }
 
 .nav-link:hover {
-  color: #00ff41;
+  background: linear-gradient(45deg, #00ff41, #4ecdc4, #45b7d1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   transform: translateX(10px);
 }
 
@@ -268,7 +279,7 @@ onUnmounted(() => {
   transform: translateY(-50%);
   width: 0;
   height: 2px;
-  background: #00ff41;
+  background: linear-gradient(90deg, #00ff41, #4ecdc4, #45b7d1);
   transition: width 0.3s ease;
 }
 

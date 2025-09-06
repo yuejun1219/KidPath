@@ -706,7 +706,10 @@ const scrollToAdvice = () => {
   font-weight: 400;
   line-height: 1.2;
   margin: 0 0 30px 0;
-  color: #00ff41;
+  background: linear-gradient(45deg, #00ff41, #4ecdc4, #45b7d1, #ff6b6b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   text-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
   animation: title-glow 2s ease-in-out infinite alternate;
 }
@@ -744,8 +747,9 @@ const scrollToAdvice = () => {
 }
 
 .stat-card {
-  background: linear-gradient(135deg, rgba(0, 0, 0, 0.9) 0%, rgba(0, 20, 40, 0.9) 100%);
-  border: 2px solid #00ff41;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.9) 0%, rgba(26, 26, 46, 0.9) 50%, rgba(22, 33, 62, 0.9) 100%);
+  border: 2px solid transparent;
+  border-image: linear-gradient(45deg, #00ff41, #4ecdc4, #45b7d1) 1;
   border-radius: 12px;
   padding: 15px;
   display: flex;
@@ -797,13 +801,19 @@ const scrollToAdvice = () => {
 
 .stat-label {
   font-size: 8px;
-  color: #00ff41;
+  background: linear-gradient(45deg, #4ecdc4, #45b7d1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   letter-spacing: 1px;
 }
 
 .stat-value {
   font-size: 16px;
-  color: #ffffff;
+  background: linear-gradient(45deg, #ffffff, #4ecdc4, #45b7d1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   font-weight: bold;
   animation: value-glow 2s ease-in-out infinite;
 }
@@ -857,8 +867,9 @@ const scrollToAdvice = () => {
 }
 
 .game-container {
-  background: rgba(0, 0, 0, 0.9);
-  border: 3px solid #00ff41;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.9) 0%, rgba(26, 26, 46, 0.9) 50%, rgba(22, 33, 62, 0.9) 100%);
+  border: 3px solid transparent;
+  border-image: linear-gradient(45deg, #00ff41, #ff6b6b, #4ecdc4, #45b7d1) 1;
   border-radius: 12px;
   padding: 20px;
   max-width: 500px;
@@ -885,7 +896,10 @@ const scrollToAdvice = () => {
 
 .game-title {
   font-size: 12px;
-  color: #00ff41;
+  background: linear-gradient(45deg, #00ff41, #ff6b6b, #4ecdc4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   margin: 0;
   letter-spacing: 1px;
   text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
@@ -911,7 +925,10 @@ const scrollToAdvice = () => {
 
 .game-stat .stat-value {
   font-size: 10px;
-  color: #ffff00;
+  background: linear-gradient(45deg, #ffff00, #ff6b6b, #4ecdc4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   font-weight: bold;
   text-shadow: 0 0 5px rgba(255, 255, 0, 0.5);
 }
@@ -1048,10 +1065,11 @@ const scrollToAdvice = () => {
 
 .control-btn {
   padding: 8px 16px;
-  background: rgba(0, 0, 0, 0.8);
-  border: 2px solid #00ff41;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.8) 0%, rgba(26, 26, 46, 0.8) 100%);
+  border: 2px solid transparent;
+  border-image: linear-gradient(45deg, #4ecdc4, #45b7d1) 1;
   border-radius: 6px;
-  color: #00ff41;
+  color: #4ecdc4;
   font-family: 'Press Start 2P', monospace;
   font-size: 8px;
   cursor: pointer;
@@ -1059,18 +1077,19 @@ const scrollToAdvice = () => {
 }
 
 .control-btn:hover {
-  background: rgba(0, 255, 65, 0.2);
+  background: linear-gradient(135deg, rgba(78, 205, 196, 0.2) 0%, rgba(69, 183, 209, 0.2) 100%);
   transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(0, 255, 65, 0.3);
+  box-shadow: 0 5px 15px rgba(78, 205, 196, 0.3);
 }
 
 .control-btn.action {
-  background: #00ff41;
-  color: #000000;
+  background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+  color: #ffffff;
+  border-image: linear-gradient(45deg, #ff6b6b, #ee5a24) 1;
 }
 
 .control-btn.action:hover {
-  background: #00cc33;
+  background: linear-gradient(135deg, #ee5a24, #ff6b6b);
 }
 
 .game-instructions {
