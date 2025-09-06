@@ -1,5 +1,14 @@
 <template>
   <div class="homepage">
+    <!-- Video Background -->
+    <div class="video-bg">
+      <video autoplay muted loop playsinline @error="onVideoError" @loadeddata="onVideoLoaded" preload="auto">
+        <source src="/video/bg-video.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+      <div class="video-overlay"></div>
+    </div>
+
     <!-- Retro Game Background -->
     <div class="retro-bg">
       <div class="pixel-grid"></div>
@@ -15,7 +24,7 @@
       <!-- Left Section - Content -->
       <div class="left-section">
         <div class="content-block">
-          <h1 class="main-title">KEEPING KIDS SAFE</h1>
+          <h1 class="main-title">SMART ROUTES FOR KIDS</h1>
           <p class="main-description" ref="typewriterText">
             {{ displayedText }}
             <span class="cursor" v-if="isTyping">|</span>
@@ -175,10 +184,10 @@ const {
 const isScrolled = ref(false)
 
 // Typewriter animation
-const fullText = "Every parent faces the same dilemma: How do we let our children play freely while keeping them safe from unpredictable weather? KidPath provides real-time weather intelligence and smart recommendations, so you can make confident decisions about outdoor activities for your family."
+const fullText = "Navigate Melbourne's weather with confidence. Find shaded routes, cooling facilities, and safe outdoor spaces tailored for children's health and comfort."
 const displayedText = ref('')
 const isTyping = ref(true)
-const typewriterSpeed = 50
+const typewriterSpeed = 20
 
 // Game state
 const gameScore = ref(0)
@@ -234,6 +243,16 @@ const getParticleStyle = (index) => {
     width: `${size}px`,
     height: `${size}px`
   }
+}
+
+// Video error handling
+const onVideoError = (event) => {
+  console.error('Video failed to load:', event)
+  console.log('Video path attempted: /video/bg-video.mp4')
+}
+
+const onVideoLoaded = () => {
+  console.log('Video loaded successfully')
 }
 
 // Initialize game
@@ -599,6 +618,48 @@ const scrollToAdvice = () => {
   overflow: hidden;
 }
 
+/* Video Background */
+.video-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.video-bg video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.video-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 2;
+}
+
+/* Fallback background when video doesn't load */
+.video-bg::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+  z-index: -1;
+}
+
 /* Retro Game Background */
 .retro-bg {
   position: fixed;
@@ -607,7 +668,8 @@ const scrollToAdvice = () => {
   right: 0;
   bottom: 0;
   background: linear-gradient(45deg, #001122 0%, #000000 50%, #001122 100%);
-  z-index: -1;
+  z-index: 0;
+  opacity: 0.3;
 }
 
 .pixel-grid {
@@ -685,6 +747,8 @@ const scrollToAdvice = () => {
   margin-top: 90px;
   background: transparent;
   overflow: hidden;
+  position: relative;
+  z-index: 10;
 }
 
 /* Left Section */
@@ -721,8 +785,8 @@ const scrollToAdvice = () => {
 }
 
 .main-description {
-  font-size: 12px;
-  line-height: 1.8;
+  font-size: 16px;
+  line-height: 1.6;
   color: #ffffff;
   margin: 0;
   max-width: 500px;
@@ -1629,7 +1693,7 @@ const scrollToAdvice = () => {
   }
   
   .main-description {
-    font-size: 14px;
+    font-size: 16px;
   }
   
   .weather-stats {
@@ -1666,7 +1730,7 @@ const scrollToAdvice = () => {
   }
   
   .main-description {
-    font-size: 12px;
+    font-size: 14px;
   }
   
   .left-section {

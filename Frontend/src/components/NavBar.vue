@@ -82,7 +82,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: 20px 40px;
-  background: rgba(0, 0, 0, 0.9);
+  background: transparent;
   backdrop-filter: blur(10px);
 }
 
