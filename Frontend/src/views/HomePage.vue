@@ -1609,6 +1609,9 @@ input:focus {
   z-index: 2;
   width: 100%;
   max-width: 600px;
+  flex-wrap: wrap;
+  justify-content: center;
+  box-sizing: border-box;
 }
 
 .stat-card {
@@ -1625,7 +1628,9 @@ input:focus {
   position: relative;
   overflow: hidden;
   flex: 1;
-  min-width: 200px;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .stat-card::before {
@@ -2313,6 +2318,36 @@ input:focus {
   }
 }
 
+/* Extra small mobile screens */
+@media (max-width: 480px) {
+  .weather-stats {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .stat-card {
+    width: 100%;
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .stat-card .stat-icon {
+    font-size: 20px;
+  }
+  
+  .stat-card .stat-value {
+    font-size: 14px;
+  }
+  
+  .stat-card .stat-label {
+    font-size: 10px;
+  }
+  
+  .quick-decision {
+    font-size: 10px;
+  }
+}
+
 .control-btn {
   padding: 8px 16px;
   background: linear-gradient(135deg, rgba(0, 0, 0, 0.8) 0%, rgba(26, 26, 46, 0.8) 100%);
@@ -2861,18 +2896,22 @@ input:focus {
   
   .weather-stats {
     margin-top: 20px;
-    gap: 15px;
+    gap: 10px;
     width: 100%;
     max-width: 100%;
     overflow-x: hidden;
     box-sizing: border-box;
+    flex-wrap: wrap;
+    justify-content: center;
   }
   
   .stat-card {
     padding: 12px;
-    width: 100%;
+    width: calc(50% - 5px);
+    min-width: 0;
     max-width: 100%;
     box-sizing: border-box;
+    flex: 0 0 calc(50% - 5px);
   }
   
   .game-container {
