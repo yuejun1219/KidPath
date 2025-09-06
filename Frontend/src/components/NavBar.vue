@@ -243,8 +243,7 @@ onUnmounted(() => {
   width: 400px;
   height: 100vh;
   min-height: 100vh;
-  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
-  border-left: 3px solid #00ff41;
+  background: #ffffff;
   padding: 20px;
   transform: translateX(100%);
   transition: transform 0.3s ease;
@@ -293,15 +292,14 @@ onUnmounted(() => {
 .music-title {
   font-family: 'Press Start 2P', monospace;
   font-size: 16px;
-  color: #00ff41;
+  color: #000000;
   margin-bottom: 10px;
-  text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
 }
 
 .music-subtitle {
   font-family: 'Press Start 2P', monospace;
   font-size: 8px;
-  color: #4ecdc4;
+  color: #666666;
   opacity: 0.8;
 }
 
@@ -312,21 +310,14 @@ onUnmounted(() => {
 }
 
 .track-item {
-  background: rgba(0, 0, 0, 0.6);
-  border: 1px solid rgba(0, 255, 65, 0.3);
-  border-radius: 12px;
-  padding: 10px;
+  background: transparent;
+  border: none;
+  padding: 0;
   transition: all 0.3s ease;
 }
 
-.track-item:hover {
-  border-color: #00ff41;
-  box-shadow: 0 0 15px rgba(0, 255, 65, 0.2);
-  transform: translateY(-2px);
-}
-
 .track-item iframe {
-  border-radius: 8px;
+  border-radius: 12px;
   width: 100%;
   height: 152px;
   border: none;

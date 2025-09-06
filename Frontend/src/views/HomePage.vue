@@ -1,5 +1,10 @@
 <template>
-  <div class="homepage">
+  <div 
+    class="homepage" 
+    :class="{ 'blurred': isMenuOpen || isMusicOpen }"
+    role="main"
+    aria-label="KidPath Homepage - Weather Safety for Children"
+  >
     <!-- Video Background -->
     <div class="video-bg">
       <video autoplay muted loop playsinline @error="onVideoError" @loadeddata="onVideoLoaded" preload="auto">
@@ -14,9 +19,9 @@
       <div class="pixel-grid"></div>
       <div class="floating-particles">
         <div class="particle" v-for="n in 20" :key="n" :style="getParticleStyle(n)"></div>
-      </div>
+            </div>
       <div class="scan-lines"></div>
-    </div>
+            </div>
 
 
     <!-- Main Content -->
@@ -33,39 +38,45 @@
 
         <!-- Call to Action Button -->
         <div class="cta-section">
-          <router-link to="/comfort-insights" class="cta-button">
-            <span class="cta-icon"></span>
+          <router-link 
+            to="/comfort-insights" 
+            class="cta-button"
+            role="button"
+            aria-label="View detailed weather insights and recommendations"
+            tabindex="0"
+          >
+            <span class="cta-icon" aria-hidden="true"></span>
             <span class="cta-text">VIEW DETAILED INSIGHTS</span>
-            <span class="cta-arrow">→</span>
+            <span class="cta-arrow" aria-hidden="true">→</span>
           </router-link>
         </div>
 
         <!-- Weather Stats -->
-        <div class="weather-stats" v-if="!loading && !error">
-          <div class="stat-card uv-card">
-            <div class="stat-icon">☀️</div>
+        <div class="weather-stats" v-if="!loading && !error" role="region" aria-label="Current Weather Conditions">
+          <div class="stat-card uv-card" role="article" :aria-label="`UV Index: ${uvIndex !== null ? uvIndex : 'Loading'}, Level: ${uvLevel}`">
+            <div class="stat-icon" aria-hidden="true">☀️</div>
             <div class="stat-info">
               <div class="stat-label">UV INDEX</div>
-              <div class="stat-value">{{ uvIndex !== null ? uvIndex : '--' }}</div>
-              <div class="stat-level" :class="uvLevel.toLowerCase().replace(' ', '-')">{{ uvLevel }}</div>
-              <div class="quick-decision" :class="uvLevel.toLowerCase().replace(' ', '-')">
+              <div class="stat-value" :aria-label="`UV Index value: ${uvIndex !== null ? uvIndex : 'Loading'}`">{{ uvIndex !== null ? uvIndex : '--' }}</div>
+              <div class="stat-level" :class="uvLevel.toLowerCase().replace(' ', '-')" :aria-label="`UV Level: ${uvLevel}`">{{ uvLevel }}</div>
+              <div class="quick-decision" :class="uvLevel.toLowerCase().replace(' ', '-')" role="note" :aria-label="`Recommendation: ${getUVDecision()}`">
                 {{ getUVDecision() }}
               </div>
-            </div>
-          </div>
-          <div class="stat-card wind-card">
-            <div class="stat-icon">💨</div>
+              </div>
+                </div>
+          <div class="stat-card wind-card" role="article" :aria-label="`Wind Speed: ${windSpeed !== null ? windSpeed.toFixed(1) : 'Loading'} km/h, Level: ${windLevel}`">
+            <div class="stat-icon" aria-hidden="true">💨</div>
             <div class="stat-info">
               <div class="stat-label">WIND SPEED</div>
-              <div class="stat-value">{{ windSpeed !== null ? windSpeed.toFixed(1) : '--' }}</div>
-              <div class="stat-level" :class="windLevel.toLowerCase().replace(' ', '-')">{{ windLevel }}</div>
-              <div class="quick-decision" :class="windLevel.toLowerCase().replace(' ', '-')">
+              <div class="stat-value" :aria-label="`Wind Speed: ${windSpeed !== null ? windSpeed.toFixed(1) : 'Loading'} kilometers per hour`">{{ windSpeed !== null ? windSpeed.toFixed(1) : '--' }}</div>
+              <div class="stat-level" :class="windLevel.toLowerCase().replace(' ', '-')" :aria-label="`Wind Level: ${windLevel}`">{{ windLevel }}</div>
+              <div class="quick-decision" :class="windLevel.toLowerCase().replace(' ', '-')" role="note" :aria-label="`Recommendation: ${getWindDecision()}`">
                 {{ getWindDecision() }}
-              </div>
             </div>
-          </div>
+              </div>
+                </div>
         </div>
-      </div>
+            </div>
 
       <!-- Right Section - Comprehensive Game -->
       <div class="right-section">
@@ -76,7 +87,7 @@
               <div class="game-stat">
                 <span class="stat-label">SCORE</span>
                 <span class="stat-value">{{ gameScore }}</span>
-              </div>
+            </div>
               <div class="game-stat">
                 <span class="stat-label">LIVES</span>
                 <span class="stat-value">{{ lives }}</span>
@@ -84,29 +95,29 @@
               <div class="game-stat">
                 <span class="stat-label">LEVEL</span>
                 <span class="stat-value">{{ currentLevel }}</span>
-              </div>
             </div>
           </div>
-          
+            </div>
+
           <div class="game-area" @click="handleGameClick" ref="gameBoard">
             <!-- Player Ship -->
             <div class="player-ship" :style="{ left: playerPosition + 'px' }">
               <div class="ship-body">🚀</div>
-            </div>
-            
+              </div>
+
             <!-- Enemies -->
-            <div 
+                    <div
               v-for="(enemy, index) in enemies" 
               :key="enemy.id"
               class="enemy"
-              :style="{ 
+                      :style="{
                 left: enemy.x + 'px', 
                 top: enemy.y + 'px',
                 '--enemy-type': enemy.type
               }"
             >
               <div class="enemy-sprite">{{ getEnemyIcon(enemy.type) }}</div>
-            </div>
+        </div>
             
             <!-- Projectiles -->
             <div 
@@ -119,7 +130,7 @@
               }"
             >
               <div class="projectile-sprite">💥</div>
-            </div>
+        </div>
             
             <!-- Power-ups -->
             <div 
@@ -132,13 +143,13 @@
               }"
             >
               <div class="powerup-sprite">{{ getPowerupIcon(powerup.type) }}</div>
-            </div>
+        </div>
             
             <!-- Explosions -->
             <div class="explosion" v-for="explosion in explosions" :key="explosion.id" 
                  :style="{ left: explosion.x + 'px', top: explosion.y + 'px' }">
               {{ explosion.symbol }}
-            </div>
+          </div>
           </div>
           
           <div class="game-controls">
@@ -155,7 +166,7 @@
             <div class="game-status" v-if="gameOver">
               <p class="game-over-text">GAME OVER!</p>
               <p class="final-score">Final Score: {{ gameScore }}</p>
-            </div>
+          </div>
           </div>
         </div>
       </div>
@@ -167,18 +178,19 @@
         <div class="loader-text">LOADING WEATHER DATA...</div>
         <div class="loader-bar">
           <div class="loader-fill"></div>
-        </div>
-      </div>
-    </div>
+            </div>
+          </div>
+          </div>
 
     <!-- Error State -->
     <div class="error-screen" v-if="error">
       <div class="error-text">ERROR: {{ error }}</div>
       <button class="retry-btn" @click="init">RETRY</button>
-    </div>
-    
+            </div>
+
     <!-- Footer -->
     <Footer />
+    
   </div>
 </template>
 
@@ -193,7 +205,7 @@ const {
   windSpeed,
   windLevel,
   uvTimestamp,
-  windTimestamp,
+   windTimestamp,
   loading,
   error,
   init
@@ -201,6 +213,11 @@ const {
 
 // UI state
 const isScrolled = ref(false)
+
+// Blur detection for nav menu and music panel
+const isMenuOpen = ref(false)
+const isMusicOpen = ref(false)
+
 
 // Typewriter animation
 const fullText = "Navigate Melbourne's weather with confidence. Find shaded routes, cooling facilities, and safe outdoor spaces tailored for children's health and comfort."
@@ -306,6 +323,7 @@ const getWindDecision = () => {
     return '⚠️ Very dangerous - stay indoors'
   }
 }
+
 
 // Initialize game
 const initializeGame = () => {
@@ -622,6 +640,7 @@ const uvAdvice = computed(() => {
 onMounted(() => {
   init()
   
+  
   // Start typewriter animation
   setTimeout(() => {
     startTypewriter()
@@ -631,6 +650,28 @@ onMounted(() => {
   setTimeout(() => {
     initializeGame()
   }, 2000)
+  
+  // Listen for nav menu and music panel state changes
+  const checkMenuState = () => {
+    const navOverlay = document.querySelector('.nav-overlay')
+    const musicOverlay = document.querySelector('.music-overlay')
+    
+    if (navOverlay) {
+      isMenuOpen.value = navOverlay.classList.contains('nav-open')
+    }
+    
+    if (musicOverlay) {
+      isMusicOpen.value = musicOverlay.classList.contains('music-open')
+    }
+  }
+  
+  // Check state periodically
+  const interval = setInterval(checkMenuState, 100)
+  
+  // Clean up interval on unmount
+  onUnmounted(() => {
+    clearInterval(interval)
+  })
   
   // Add keyboard controls
   document.addEventListener('keydown', handleKeyPress)
@@ -662,12 +703,26 @@ const scrollToAdvice = () => {
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
 
 .homepage {
-  min-height: 100vh;
+  height: 100vh;
   background: #000000;
   color: #00ff41;
   font-family: 'Press Start 2P', monospace;
   position: relative;
+  transition: filter 0.3s ease;
   overflow: hidden;
+}
+
+.homepage.blurred {
+  filter: blur(5px);
+  pointer-events: none;
+}
+
+/* Focus indicators for keyboard navigation */
+button:focus,
+a:focus,
+input:focus {
+  outline: 3px solid #ffff00;
+  outline-offset: 2px;
 }
 
 /* Video Background */
@@ -1831,6 +1886,12 @@ const scrollToAdvice = () => {
 }
 
 @media (max-width: 768px) {
+  .homepage {
+    overflow-y: auto;
+    height: auto;
+    min-height: 100vh;
+  }
+  
   .header {
     padding: 15px 20px;
   }
@@ -1839,7 +1900,7 @@ const scrollToAdvice = () => {
     grid-template-columns: 1fr;
     height: auto;
     min-height: calc(100vh - 90px);
-    overflow-y: auto;
+    overflow-y: visible;
   }
   
   .left-section {
@@ -1880,6 +1941,11 @@ const scrollToAdvice = () => {
   .control-btn {
     padding: 6px 10px;
     font-size: 7px;
+  }
+  
+  .cta-button {
+    width: 100%;
+    max-width: none;
   }
   
   .nav-menu {
