@@ -1,341 +1,93 @@
 <template>
   <div class="homepage">
-    <!-- Hero Section -->
-    <section class="hero">
-      <img src="../images/tree-bg.png" alt="Tree background" class="hero-background" />
-      <div class="hero-overlay">
-        <div class="hero-content">
-          <h1 class="hero-title">
-            <span class="title-line-1">Helping Families Walk with</span>
-            <span class="title-line-2">Confidence & Care</span>
-          </h1>
-          <p class="hero-subtitle">
-            Discover the safest and most comfortable outdoor experiences for your little ones
-          </p>
-          <p class="season-text">season by season</p>
-
-          <!-- Feature Highlights -->
-          <div class="feature-highlights">
-            <div class="feature-item">
-              <div class="feature-dot blue"></div>
-              <span>Real-time UV & Pollen Data</span>
-            </div>
-            <div class="feature-item">
-              <div class="feature-dot green"></div>
-              <span>Comfort Insights</span>
-            </div>
-            <div class="feature-item">
-              <div class="feature-dot yellow"></div>
-              <span>Seasonal Activity Tips</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Key Information Cards -->
-    <section class="info-cards">
-      <div class="container">
-        <!-- loading -->
-        <div class="loading-state" v-if="loading">
-          <p>Loading comfort data...</p>
-        </div>
-
-        <!-- error -->
-        <div class="error-state" v-else-if="error">
-          <p>Failed to load data: {{ error }}</p>
-        </div>
-
-        <div class="card-grid" v-else>
-          <!-- UV Index Card -->
-          <div class="info-card uv-card">
-            <div class="card-header">
-              <div class="icon-container">
-                <img src="../images/4.png" alt="Sun icon" class="icon-image" />
-              </div>
-              <div class="card-title">
-                <h3>UV Index</h3>
-                <p>Current Level</p>
-              </div>
-                <div class="risk-tag" :class="uvLevel.toLowerCase().replace(' ', '-')">{{ uvLevel }}
-                </div>
-            </div>
-
-            <div class="card-main-data">
-              <div class="main-value">
-                <!-- UV Index number -->
-                <span class="number">{{ uvIndex !== null ? uvIndex : '--' }}</span>
-                <span class="scale">/11+</span>
-              </div>
-
-              <div class="risk-bar-section">
-                <div class="risk-label">Risk Level</div>
-                <div class="risk-bar">
-                  <div
-                    class="risk-fill"
-                    :style="{
-                      width: uvIndex !== null ? Math.min((uvIndex / 11) * 100, 100) + '%' : '0%',
-                      background: uvIndex >= 8
-                        ? 'linear-gradient(90deg, #ff6b6b, #d32f2f)'       // Very High
-                        : uvIndex >= 6
-                        ? 'linear-gradient(90deg, #ffb74d, #f57c00)'       // High
-                        : uvIndex >= 3
-                        ? 'linear-gradient(90deg, #fff176, #fdd835)'       // Moderate
-                        : 'linear-gradient(90deg, #aed581, #81c784)'       // Low
-                    }"
-                  ></div>
-                </div>
-                <div class="risk-percentage">{{ uvIndex !== null ? Math.min((uvIndex / 11) * 100, 100).toFixed(0) + '%' : '--' }}</div>
-              </div>
-            </div>
-
-            <div class="advice-content">
-              <p>{{ uvAdvice }}</p>
-            </div>
-
-            <div class="card-footer">
-              <div class="update-info">
-                <span>{{ formattedUvTime }}</span>
-              </div>
-              <div class="data-source">Open-Meteo Weather</div>
-            </div>
-          </div>
-
-          <!-- Wind speed Card -->
-          <div class="info-card wind-card">
-            <div class="card-header">
-              <div class="icon-container">
-                <img src="../images/5.png" alt="Flower icon" class="icon-image" />
-              </div>
-              <div class="card-title">
-                <h3>Wind Speed</h3>
-                <p>Current Level</p>
-              </div>
-              <div class="risk-tag" :class="windLevel.toLowerCase().replace(' ', '-')">{{ windLevel }}</div>
-            </div>
-
-            <div class="card-main-data">
-              <div class="main-value">
-                <span
-                  class="number-wind"
-                  :style="{ color: getWindTextColor(windLevel) }"
-                >
-                  {{ windSpeed !== null ? windSpeed.toFixed(1) : '--' }}
-                </span>
-                <span class="scale">km/h</span>
-              </div>
-
-              <div class="risk-bar-section">
-                <div class="risk-label">Wind Intensity</div>
-                <div class="risk-bar">
-                    <div
-                      class="risk-fill"
-                      :style="{
-                        width: windSpeed ? Math.min((windSpeed / 50) * 100, 100) + '%' : '0%',
-                        background: windColor
-                      }"
-                    ></div>
-                </div>
-                <div class="risk-percentage">{{ windSpeed ? Math.min((windSpeed / 50) * 100, 100).toFixed(0) + '%' : '--' }}</div>
-              </div>
-            </div>
-
-            <div class="advice-section">
-              <div class="advice-content">
-                <p>
-                  {{
-                    windLevel === 'Very Strong'
-                      ? 'Avoid outdoor activities, especially with children.'
-                      : windLevel === 'Strong'
-                      ? 'Windy conditions—be cautious with children and hats!'
-                      : windLevel === 'Moderate'
-                      ? 'Consider windproof clothing for kids.'
-                      : windLevel === 'Low'
-                      ? 'Ideal for outdoor play.'
-                      : ''
-                  }}
-                </p>
-              </div>
-            </div>
-
-            <div class="card-footer">
-              <div class="update-info">
-                <span>{{ formattedWindTime }}</span>
-              </div>
-              <div class="data-source">Open-Meteo Weather</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Did You Know Section -->
-        <div class="did-you-know">
-          <div class="percentage">85%</div>
-          <div class="fact-box">
-            <div class="fact-icon">🌿</div>
-            <div class="fact-text">
-              <strong>Did You Know?</strong> Australian parents worry about their children's health during extreme heat.
-              Last summer, heatwaves forced nearly 10% of Victorian schools to close.
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-<!-- Related Articles -->
-<section class="articles">
-  <div class="container">
-    <h2 class="section-title">Latest Insights</h2>
-    <div class="article-grid">
-      <!-- Card 1 -->
-      <a
-        class="article-card link-card"
-        href="https://www.ausleisure.com.au/news/500000-trees-to-shade-parks-and-enhance-wildlife-habitats-in-melbournes-west/"
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label="Open article: 500,000 Trees to Shade Parks and Playgrounds (opens in a new tab)"
-      >
-        <div class="article-image">
-          <img src="../images/500-trees.png" alt="Tree planting program" class="article-img" />
-        </div>
-        <div class="article-content">
-          <h3>500,000 Trees to Shade Parks and Playgrounds</h3>
-          <p>Discover how urban greening initiatives are creating safer outdoor spaces for children.</p>
-        </div>
-      </a>
-
-      <!-- Card 2 -->
-      <a
-        class="article-card link-card"
-        href="https://www.parks.vic.gov.au/news/2023/07/19/02/37/winter-ideas-to-get-kids-outdoors?utm_source=chatgpt.com"
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label="Open article: Winter Ideas to Get Kids Outdoors (opens in a new tab)"
-      >
-        <div class="article-image">
-          <img src="../images/winter.png" alt="Kids playing in snow" class="article-img" />
-        </div>
-        <div class="article-content">
-          <h3>Winter Ideas to Get Kids Outdoors</h3>
-          <p>Fun and safe outdoor activities to keep your children active during colder months.</p>
-        </div>
-      </a>
-
-      <!-- Card 3 -->
-      <a
-        class="article-card link-card"
-        href="https://www.sydney.edu.au/news-opinion/news/2025/07/10/hot-weather-causes-children-to-sweat-at-the-same-rate-as-adults-study-shows.html?utm_source=chatgpt.com"
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label="Open article: Hot Weather Safety for Children (opens in a new tab)"
-      >
-        <div class="article-image">
-          <img src="../images/hot.png" alt="Child drinking water on a hot day" class="article-img" />
-        </div>
-        <div class="article-content">
-          <h3>Hot Weather Safety for Children</h3>
-          <p>Essential tips to keep your kids safe and comfortable during hot weather.</p>
-        </div>
-      </a>
+    <!-- Retro Game Background -->
+    <div class="retro-bg">
+      <div class="pixel-grid"></div>
+      <div class="scan-lines"></div>
     </div>
-  </div>
-</section>
 
+    <!-- Main Game Screen -->
+    <div class="game-screen">
+      <!-- Header -->
+      <div class="game-header">
+        <div class="pixel-border">
+          <h1 class="game-title">
+            <span class="pixel-text">KID</span>
+            <span class="pixel-accent">PATH</span>
+          </h1>
+          <div class="subtitle">FAMILY ADVENTURE SYSTEM</div>
+        </div>
+      </div>
 
-    <!-- Seasonal Comfort Section -->
-    <section class="seasonal-comfort">
-      <div class="container">
-        <h2 class="section-title">Seasonal Comfort Explore</h2>
-        <div class="comfort-options">
-          <div class="comfort-option summer">
-            <h3>Summer Shade Mapping</h3>
-            <p>Find the coolest routes and shaded areas</p>
-          </div>
-          <div class="comfort-option winter">
-            <h3>Winter Sun Exposure</h3>
-            <p>Discover sunny spots for winter warmth</p>
-          </div>
-          <div class="comfort-option playground">
-            <h3>Best Playgrounds Explore</h3>
-            <p>Discover season-friendly playgrounds - shade in summer, sun in winter</p>
+      <!-- Game Stats -->
+      <div class="game-stats" v-if="!loading && !error">
+        <div class="stat-card uv-card">
+          <div class="stat-icon">☀️</div>
+          <div class="stat-info">
+            <div class="stat-label">UV INDEX</div>
+            <div class="stat-value">{{ uvIndex !== null ? uvIndex : '--' }}</div>
+            <div class="stat-level" :class="uvLevel.toLowerCase().replace(' ', '-')">{{ uvLevel }}</div>
           </div>
         </div>
-        <router-link to="/seasonal-comfort" class="explore-button">
-          Explore Seasonal Comfort
+
+        <div class="stat-card wind-card">
+          <div class="stat-icon">💨</div>
+          <div class="stat-info">
+            <div class="stat-label">WIND SPEED</div>
+            <div class="stat-value">{{ windSpeed !== null ? windSpeed.toFixed(1) : '--' }}</div>
+            <div class="stat-level" :class="windLevel.toLowerCase().replace(' ', '-')">{{ windLevel }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div class="loading-screen" v-if="loading">
+        <div class="pixel-loader">
+          <div class="loader-text">LOADING WEATHER DATA...</div>
+          <div class="loader-bar">
+            <div class="loader-fill"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Error State -->
+      <div class="error-screen" v-if="error">
+        <div class="error-text">ERROR: {{ error }}</div>
+        <button class="retry-btn" @click="init">RETRY</button>
+      </div>
+
+      <!-- Game Menu -->
+      <div class="game-menu">
+        <router-link to="/comfort-insights" class="menu-item">
+          <div class="menu-icon">📊</div>
+          <div class="menu-text">INSIGHTS</div>
         </router-link>
-      </div>
-    </section>
-
-    <!-- Child-Friendly Spots -->
-    <!-- <section class="child-friendly">
-      <div class="container">
-        <h2 class="section-title">Child-Friendly Spots</h2>
-        <div class="spots-content">
-          <div class="spots-info">
-            <div class="spot-bubble water">
-              <h4>Water Fountains & Cooling Spots</h4>
-              <p>Stay refreshed during hot days</p>
-            </div>
-            <div class="spot-bubble playgrounds">
-              <h4>Shaded Playgrounds</h4>
-              <p>Safe play areas with natural protection</p>
-            </div>
-          </div>
-          <div class="spots-illustration">
-            <img src="../images/5.png" alt="Child-friendly spots illustration" class="spots-img" />
-          </div>
-        </div>
-        <button class="find-spots-button">Find Child-Friendly Spots</button>
-      </div>
-    </section> -->
-
-    <!-- Why KidPath Section -->
-    <section class="why-kidpath">
-      <div class="container">
-        <h2 class="section-title">Why KidPath? 🌱</h2>
-        <p class="section-description">
-          Our research-backed platform combines environmental data with family-friendly insights
-          to create a more comfortable urban experience.
-        </p>
-
-        <div class="features-grid">
-          <div class="feature-card">
-            <div class="feature-icon">
-              <img src="../images/4.png" alt="Weather icon" class="feature-img" />
-            </div>
-            <h3>Weather-Smart Routes</h3>
-            <p>Find the most comfortable paths based on seasonal conditions</p>
-          </div>
-
-          <div class="feature-card">
-            <div class="feature-icon">
-              <img src="../images/10.png" alt="Sustainability icon" class="feature-img" />
-            </div>
-            <h3>Urban Sustainability</h3>
-            <p>Promoting green spaces and sustainable urban living</p>
-          </div>
-
-          <div class="feature-card">
-            <div class="feature-icon">
-              <img src="../images/family.jpg" alt="Family icon" class="feature-img" />
-            </div>
-            <h3>Family-Focused</h3>
-            <p>Designed with families and children's needs in mind</p>
-          </div>
+        
+        <router-link to="/seasonal-comfort" class="menu-item">
+          <div class="menu-icon">🌍</div>
+          <div class="menu-text">SEASONS</div>
+        </router-link>
+        
+        <div class="menu-item" @click="scrollToAdvice">
+          <div class="menu-icon">💡</div>
+          <div class="menu-text">ADVICE</div>
         </div>
       </div>
-    </section>
 
-    <!-- Footer -->
-    <footer class="footer">
-      <div class="container">
-        <p>&copy; 2025 KidPath. Helping families explore safely.</p>
+      <!-- Quick Advice -->
+      <div class="quick-advice" v-if="!loading && !error">
+        <div class="advice-box">
+          <div class="advice-icon">💡</div>
+          <div class="advice-text">{{ uvAdvice }}</div>
+        </div>
       </div>
-    </footer>
+    </div>
+
   </div>
 </template>
 
 <script setup>
-import { onMounted, computed } from 'vue'
+import { onMounted, computed, ref } from 'vue'
 import { useComfortData } from '@/composables/useComfortData'
 import { format } from 'date-fns'
 
@@ -350,7 +102,16 @@ const {
   init
 } = useComfortData()
 
-onMounted(() => init())
+onMounted(() => {
+  init()
+})
+
+const scrollToAdvice = () => {
+  const adviceElement = document.querySelector('.quick-advice')
+  if (adviceElement) {
+    adviceElement.scrollIntoView({ behavior: 'smooth' })
+  }
+}
 
 // UV risk level
 const uvLevel = computed(() => {
@@ -410,1171 +171,528 @@ const formattedWindTime = computed(() => {
 
 
 <style scoped>
+/* Import retro pixel font */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
 .homepage {
   min-height: 100vh;
-  background: linear-gradient(180deg, #f8faf8 0%, #e8f5e8 100%);
-}
-
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 20px;
-}
-
-/* Hero Section */
-.hero {
+  background: #000000;
+  color: #00ff41;
+  font-family: 'Press Start 2P', monospace;
+  overflow-x: hidden;
   position: relative;
-  min-height: 500px;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
 }
 
-.hero-background {
-  position: absolute;
-  top: 25px;
+/* Retro Game Background */
+.retro-bg {
+  position: fixed;
+  top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  z-index: 1;
+  z-index: 0;
+  background: #000000;
 }
 
-.hero-overlay {
-  position: relative;
-  z-index: 2;
+.pixel-grid {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.3);
-  margin-top: 30px;
+  background-image: 
+    linear-gradient(rgba(0, 255, 65, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 255, 65, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+  animation: grid-move 20s linear infinite;
 }
 
-.hero-content {
+@keyframes grid-move {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(20px, 20px); }
+}
+
+.scan-lines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    transparent 50%,
+    rgba(0, 255, 65, 0.03) 50%
+  );
+  background-size: 100% 4px;
+  animation: scan 0.1s linear infinite;
+}
+
+@keyframes scan {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(4px); }
+}
+
+/* Main Game Screen */
+.game-screen {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 30px;
+  min-height: calc(100vh - 40px);
+}
+
+/* Game Header */
+.game-header {
   text-align: center;
-  max-width: 1000px;
-  padding: 0 20px;
-}
-
-.hero-title {
   margin-bottom: 20px;
+}
+
+.pixel-border {
+  border: 3px solid #00ff41;
+  padding: 20px;
+  background: rgba(0, 255, 65, 0.05);
+  box-shadow: 
+    inset 0 0 20px rgba(0, 255, 65, 0.2),
+    0 0 20px rgba(0, 255, 65, 0.3);
+  position: relative;
+}
+
+.pixel-border::before {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  right: -3px;
+  bottom: -3px;
+  background: linear-gradient(45deg, #00ff41, #ff6b35, #00ff41);
+  z-index: -1;
+  animation: border-glow 2s ease-in-out infinite;
+}
+
+@keyframes border-glow {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+.game-title {
+  font-size: clamp(2rem, 6vw, 3rem);
+  margin: 0;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.title-line-1 {
-  margin-top: 10px;
-  font-size: 3rem;
-  font-weight: 600;
-  color: #ffffff;
-  line-height: 1.3;
-  margin-bottom: 10px;
-  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
-  font-family: 'Segoe UI', 'Arial', sans-serif;
-  letter-spacing: -0.5px;
-}
-
-.title-line-2 {
-  font-size: 4.2rem;
-  font-weight: 700;
-  color: #8efaf7;
-  line-height: 1.2;
-  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
-  font-family: 'Segoe UI', 'Arial', sans-serif;
-  letter-spacing: -0.5px;
-}
-
-.hero-subtitle {
-  font-size: 1.3rem;
-  color: #ffffff;
-  margin-bottom: 15px;
-  line-height: 1.7;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
-  font-weight: 400;
-  font-family: 'Segoe UI', 'Arial', sans-serif;
-  letter-spacing: 0.2px;
-}
-
-.season-text {
-  font-size: 2rem;
-  color: #8efaf7;
-  margin-bottom: 40px;
-  font-weight: 600;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
-  font-family: 'Segoe UI', 'Arial', sans-serif;
-  letter-spacing: 0.3px;
-}
-
-/* Feature Highlights */
-.feature-highlights {
-  display: flex;
-  gap: 40px;
   justify-content: center;
+  gap: 10px;
   flex-wrap: wrap;
 }
 
-.feature-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 8px 0;
-  transition: all 0.3s ease;
+.pixel-text {
+  color: #00ff41;
+  text-shadow: 2px 2px 0px #008f11;
+  animation: text-flicker 3s ease-in-out infinite;
 }
 
-.feature-item:hover {
+.pixel-accent {
+  color: #ff6b35;
+  text-shadow: 2px 2px 0px #cc4a1a;
+  animation: text-flicker 3s ease-in-out infinite 1.5s;
+}
+
+@keyframes text-flicker {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+.subtitle {
+  font-size: 12px;
+  color: #ffffff;
+  margin-top: 10px;
+  letter-spacing: 2px;
+  text-shadow: 1px 1px 0px #333;
+}
+
+/* Game Stats */
+.game-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.stat-card {
+  border: 2px solid #00ff41;
+  background: rgba(0, 255, 65, 0.05);
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card:hover {
+  box-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
   transform: translateY(-2px);
 }
 
-.feature-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.feature-dot.blue {
-  background: #4fc3f7;
-}
-
-.feature-dot.green {
-  background: #66bb6a;
-}
-
-.feature-dot.yellow {
-  background: #ffd54f;
-}
-
-.feature-item span {
-  color: #ffffff;
-  font-weight: 400;
-  font-size: 0.95rem;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
-  letter-spacing: 0.5px;
-}
-
-/* Section Titles */
-.section-title {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #2e7d32;
-  text-align: center;
-  margin-bottom: 50px;
-}
-
-/* Info Cards */
-.info-cards {
-  padding: 80px, 0px, 70px, 0px;
-  background: white;
-  position: relative;
-  overflow: hidden;
-}
-
-/* background-dots decoration */
-.info-cards::before {
+.stat-card::before {
   content: '';
   position: absolute;
-  top: 30px;
-  left: 30px;
-  width: 120px;
-  height: 120px;
-  background-image: url('../images/dot2.png');
-  background-size: contain;
-  background-repeat: no-repeat;
-  opacity: 0.25;
-  z-index: 1;
-  filter: hue-rotate(200deg) saturate(1.5);
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(0, 255, 65, 0.2), transparent);
+  transition: left 0.5s ease;
 }
 
-.info-cards::after {
-  content: '';
-  position: absolute;
-  top: 150px;
-  right: 50px;
-  width: 140px;
-  height: 140px;
-  background-image: url('../images/dot3.png');
-  background-size: contain;
-  background-repeat: no-repeat;
-  opacity: 0.3;
-  z-index: 1;
-  filter: hue-rotate(280deg) saturate(1.8);
+.stat-card:hover::before {
+  left: 100%;
 }
 
-.loading-state,
-.error-state {
-  text-align: center;
-  padding: 40px 20px;
-  font-size: 1.1rem;
-  color: #87a615;
+.stat-icon {
+  font-size: 2rem;
+  animation: bounce 2s ease-in-out infinite;
 }
 
-.error-state {
-  color: #f490f2;
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
 }
 
-.card-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-  gap: 30px;
-  margin-bottom: 80px;
-  position: relative;
-  z-index: 2;
-}
-
-.info-card {
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(10px);
-  border-radius: 20px;
-  padding: 30px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
-  transition: all 0.4s ease;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  position: relative;
-  overflow: hidden;
-  margin-top: 100px;
-}
-
-/* card decoration - dots */
-.info-card::before {
-  content: '';
-  position: absolute;
-  top: -30px;
-  right: -30px;
-  width: 140px;
-  height: 140px;
-  background-image: url('../images/dot4.png');
-  background-size: contain;
-  background-repeat: no-repeat;
-  opacity: 0.2;
-  z-index: 1;
-  filter: hue-rotate(320deg) saturate(1.6);
-}
-
-.info-card:hover {
-  transform: translateY(-8px) scale(1.02);
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
-  background: rgba(255, 255, 255, 0.95);
-}
-
-/* card */
-.card-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  margin-bottom: 15px;
-  position: relative;
-  z-index: 2;
-}
-
-.icon-container {
-  position: relative;
-  width: 60px;
-  height: 60px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 15px;
-}
-
-.icon-image {
-  width: 80px;
-  height: 80px;
-}
-
-.warning-badge, .level-badge {
-  position: absolute;
-  top: -5px;
-  right: -5px;
-  font-size: 12px;
-}
-
-.level-badge {
-  background: #ff9800;
-  color: white;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-}
-
-.card-title {
+.stat-info {
   flex: 1;
+}
+
+.stat-label {
+  font-size: 10px;
+  color: #ffffff;
+  margin-bottom: 5px;
+  letter-spacing: 1px;
+}
+
+.stat-value {
+  font-size: 24px;
+  color: #00ff41;
+  text-shadow: 2px 2px 0px #008f11;
+  margin-bottom: 5px;
+}
+
+.stat-level {
+  font-size: 8px;
+  padding: 2px 8px;
+  border: 1px solid;
+  display: inline-block;
+}
+
+.stat-level.very-high {
+  color: #ff6b6b;
+  border-color: #ff6b6b;
+  background: rgba(255, 107, 107, 0.1);
+}
+
+.stat-level.high {
+  color: #ffb74d;
+  border-color: #ffb74d;
+  background: rgba(255, 183, 77, 0.1);
+}
+
+.stat-level.moderate {
+  color: #fff176;
+  border-color: #fff176;
+  background: rgba(255, 241, 118, 0.1);
+}
+
+.stat-level.low {
+  color: #81c784;
+  border-color: #81c784;
+  background: rgba(129, 199, 132, 0.1);
+}
+
+.stat-level.very-strong {
+  color: #64b5f6;
+  border-color: #64b5f6;
+  background: rgba(100, 181, 246, 0.1);
+}
+
+.stat-level.strong {
+  color: #7986cb;
+  border-color: #7986cb;
+  background: rgba(121, 134, 203, 0.1);
+}
+
+/* Loading Screen */
+.loading-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+}
+
+.pixel-loader {
+  text-align: center;
+}
+
+.loader-text {
+  font-size: 12px;
+  color: #00ff41;
+  margin-bottom: 20px;
+  animation: blink 1s ease-in-out infinite;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.loader-bar {
+  width: 200px;
+  height: 4px;
+  border: 2px solid #00ff41;
+  background: #000000;
+  position: relative;
+  overflow: hidden;
+}
+
+.loader-fill {
+  height: 100%;
+  background: #00ff41;
+  animation: loading 2s ease-in-out infinite;
+}
+
+@keyframes loading {
+  0% { width: 0%; }
+  50% { width: 100%; }
+  100% { width: 0%; }
+}
+
+/* Error Screen */
+.error-screen {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-left: 20px;
-}
-
-.card-title h3 {
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: #6a0592;
-  margin: 0;
-  font-family: 'Segoe UI', sans-serif;
-}
-
-.card-title p {
-  font-size: 0.9rem;
-  color: #9e62ac;
-  margin: 0;
-  font-weight: 400;
-  font-family: 'Segoe UI', sans-serif;
-}
-
-.risk-tag {
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-family: 'Segoe UI', sans-serif;
-}
-
-.risk-tag.very-high {
-  background: rgba(255, 68, 68, 0.1);
-  color: #ff4444;
-  border: 1px solid rgba(255, 68, 68, 0.3);
-}
-
-.risk-tag.high {
-  background: rgba(255, 152, 0, 0.1);
-  color: #ff9800;
-  border: 1px solid rgba(255, 152, 0, 0.3);
-}
-
-.risk-tag.moderate {
-  background: rgba(255, 225, 0, 0.1);
-  color: rgba(255, 225, 0);
-  border: 1px solid rgba(255, 255, 0, 0.3);
-}
-
-.risk-tag.low {
-  background: rgba(76, 175, 172, 0.1);
-  color: rgba(76, 175, 172);
-  border: 1px solid rgba(76, 175, 172, 0.3);
-}
-
-.risk-tag.very-strong {
-  background: #4466ff1c;
-  color: #4466ff;
-  border: 1px solid #4466ff47;
-}
-
-.risk-tag.strong {
-  background: #0d03911e;
-  color: #0d0391;
-  border: 1px solid #0d039168;
-}
-
-.card-main-data {
-  margin-bottom: 10px;
-  position: relative;
-  z-index: 2;
-}
-
-.main-value {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  margin-bottom: 5px;
+  align-items: center;
   justify-content: center;
+  min-height: 200px;
+  text-align: center;
 }
 
-.number {
-  font-size: 3.5rem;
-  font-weight: 800;
-  color: #ff6b35;
-  font-family: 'Segoe UI', sans-serif;
-}
-
-.scale {
-  font-size: 1.5rem;
-  color: #666;
-  font-weight: 500;
-  font-family: 'Segoe UI', sans-serif;
-}
-
-.number-wind {
-  font-size: 3.5rem;
-  font-weight: 800;
-  font-family: 'Segoe UI', sans-serif;
-}
-
-.risk-bar-section {
-  margin-bottom: 25px;
-  position: relative;
-  z-index: 2;
-}
-
-.risk-label {
-  font-size: 0.9rem;
-  color: #666;
-  margin-bottom: 10px;
-  font-weight: 500;
-  font-family: 'Segoe UI', sans-serif;
-}
-
-.risk-bar {
-  height: 8px;
-  background: #f0f0f0;
-  border-radius: 4px;
-  overflow: hidden;
-  margin-bottom: 8px;
-}
-
-.risk-fill {
-  height: 100%;
-  border-radius: 4px;
-  transition: width 0.3s ease;
-}
-
-.pollen-fill {
-  width: 75%;
-  background: linear-gradient(90deg, #4caf50, #ff9800);
-}
-
-.risk-percentage, .risk-percentage{
-  font-size: 0.9rem;
-  color: #666;
-  font-weight: 600;
-  font-family: 'Segoe UI', sans-serif;
-  text-align: right;
-}
-
-.advice-content p {
-  font-family: "Sour Gummy", cursive;
-  font-size: 1.2rem;
-  color: #f4a3ee;
-  line-height: 1.5;
+.error-text {
+  font-size: 12px;
+  color: #ff6b6b;
   margin-bottom: 20px;
-  font-weight: 200;
 }
 
-.card-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  position: relative;
-  z-index: 2;
-  padding-top: 20px;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
+.retry-btn {
+  background: transparent;
+  border: 2px solid #ff6b6b;
+  color: #ff6b6b;
+  padding: 10px 20px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
-.update-info {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 0.85rem;
-  color: #888;
-  font-family: 'Segoe UI', sans-serif;
+.retry-btn:hover {
+  background: #ff6b6b;
+  color: #000000;
+  box-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
 }
 
-.data-source {
-  font-size: 0.85rem;
-  color: #888;
-  font-weight: 500;
-  font-family: 'Segoe UI', sans-serif;
+/* Game Menu */
+.game-menu {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
 }
 
-
-
-.advice-quote {
-  background: #f8f9fa;
-  border-left: 4px solid #ff6b35;
+.menu-item {
+  border: 2px solid #00ff41;
+  background: rgba(0, 255, 65, 0.05);
   padding: 20px;
-  border-radius: 12px;
-  margin-top: 20px;
-  margin-bottom: 20px;
-  position: relative;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-.advice-quote p {
-  margin: 0;
-  font-size: 1rem;
-  color: #333;
-  line-height: 1.6;
-  font-family: 'Georgia', 'Times New Roman', serif;
-  font-style: italic;
-  text-align: left;
-  position: relative;
-  padding-left: 30px;
-}
-
-.advice-quote p::before {
-  content: '"';
-  position: absolute;
-  left: 0;
-  top: -8px;
-  font-size: 3rem;
-  color: #ff6b35;
-  font-family: 'Georgia', serif;
-  line-height: 1;
-}
-
-.advice-quote p::after {
-  content: '"';
-  position: absolute;
-  right: 0;
-  top: -8px;
-  font-size: 3rem;
-  color: #ff6b35;
-  font-family: 'Georgia', serif;
-  line-height: 1;
-}
-
-/* Decorative Image Section */
-.decorative-image-section {
-  padding: 40px 0;
-  background: white;
+  text-align: center;
+  text-decoration: none;
+  color: #ffffff;
+  transition: all 0.3s ease;
+  cursor: pointer;
   position: relative;
   overflow: hidden;
 }
 
-.decorative-image-section::before {
+.menu-item:hover {
+  background: rgba(0, 255, 65, 0.1);
+  box-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
+  transform: translateY(-2px);
+}
+
+.menu-item::before {
   content: '';
   position: absolute;
-  top: -20px;
-  left: 10%;
-  width: 120px;
-  height: 120px;
-  background-image: url('../images/dot7.png');
-  background-size: contain;
-  background-repeat: no-repeat;
-  opacity: 0.3;
-  z-index: 1;
-  filter: hue-rotate(60deg) saturate(1.5);
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(0, 255, 65, 0.2), transparent);
+  transition: left 0.5s ease;
 }
 
-.decorative-image-section::after {
-  content: '';
-  position: absolute;
-  bottom: -20px;
-  right: 15%;
-  width: 100px;
-  height: 100px;
-  background-image: url('../images/dot6.png');
-  background-size: contain;
-  background-repeat: no-repeat;
-  opacity: 0.25;
-  z-index: 1;
-  filter: hue-rotate(150deg) saturate(1.6);
+.menu-item:hover::before {
+  left: 100%;
 }
 
-.image-container {
-  display: flex;
-  justify-content: flex-end;
-  align-items: flex-end;
-  position: relative;
-  z-index: 2;
-  padding-right: 40px;
-  padding-bottom: 20px;
-}
-
-.decorative-img {
-  max-width: 200px;
-  height: auto;
-  border-radius: 20px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-  transition: all 0.4s ease;
-  filter: drop-shadow(0 4px 15px rgba(0, 0, 0, 0.08));
-}
-
-.decorative-img:hover {
-  transform: scale(1.05);
-  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
-}
-
-/* Did You Know Section - 重新设计 */
-.did-you-know {
-  display: flex;
-  align-items: center;
-  gap: 50px;
-  background: white;
-  border-radius: 24px;
-  padding: 40px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
-  border: 2px solid rgba(0, 0, 0, 0.06);
-  position: relative;
-  overflow: hidden;
-  animation: slideInUp 0.8s ease-out;
-  transition: all 0.4s ease;
-}
-
-.did-you-know:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
-}
-
-/* Did You Know background */
-.did-you-know::before {
-  content: '';
-  position: absolute;
-  bottom: -40px;
-  left: -40px;
-  width: 160px;
-  height: 160px;
-  background-image: url('../images/dot5.png');
-  background-size: contain;
-  background-repeat: no-repeat;
-  opacity: 0.25;
-  z-index: 1;
-  filter: hue-rotate(40deg) saturate(1.7);
-  animation: float 6s ease-in-out infinite;
-}
-
-.did-you-know::after {
-  content: '';
-  position: absolute;
-  top: -30px;
-  right: -30px;
-  width: 120px;
-  height: 120px;
-  background-image: url('../images/dot6.png');
-  background-size: contain;
-  background-repeat: no-repeat;
-  opacity: 0.3;
-  z-index: 1;
-  filter: hue-rotate(180deg) saturate(1.9);
-  animation: float 8s ease-in-out infinite reverse;
-}
-
-.percentage {
-  font-size: 5rem;
-  font-weight: 800;
-  color: #ff8f00;
-  font-family: 'Segoe UI', sans-serif;
-  position: relative;
-  z-index: 2;
-  animation: countUp 2s ease-out 0.5s both;
-  transform: scale(0);
-}
-
-.percentage.animate {
-  animation: countUp 2s ease-out both;
-}
-
-.fact-box {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  background: linear-gradient(135deg, #f3e5f5, #e1bee7);
-  padding: 25px;
-  border-radius: 18px;
-  border: 2px solid #ce93d8;
-  position: relative;
-  z-index: 2;
-  animation: slideInRight 1s ease-out 0.8s both;
-  transform: translateX(50px);
-  opacity: 0;
-}
-
-.fact-box.animate {
-  animation: slideInRight 1s ease-out both;
-}
-
-.fact-icon {
+.menu-icon {
   font-size: 2rem;
-  animation: bounceIn 1.2s ease-out 1s both;
-  transform: scale(0);
-}
-
-.fact-icon.animate {
-  animation: bounceIn 1.2s ease-out both;
-}
-
-.fact-text {
-  font-size: 1.05rem;
-  color: #4a148c;
-  line-height: 1.6;
-  font-family: 'Segoe UI', sans-serif;
-  font-weight: 500;
-  animation: fadeInUp 1s ease-out 1.2s both;
-  transform: translateY(30px);
-  opacity: 0;
-}
-
-.fact-text.animate {
-  animation: fadeInUp 1s ease-out both;
-}
-
-/* animation */
-@keyframes slideInUp {
-  from {
-    transform: translateY(50px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-@keyframes countUp {
-  from {
-    transform: scale(0) rotate(-10deg);
-    opacity: 0;
-  }
-  50% {
-    transform: scale(1.2) rotate(5deg);
-  }
-  to {
-    transform: scale(1) rotate(0deg);
-    opacity: 1;
-  }
-}
-
-@keyframes slideInRight {
-  from {
-    transform: translateX(50px);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-@keyframes bounceIn {
-  0% {
-    transform: scale(0);
-    opacity: 0;
-  }
-  50% {
-    transform: scale(1.3);
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-@keyframes fadeInUp {
-  from {
-    transform: translateY(30px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
+  margin-bottom: 10px;
+  animation: float 3s ease-in-out infinite;
 }
 
 @keyframes float {
-  0%, 100% {
-    transform: translateY(0px) rotate(0deg);
-  }
-  33% {
-    transform: translateY(-10px) rotate(2deg);
-  }
-  66% {
-    transform: translateY(5px) rotate(-1deg);
-  }
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
 }
 
-/* Articles Section */
-.articles {
-  padding: 80px 0;
-  background: white;
+.menu-text {
+  font-size: 10px;
+  color: #00ff41;
+  letter-spacing: 1px;
+}
+
+/* Quick Advice */
+.quick-advice {
+  margin-top: 20px;
+}
+
+.advice-box {
+  border: 2px solid #ff6b35;
+  background: rgba(255, 107, 53, 0.05);
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
   position: relative;
   overflow: hidden;
 }
 
-/* background dots - dot3/4/7/6 */
-.articles::before {
+.advice-box::before {
   content: '';
   position: absolute;
-  top: 10px;
-  left: 10px;
-  width: 200px;
-  height: 200px;
-  background-image: url('../images/dot3.png');
-  background-size: contain;
-  background-repeat: no-repeat;
-  opacity: 0.4;
-  z-index: 2;
-  filter: hue-rotate(200deg) saturate(1.8);
-}
-
-.articles::after {
-  content: '';
-  position: absolute;
-  top: 120px;
-  right: 80px;
-  width: 120px;
-  height: 120px;
-  background-image: url('../images/dot4.png');
-  background-size: contain;
-  background-repeat: no-repeat;
-  opacity: 0.35;
-  z-index: 1;
-  filter: hue-rotate(320deg) saturate(1.6);
-}
-
-/* dots decoration */
-.articles .container::before {
-  content: '';
-  position: absolute;
-  bottom: 5px;
-  left: 200px;
-  width: 100px;
-  height: 100px;
-  background-image: url('../images/dot6.png');
-  background-size: contain;
-  background-repeat: no-repeat;
-  opacity: 0.4;
-  z-index: 1;
-  filter: hue-rotate(40deg) saturate(1.9);
-}
-
-.articles .container::after {
-  content: '';
-  position: absolute;
-  top: 200px;
-  right: 150px;
-  width: 130px;
-  height: 130px;
-  background-image: url('../images/dot6.png');
-  background-size: contain;
-  background-repeat: no-repeat;
-  opacity: 0.3;
-  z-index: 1;
-  filter: hue-rotate(180deg) saturate(1.7);
-}
-
-.article-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-  gap: 30px;
-  position: relative;
-  z-index: 2;
-}
-
-.article-card {
-  background: white;
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
-  border: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-.article-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-}
-
-.article-image {
-  height: 200px;
-  overflow: hidden;
-}
-
-.article-img {
+  top: 0;
+  left: -100%;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  background: linear-gradient(90deg, transparent, rgba(255, 107, 53, 0.2), transparent);
+  transition: left 0.5s ease;
 }
 
-/* photos for articles */
-.article-card:nth-child(1) .article-img {
-  object-position: center 30%; /* 500-trees.png */
+.advice-box:hover::before {
+  left: 100%;
 }
 
-.article-card:nth-child(2) .article-img {
-  object-position: center 3%; /* winter.png */
+.advice-icon {
+  font-size: 1.5rem;
+  animation: pulse 2s ease-in-out infinite;
 }
 
-.article-card:nth-child(3) .article-img {
-  object-position: center 22%; /* hot.png */
-}
-
-.article-content {
-  padding: 25px;
-}
-
-.article-content h3 {
-  font-size: 1.3rem;
-  font-weight: 600;
-  color: #2e7d32;
-  margin-bottom: 15px;
-}
-
-.article-content p {
-  color: #666;
-  line-height: 1.6;
-}
-
-/* Seasonal Comfort Section */
-.seasonal-comfort {
-  padding: 80px 0;
-  background: linear-gradient(135deg, #f3e5f5, #e1bee7);
-}
-
-.comfort-options {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 25px;
-  margin-bottom: 40px;
-}
-
-.comfort-option {
-  background: white;
-  padding: 30px;
-  border-radius: 16px;
-  text-align: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
-  border: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-.comfort-option:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-}
-
-.comfort-option h3 {
-  font-size: 1.4rem;
-  font-weight: 600;
-  margin-bottom: 15px;
-}
-
-.comfort-option p {
-  color: #666;
-  line-height: 1.5;
-}
-
-.summer h3 { color: #ff6f00; }
-.winter h3 { color: #5e35b1; }
-.playground h3 { color: #f57c00; }
-
-.explore-button {
-  background: linear-gradient(135deg, #5e35b1, #7b1fa2);
-  color: white;
-  border: none;
-  padding: 15px 30px;
-  font-size: 1.1rem;
-  font-weight: 600;
-  border-radius: 25px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: block;
-  margin: 0 auto;
-  text-decoration: none;
-  text-align: center;
-}
-
-.explore-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 24px rgba(94, 53, 177, 0.3);
-}
-
-/* Child-Friendly Spots */
-.child-friendly {
-  padding: 80px 0;
-  background: white;
-}
-
-.spots-content {
-  display: flex;
-  align-items: center;
-  gap: 40px;
-  margin-bottom: 40px;
-}
-
-.spots-info {
+.advice-text {
+  font-size: 10px;
+  color: #ffffff;
+  line-height: 1.4;
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.spot-bubble {
-  background: linear-gradient(135deg, #e8f5e8, #c8e6c9);
-  padding: 25px;
-  border-radius: 16px;
-  border: 1px solid #81c784;
-}
-
-.spot-bubble h4 {
-  font-size: 1.3rem;
-  font-weight: 600;
-  color: #2e7d32;
-  margin-bottom: 10px;
-}
-
-.spot-bubble p {
-  color: #4a6741;
-  line-height: 1.5;
-}
-
-.spots-illustration {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-}
-
-.spots-img {
-  max-width: 100%;
-  height: auto;
-  border-radius: 16px;
-}
-
-.find-spots-button {
-  background: linear-gradient(135deg, #f06292, #e91e63);
-  color: white;
-  border: none;
-  padding: 15px 30px;
-  font-size: 1.1rem;
-  font-weight: 600;
-  border-radius: 25px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: block;
-  margin: 0 auto;
-}
-
-.find-spots-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 24px rgba(240, 98, 146, 0.3);
-}
-
-/* Why KidPath Section */
-.why-kidpath {
-  padding: 80px 0;
-  background: linear-gradient(135deg, #edf6ed, #c8e6c9);
-}
-
-.section-description {
-  font-size: 1.2rem;
-  color: #2e7d32;
-  text-align: center;
-  max-width: 800px;
-  margin: 0 auto 50px;
-  line-height: 1.6;
-}
-
-.features-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 30px;
-}
-
-.feature-card {
-  background: white;
-  padding: 40px 30px;
-  border-radius: 16px;
-  text-align: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
-  border: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-.feature-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-}
-
-.feature-icon {
-  margin-bottom: 15px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.feature-img {
-  width: 70px;
-  height: 70px;
-  object-fit: cover;
-  border-radius: 12px;
-  transition: all 0.3s ease;
-}
-
-.feature-card:hover .feature-img {
-  transform: scale(1.1);
-}
-
-.feature-card h3 {
-  font-size: 1.4rem;
-  font-weight: 600;
-  color: #2e7d32;
-  margin-bottom: 15px;
-}
-
-.feature-card p {
-  color: #787e7d;
-  line-height: 1.6;
-}
-
-/* Footer */
-.footer {
-  background: #2e7d32;
-  color: white;
-  text-align: center;
-  padding: 30px 0;
-}
-
-.footer p {
-  margin: 0;
-  font-size: 1rem;
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  .hero {
-    min-height: 500px;
-  }
-
-  .title-line-1 {
-    font-size: 2.5rem;
-  }
-
-  .title-line-2 {
-    font-size: 3rem;
-  }
-
-  .feature-highlights {
-    flex-direction: column;
+  .game-screen {
+    padding: 15px;
     gap: 20px;
   }
-
-  .card-grid {
-    grid-template-columns: 1fr;
+  
+  .game-title {
+    font-size: clamp(1.5rem, 8vw, 2.5rem);
+    flex-direction: column;
+    gap: 5px;
   }
-
-  .info-card {
-    padding: 25px;
+  
+  .pixel-text,
+  .pixel-accent {
+    font-size: clamp(1.2rem, 6vw, 2rem);
+  }
+  
+  .subtitle {
+    font-size: 10px;
+  }
+  
+  .game-stats {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  
+  .stat-card {
+    padding: 15px;
+  }
+  
+  .stat-value {
+    font-size: 20px;
+  }
+  
+  .game-menu {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  
+  .menu-item {
+    padding: 15px;
+  }
+  
+  .advice-box {
+    padding: 15px;
     flex-direction: column;
     text-align: center;
+    gap: 10px;
   }
-
-  .card-icon {
-    margin-bottom: 15px;
-  }
-
-  .did-you-know {
-    flex-direction: column;
-    text-align: center;
-  }
-
-  .spots-content {
-    flex-direction: column;
-    text-align: center;
-  }
-
-  .comfort-options {
-    grid-template-columns: 1fr;
-  }
-
-  .features-grid {
-    grid-template-columns: 1fr;
+  
+  .advice-text {
+    font-size: 9px;
   }
 }
+
+@media (max-width: 480px) {
+  .game-screen {
+    padding: 10px;
+    gap: 15px;
+  }
+  
+  .pixel-border {
+    padding: 15px;
+  }
+  
+  .stat-card {
+    padding: 12px;
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .stat-value {
+    font-size: 18px;
+  }
+  
+  .menu-item {
+    padding: 12px;
+  }
+  
+  .advice-box {
+    padding: 12px;
+  }
+}
+
+
+
+
+
 </style>

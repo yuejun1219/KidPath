@@ -2,26 +2,28 @@
   <nav class="navbar">
     <div class="nav-container">
       <div class="nav-logo">
-        <img src="../images/logo.png" alt="KidPath Logo" class="logo-image" />
-        <router-link to="/" class="logo-text">KidPath</router-link>
+        <router-link to="/" class="logo-text">
+          <span class="pixel-logo">KID</span>
+          <span class="pixel-logo-accent">PATH</span>
+        </router-link>
       </div>
       
       <!-- Mobile menu button -->
       <button class="mobile-menu-btn" @click="toggleMobileMenu">
-        <span class="hamburger"></span>
-        <span class="hamburger"></span>
-        <span class="hamburger"></span>
+        <div class="pixel-hamburger"></div>
+        <div class="pixel-hamburger"></div>
+        <div class="pixel-hamburger"></div>
       </button>
       
       <div class="nav-links" :class="{ 'mobile-open': mobileMenuOpen }">
         <router-link to="/" class="nav-link" active-class="active" @click="closeMobileMenu">
-          <span>HOME</span>
+          <span class="pixel-text">HOME</span>
         </router-link>
         <router-link to="/comfort-insights" class="nav-link" active-class="active" @click="closeMobileMenu">
-          <span>Comfort Insights</span>
+          <span class="pixel-text">INSIGHTS</span>
         </router-link>
         <router-link to="/seasonal-comfort" class="nav-link" active-class="active" @click="closeMobileMenu">
-          <span>Seasonal Comfort</span>
+          <span class="pixel-text">SEASONS</span>
         </router-link>
       </div>
     </div>
@@ -43,12 +45,16 @@ const closeMobileMenu = () => {
 </script>
 
 <style scoped>
+/* Import retro pixel font */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
 .navbar {
-  background: rgb(250, 237, 220);
-  box-shadow: 0 2px 10px rgba(92, 91, 91, 0.08);
+  background: #0a0a0a;
+  border-bottom: 3px solid #00ff41;
   position: sticky;
   top: 0;
   z-index: 1000;
+  box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
 }
 
 .nav-container {
@@ -58,102 +64,106 @@ const closeMobileMenu = () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 70px;
+  height: 80px;
 }
 
 .nav-logo {
   display: flex;
   align-items: center;
-  gap: 3px;
-}
-
-.logo-image {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
 }
 
 .logo-text {
-  font-family: 'Otomanopee One', cursive;
-  font-size: 35px;
-  font-weight: 400;
-  line-height: 35px;
-  letter-spacing: 0%;
-  background: linear-gradient(135deg, #89984c 0%, #697b18 58%, #BCC889 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
   text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   transition: all 0.3s ease;
 }
 
 .logo-text:hover {
   transform: scale(1.05);
+  filter: drop-shadow(0 0 10px #00ff41);
+}
+
+.pixel-logo {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 24px;
+  color: #00ff41;
+  text-shadow: 2px 2px 0px #008f11;
+  letter-spacing: 2px;
+}
+
+.pixel-logo-accent {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 24px;
+  color: #ff6b35;
+  text-shadow: 2px 2px 0px #cc4a1a;
+  letter-spacing: 2px;
 }
 
 .nav-links {
   display: flex;
-  gap: 40px;
+  gap: 30px;
   align-items: center;
 }
 
 .nav-link {
   text-decoration: none;
-  color: #acbd65 ;
-  font-family: 'Sour Gummy';
-  font-weight: 1000;
-  font-size: 1.2rem;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  padding: 12px 20px;
-  border-radius: 25px;
-  transition: all 0.3s ease;
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 12px 20px;
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+  background: transparent;
 }
 
-.nav-link span {
-  position: relative;
-  z-index: 2;
-}
-
-/* 图片高亮效果 */
 .nav-link::before {
   content: '';
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-20%, -20%) scale(0);
-  width: 80px;
-  height: 70px;
-  background-image: url('../images/dot1.png');
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  z-index: 1;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, #00ff41, #ff6b35);
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
-/* 悬停效果 */
 .nav-link:hover::before {
-  transform: translate(-50%, -50%) scale(1) rotate(15deg);
-}
-
-/* 选中状态 - 图片高亮 */
-.nav-link.active::before {
-  transform: translate(-50%, -50%) scale(1) rotate(0deg);
-  filter: brightness(1.1) saturate(1.2);
+  opacity: 0.1;
 }
 
 .nav-link:hover {
-  color:  #b0bd74 ;
+  border-color: #00ff41;
+  box-shadow: 0 0 15px rgba(0, 255, 65, 0.5);
 }
 
 .nav-link.active {
-  color: #6d830b;
-  font-weight: 600;
+  border-color: #ff6b35;
+  background: rgba(255, 107, 53, 0.1);
+  box-shadow: 0 0 20px rgba(255, 107, 53, 0.3);
+}
+
+.pixel-text {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 12px;
+  color: #ffffff;
+  text-shadow: 1px 1px 0px #333;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+}
+
+.nav-link:hover .pixel-text {
+  color: #00ff41;
+  text-shadow: 1px 1px 0px #008f11;
+}
+
+.nav-link.active .pixel-text {
+  color: #ff6b35;
+  text-shadow: 1px 1px 0px #cc4a1a;
 }
 
 /* Mobile menu button */
@@ -161,34 +171,38 @@ const closeMobileMenu = () => {
   display: none;
   flex-direction: column;
   background: none;
-  border: none;
+  border: 2px solid #00ff41;
   cursor: pointer;
-  padding: 5px;
+  padding: 8px;
   gap: 4px;
-}
-
-.hamburger {
-  width: 25px;
-  height: 3px;
-  background: #acbd65;
-  border-radius: 2px;
   transition: all 0.3s ease;
 }
 
-.mobile-menu-btn:hover .hamburger {
-  background: #6d830b;
+.mobile-menu-btn:hover {
+  box-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
 }
 
-/* 响应式设计 */
+.pixel-hamburger {
+  width: 20px;
+  height: 3px;
+  background: #00ff41;
+  transition: all 0.3s ease;
+}
+
+.mobile-menu-btn:hover .pixel-hamburger {
+  background: #ff6b35;
+}
+
+
 @media (max-width: 768px) {
   .nav-container {
-    height: 60px;
+    height: 70px;
     padding: 0 15px;
   }
   
-  .logo-text {
-    font-size: 28px;
-    line-height: 22px;
+  .pixel-logo,
+  .pixel-logo-accent {
+    font-size: 18px;
   }
   
   .mobile-menu-btn {
@@ -200,11 +214,13 @@ const closeMobileMenu = () => {
     top: 100%;
     left: 0;
     right: 0;
-    background: rgb(250, 237, 220);
+    background: #0a0a0a;
+    border: 2px solid #00ff41;
+    border-top: none;
     flex-direction: column;
     gap: 0;
     padding: 20px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 20px rgba(0, 255, 65, 0.3);
     transform: translateY(-100%);
     opacity: 0;
     visibility: hidden;
@@ -219,18 +235,20 @@ const closeMobileMenu = () => {
   
   .nav-link {
     padding: 15px 20px;
-    font-size: 1rem;
-    border-bottom: 1px solid rgba(172, 189, 101, 0.2);
+    border: 1px solid transparent;
+    border-bottom: 1px solid rgba(0, 255, 65, 0.3);
     width: 100%;
     text-align: center;
+    margin-bottom: 5px;
   }
   
   .nav-link:last-child {
     border-bottom: none;
+    margin-bottom: 0;
   }
   
-  .nav-link::before {
-    display: none;
+  .pixel-text {
+    font-size: 10px;
   }
 }
 
@@ -239,9 +257,9 @@ const closeMobileMenu = () => {
     padding: 0 10px;
   }
   
-  .logo-text {
-    font-size: 24px;
-    line-height: 20px;
+  .pixel-logo,
+  .pixel-logo-accent {
+    font-size: 16px;
   }
   
   .nav-links {
@@ -250,7 +268,10 @@ const closeMobileMenu = () => {
   
   .nav-link {
     padding: 12px 15px;
-    font-size: 0.9rem;
+  }
+  
+  .pixel-text {
+    font-size: 9px;
   }
 }
 </style>
