@@ -6,24 +6,24 @@
       <div class="hamburger-line"></div>
     </button>
     
+    <button class="music-btn" @click="toggleMusicPanel">
+      <span class="music-icon">🎵</span>
+    </button>
+    
     <div class="logo" :class="{ 'logo-centered': isScrolled }">
       <span class="logo-text">KIDPATH</span>
     </div>
-    
-    <button class="contact-btn">
-      <span class="contact-icon">👋</span>
-    </button>
 
     <!-- Sliding Navigation Menu -->
     <div class="nav-overlay" :class="{ 'nav-open': menuOpen }" @click="closeMenu">
       <div class="nav-menu" @click.stop>
         <button class="nav-close" @click="closeMenu">×</button>
         
-        <div class="nav-logo">
+      <div class="nav-logo">
           <div class="nav-logo-icon">🌱</div>
           <span class="nav-logo-text">KIDPATH</span>
-        </div>
-        
+      </div>
+      
         <nav class="nav-links">
           <router-link to="/" class="nav-link" @click="closeMenu">Home</router-link>
           <router-link to="/comfort-insights" class="nav-link" @click="closeMenu">Weather Insights</router-link>
@@ -37,14 +37,108 @@
         </div>
       </div>
     </div>
+
+    <!-- Music Panel -->
+    <div class="music-overlay" :class="{ 'music-open': musicPanelOpen }" @click="closeMusicPanel">
+      <div class="music-panel" @click.stop>
+        <button class="music-close" @click="closeMusicPanel">×</button>
+        
+        <div class="music-header">
+          <div class="music-title">WEATHER VIBES</div>
+          <div class="music-subtitle">Calm tracks for your journey</div>
+        </div>
+        
+        <div class="tracks-container">
+          <div class="track-item">
+            <iframe 
+              data-testid="embed-iframe" 
+              style="border-radius:12px" 
+              src="https://open.spotify.com/embed/track/4xF4ZBGPZKxECeDFrqSAG4?utm_source=generator" 
+              width="100%" 
+              height="152" 
+              frameBorder="0" 
+              allowfullscreen="" 
+              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+              loading="lazy">
+            </iframe>
+          </div>
+          
+          <div class="track-item">
+            <iframe 
+              data-testid="embed-iframe" 
+              style="border-radius:12px" 
+              src="https://open.spotify.com/embed/track/4txrAyGAWA9JqZzoNHiPRh?utm_source=generator" 
+              width="100%" 
+              height="152" 
+              frameBorder="0" 
+              allowfullscreen="" 
+              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+              loading="lazy">
+            </iframe>
+          </div>
+          
+          <div class="track-item">
+            <iframe 
+              data-testid="embed-iframe" 
+              style="border-radius:12px" 
+              src="https://open.spotify.com/embed/track/4VkRQSpG16JxrXaVlNyWdX?utm_source=generator" 
+              width="100%" 
+              height="152" 
+              frameBorder="0" 
+              allowfullscreen="" 
+              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+              loading="lazy">
+            </iframe>
+          </div>
+          
+          <div class="track-item">
+            <iframe 
+              data-testid="embed-iframe" 
+              style="border-radius:12px" 
+              src="https://open.spotify.com/embed/track/1r232i80xFiNHzSUmrFc01?utm_source=generator" 
+              width="100%" 
+              height="152" 
+              frameBorder="0" 
+              allowfullscreen="" 
+              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+              loading="lazy">
+            </iframe>
+          </div>
+          
+          <div class="track-item">
+            <iframe 
+              data-testid="embed-iframe" 
+              style="border-radius:12px" 
+              src="https://open.spotify.com/embed/track/6WUgqFZhbNRaeBuzG2ahfJ?utm_source=generator" 
+              width="100%" 
+              height="152" 
+              frameBorder="0" 
+              allowfullscreen="" 
+              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+              loading="lazy">
+            </iframe>
+          </div>
+        </div>
+      </div>
+    </div>
   </header>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 
 const menuOpen = ref(false)
 const isScrolled = ref(false)
+const musicPanelOpen = ref(false)
+
+// Music panel functions
+const toggleMusicPanel = () => {
+  musicPanelOpen.value = !musicPanelOpen.value
+}
+
+const closeMusicPanel = () => {
+  musicPanelOpen.value = false
+}
 
 const toggleMenu = () => {
   menuOpen.value = !menuOpen.value
@@ -81,37 +175,198 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 40px;
+  padding: 20px 40px 20px 40px;
   background: transparent;
   backdrop-filter: blur(10px);
+  min-height: 80px;
+}
+
+/* Music Button */
+.music-btn {
+  position: absolute;
+  top: 50%;
+  right: 20px;
+  transform: translateY(-50%);
+  z-index: 1001;
+  width: 50px;
+  height: 50px;
+  background: transparent;
+  border: 2px solid #00ff41;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.music-btn:hover {
+  background: rgba(0, 255, 65, 0.1);
+  box-shadow: 0 0 15px rgba(0, 255, 65, 0.3);
+  transform: translateY(-50%) scale(1.05);
+}
+
+.music-icon {
+  font-size: 20px;
+  color: #00ff41;
+  transition: all 0.3s ease;
+}
+
+.music-btn:hover .music-icon {
+  color: #4ecdc4;
+  transform: scale(1.1);
+}
+
+/* Music Panel */
+.music-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 2000;
+  display: flex;
+  justify-content: flex-end;
+  align-items: stretch;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.music-overlay.music-open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.music-panel {
+  width: 400px;
+  height: 100vh;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+  border-left: 3px solid #00ff41;
+  padding: 20px;
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+  overflow-y: auto;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.music-overlay.music-open .music-panel {
+  transform: translateX(0);
+}
+
+.music-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.8);
+  border: 2px solid #00ff41;
+  border-radius: 8px;
+  font-size: 20px;
+  color: #00ff41;
+  font-family: 'Press Start 2P', monospace;
+  z-index: 10;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.music-close:hover {
+  background: #00ff41;
+  color: #000;
+  transform: scale(1.1);
+}
+
+.music-header {
+  margin-top: 60px;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.music-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 16px;
+  color: #00ff41;
+  margin-bottom: 10px;
+  text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+}
+
+.music-subtitle {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  color: #4ecdc4;
+  opacity: 0.8;
+}
+
+.tracks-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.track-item {
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(0, 255, 65, 0.3);
+  border-radius: 12px;
+  padding: 10px;
+  transition: all 0.3s ease;
+}
+
+.track-item:hover {
+  border-color: #00ff41;
+  box-shadow: 0 0 15px rgba(0, 255, 65, 0.2);
+  transform: translateY(-2px);
+}
+
+.track-item iframe {
+  border-radius: 8px;
+  width: 100%;
+  height: 152px;
+  border: none;
 }
 
 .hamburger {
   width: 50px;
   height: 50px;
   background: transparent;
-  border: 2px solid #ffffff;
-  border-radius: 12px;
+  border: 2px solid #00ff41;
+  border-radius: 8px;
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   gap: 4px;
   cursor: pointer;
   transition: all 0.3s ease;
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1001;
 }
 
 .hamburger:hover {
-  background: rgba(255, 255, 255, 0.1);
-  transform: scale(1.05);
+  background: rgba(0, 255, 65, 0.1);
+  box-shadow: 0 0 15px rgba(0, 255, 65, 0.3);
 }
 
 .hamburger-line {
   width: 20px;
   height: 2px;
-  background: #ffffff;
+  background: #00ff41;
   border-radius: 1px;
   transition: all 0.3s ease;
+}
+
+.hamburger:hover .hamburger-line {
+  background: #4ecdc4;
 }
 
 .logo {
@@ -123,9 +378,9 @@ onUnmounted(() => {
 
 .logo-centered {
   transform: translateX(-50%) scale(0.8);
-}
-
-.logo-text {
+  }
+  
+  .logo-text {
   font-family: 'Press Start 2P', monospace;
   font-size: 22px;
   background: linear-gradient(45deg, #00ff41, #4ecdc4, #45b7d1, #ff6b6b);
@@ -157,48 +412,27 @@ onUnmounted(() => {
   opacity: 0.4;
 }
 
-.contact-btn {
-  width: 50px;
-  height: 50px;
-  background: transparent;
-  border: 2px solid #ffffff;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.contact-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  transform: scale(1.05);
-}
-
-.contact-icon {
-  font-size: 20px;
-}
 
 /* Navigation Menu */
 .nav-overlay {
   position: fixed;
   top: 0;
-  left: 0;
-  right: 0;
+    left: 0;
+    right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.8);
   backdrop-filter: blur(10px);
   z-index: 2000;
-  opacity: 0;
-  visibility: hidden;
+    opacity: 0;
+    visibility: hidden;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
+  }
+  
 .nav-overlay.nav-open {
-  opacity: 1;
-  visibility: visible;
-}
-
+    opacity: 1;
+    visibility: visible;
+  }
+  
 .nav-menu {
   position: absolute;
   top: 0;
@@ -253,7 +487,7 @@ onUnmounted(() => {
 }
 
 .nav-logo-icon {
-  font-size: 24px;
+    font-size: 24px;
   background: linear-gradient(45deg, #00ff41, #4ecdc4, #45b7d1);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -268,15 +502,15 @@ onUnmounted(() => {
   -webkit-text-fill-color: transparent;
   background-clip: text;
   letter-spacing: 1px;
-}
-
-.nav-links {
+  }
+  
+  .nav-links {
   display: flex;
   flex-direction: column;
   gap: 20px;
-}
-
-.nav-link {
+  }
+  
+  .nav-link {
   font-family: 'Press Start 2P', monospace;
   font-size: 12px;
   color: #ffffff;

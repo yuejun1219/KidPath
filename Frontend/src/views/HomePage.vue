@@ -31,6 +31,15 @@
           </p>
         </div>
 
+        <!-- Call to Action Button -->
+        <div class="cta-section">
+          <router-link to="/comfort-insights" class="cta-button">
+            <span class="cta-icon"></span>
+            <span class="cta-text">VIEW DETAILED INSIGHTS</span>
+            <span class="cta-arrow">→</span>
+          </router-link>
+        </div>
+
         <!-- Weather Stats -->
         <div class="weather-stats" v-if="!loading && !error">
           <div class="stat-card uv-card">
@@ -39,6 +48,9 @@
               <div class="stat-label">UV INDEX</div>
               <div class="stat-value">{{ uvIndex !== null ? uvIndex : '--' }}</div>
               <div class="stat-level" :class="uvLevel.toLowerCase().replace(' ', '-')">{{ uvLevel }}</div>
+              <div class="quick-decision" :class="uvLevel.toLowerCase().replace(' ', '-')">
+                {{ getUVDecision() }}
+              </div>
             </div>
           </div>
           <div class="stat-card wind-card">
@@ -47,6 +59,9 @@
               <div class="stat-label">WIND SPEED</div>
               <div class="stat-value">{{ windSpeed !== null ? windSpeed.toFixed(1) : '--' }}</div>
               <div class="stat-level" :class="windLevel.toLowerCase().replace(' ', '-')">{{ windLevel }}</div>
+              <div class="quick-decision" :class="windLevel.toLowerCase().replace(' ', '-')">
+                {{ getWindDecision() }}
+              </div>
             </div>
           </div>
         </div>
@@ -161,6 +176,9 @@
       <div class="error-text">ERROR: {{ error }}</div>
       <button class="retry-btn" @click="init">RETRY</button>
     </div>
+    
+    <!-- Footer -->
+    <Footer />
   </div>
 </template>
 
@@ -168,6 +186,7 @@
 import { onMounted, onUnmounted, computed, ref } from 'vue'
 import { useComfortData } from '@/composables/useComfortData'
 import { format } from 'date-fns'
+import Footer from '@/components/Footer.vue'
 
 const {
   uvIndex,
@@ -253,6 +272,39 @@ const onVideoError = (event) => {
 
 const onVideoLoaded = () => {
   console.log('Video loaded successfully')
+}
+
+// Quick decision functions
+const getUVDecision = () => {
+  if (uvIndex.value === null) return 'Check UV data...'
+  
+  if (uvIndex.value <= 2) {
+    return '✅ Perfect for outdoor play!'
+  } else if (uvIndex.value <= 5) {
+    return '⚠️ Use sun protection'
+  } else if (uvIndex.value <= 7) {
+    return '🛡️ Seek shade, use sunscreen'
+  } else if (uvIndex.value <= 10) {
+    return '🚫 Avoid peak sun hours'
+  } else {
+    return '⚠️ Stay indoors or heavily shaded'
+  }
+}
+
+const getWindDecision = () => {
+  if (windSpeed.value === null) return 'Check wind data...'
+  
+  if (windSpeed.value <= 10) {
+    return '✅ Calm conditions - great for kids!'
+  } else if (windSpeed.value <= 20) {
+    return '⚠️ Light breeze - watch small children'
+  } else if (windSpeed.value <= 30) {
+    return '🛡️ Moderate wind - hold hands'
+  } else if (windSpeed.value <= 40) {
+    return '🚫 Strong wind - avoid outdoor play'
+  } else {
+    return '⚠️ Very dangerous - stay indoors'
+  }
 }
 
 // Initialize game
@@ -743,8 +795,9 @@ const scrollToAdvice = () => {
 .main-content {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  height: calc(100vh - 90px);
-  margin-top: 90px;
+  gap: 5px;
+  height: calc(100vh - 160px);
+  margin-top: 100px;
   background: transparent;
   overflow: hidden;
   position: relative;
@@ -802,13 +855,74 @@ const scrollToAdvice = () => {
   51%, 100% { opacity: 0; }
 }
 
+/* Call to Action Section */
+.cta-section {
+  margin-top: 30px;
+  z-index: 2;
+}
+
+.cta-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px 25px;
+  background: linear-gradient(135deg, #00ff41, #4ecdc4, #45b7d1);
+  border: 2px solid transparent;
+  border-radius: 12px;
+  text-decoration: none;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  color: #000000;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 255, 65, 0.3);
+  animation: cta-pulse 3s ease-in-out infinite;
+}
+
+.cta-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 255, 65, 0.5);
+  background: linear-gradient(135deg, #4ecdc4, #45b7d1, #00ff41);
+}
+
+.cta-icon {
+  font-size: 14px;
+  animation: icon-bounce 2s ease-in-out infinite;
+}
+
+.cta-text {
+  font-weight: bold;
+}
+
+.cta-arrow {
+  font-size: 12px;
+  transition: transform 0.3s ease;
+}
+
+.cta-button:hover .cta-arrow {
+  transform: translateX(5px);
+}
+
+@keyframes cta-pulse {
+  0%, 100% { 
+    box-shadow: 0 4px 15px rgba(0, 255, 65, 0.3);
+  }
+  50% { 
+    box-shadow: 0 6px 20px rgba(0, 255, 65, 0.5);
+  }
+}
+
 /* Weather Stats */
 .weather-stats {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 15px;
-  margin-top: 30px;
+  margin-top: 40px;
   z-index: 2;
+  width: 100%;
+  max-width: 600px;
 }
 
 .stat-card {
@@ -816,7 +930,7 @@ const scrollToAdvice = () => {
   border: 2px solid transparent;
   border-image: linear-gradient(45deg, #00ff41, #4ecdc4, #45b7d1) 1;
   border-radius: 12px;
-  padding: 15px;
+  padding: 20px 15px;
   display: flex;
   align-items: center;
   gap: 15px;
@@ -824,6 +938,8 @@ const scrollToAdvice = () => {
   box-shadow: 0 8px 32px rgba(0, 255, 65, 0.2);
   position: relative;
   overflow: hidden;
+  flex: 1;
+  min-width: 200px;
 }
 
 .stat-card::before {
@@ -849,7 +965,7 @@ const scrollToAdvice = () => {
 }
 
 .stat-icon {
-  font-size: 24px;
+  font-size: 18px;
   animation: icon-bounce 2s ease-in-out infinite;
 }
 
@@ -862,10 +978,13 @@ const scrollToAdvice = () => {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  flex: 1;
+  min-width: 0;
+  padding: 5px;
 }
 
 .stat-label {
-  font-size: 8px;
+  font-size: 7px;
   background: linear-gradient(45deg, #4ecdc4, #45b7d1);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -874,7 +993,7 @@ const scrollToAdvice = () => {
 }
 
 .stat-value {
-  font-size: 16px;
+  font-size: 14px;
   background: linear-gradient(45deg, #ffffff, #4ecdc4, #45b7d1);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -889,8 +1008,8 @@ const scrollToAdvice = () => {
 }
 
 .stat-level {
-  font-size: 6px;
-  padding: 2px 6px;
+  font-size: 5px;
+  padding: 2px 4px;
   border-radius: 4px;
   font-weight: bold;
   text-transform: uppercase;
@@ -919,6 +1038,53 @@ const scrollToAdvice = () => {
   color: #4caf50;
   background: rgba(76, 175, 80, 0.2);
   border: 1px solid #4caf50;
+}
+
+.quick-decision {
+  font-size: 10px;
+  font-weight: bold;
+  margin-top: 6px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  text-align: center;
+  font-family: 'Orbitron', monospace;
+  letter-spacing: 0.5px;
+  animation: decision-pulse 2s ease-in-out infinite;
+}
+
+.quick-decision.low {
+  color: #4caf50;
+  background: rgba(76, 175, 80, 0.15);
+  border: 1px solid #4caf50;
+}
+
+.quick-decision.moderate {
+  color: #ffa726;
+  background: rgba(255, 167, 38, 0.15);
+  border: 1px solid #ffa726;
+}
+
+.quick-decision.high {
+  color: #ffeb3b;
+  background: rgba(255, 235, 59, 0.15);
+  border: 1px solid #ffeb3b;
+}
+
+.quick-decision.very-high {
+  color: #f44336;
+  background: rgba(244, 67, 54, 0.15);
+  border: 1px solid #f44336;
+}
+
+@keyframes decision-pulse {
+  0%, 100% { 
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% { 
+    opacity: 0.8;
+    transform: scale(1.02);
+  }
 }
 
 /* Right Section - Game */
@@ -1276,11 +1442,6 @@ const scrollToAdvice = () => {
   margin: 0 0 30px 0;
 }
 
-.weather-stats {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
 
 .stat-item {
   display: flex;
@@ -1300,6 +1461,9 @@ const scrollToAdvice = () => {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  flex: 1;
+  min-width: 0;
+  padding: 5px;
 }
 
 .stat-label {
