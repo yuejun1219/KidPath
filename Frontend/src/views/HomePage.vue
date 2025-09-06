@@ -9,53 +9,13 @@
       <div class="scan-lines"></div>
     </div>
 
-    <!-- Header -->
-    <header class="header">
-      <button class="hamburger" @click="toggleMenu">
-        <div class="hamburger-line"></div>
-        <div class="hamburger-line"></div>
-        <div class="hamburger-line"></div>
-      </button>
-      
-      <div class="logo" :class="{ 'logo-centered': isScrolled }">
-        <span class="logo-text">KIDPATH</span>
-      </div>
-      
-      <button class="contact-btn">
-        <span class="contact-icon">👋</span>
-      </button>
-    </header>
-
-    <!-- Sliding Navigation Menu -->
-    <div class="nav-overlay" :class="{ 'nav-open': menuOpen }" @click="closeMenu">
-      <div class="nav-menu" @click.stop>
-        <button class="nav-close" @click="closeMenu">×</button>
-        
-        <div class="nav-logo">
-          <div class="nav-logo-icon">🌱</div>
-          <span class="nav-logo-text">KIDPATH</span>
-        </div>
-        
-        <nav class="nav-links">
-          <router-link to="/" class="nav-link" @click="closeMenu">Home</router-link>
-          <router-link to="/comfort-insights" class="nav-link" @click="closeMenu">Weather Insights</router-link>
-          <router-link to="/seasonal-comfort" class="nav-link" @click="closeMenu">Seasonal Guide</router-link>
-          <router-link to="/about" class="nav-link" @click="closeMenu">About</router-link>
-        </nav>
-        
-        <div class="nav-contact">
-          <div class="nav-contact-label">SAY HELLO</div>
-          <div class="nav-contact-email">hello@kidpath.com</div>
-        </div>
-      </div>
-    </div>
 
     <!-- Main Content -->
     <main class="main-content">
       <!-- Left Section - Content -->
       <div class="left-section">
         <div class="content-block">
-          <h1 class="main-title">WHAT WE DO</h1>
+          <h1 class="main-title">KEEPING KIDS SAFE</h1>
           <p class="main-description" ref="typewriterText">
             {{ displayedText }}
             <span class="cursor" v-if="isTyping">|</span>
@@ -163,7 +123,15 @@
               <button class="control-btn action" @click="shoot">FIRE</button>
               <button class="control-btn" @click="moveRight">→</button>
             </div>
+            <div class="game-actions">
+              <button class="control-btn reset-btn" @click="resetGame" v-if="gameOver || lives <= 0">RESET</button>
+              <button class="control-btn start-btn" @click="initializeGame" v-if="!gameStarted && !gameOver">START</button>
+            </div>
             <p class="game-instructions">Defend against weather hazards! Use arrow keys or buttons to move and shoot.</p>
+            <div class="game-status" v-if="gameOver">
+              <p class="game-over-text">GAME OVER!</p>
+              <p class="final-score">Final Score: {{ gameScore }}</p>
+            </div>
           </div>
         </div>
       </div>
@@ -204,11 +172,10 @@ const {
 } = useComfortData()
 
 // UI state
-const menuOpen = ref(false)
 const isScrolled = ref(false)
 
 // Typewriter animation
-const fullText = "We help parents, families, and communities build weather-smart outdoor experiences made for safety and growth. From real-time insights to seasonal planning, our platform is tailored to families ready to explore confidently and make lasting memories."
+const fullText = "Every parent faces the same dilemma: How do we let our children play freely while keeping them safe from unpredictable weather? KidPath provides real-time weather intelligence and smart recommendations, so you can make confident decisions about outdoor activities for your family."
 const displayedText = ref('')
 const isTyping = ref(true)
 const typewriterSpeed = 50
@@ -234,14 +201,6 @@ const projectileId = ref(0)
 const powerupId = ref(0)
 const explosionId = ref(0)
 
-// Menu functions
-const toggleMenu = () => {
-  menuOpen.value = !menuOpen.value
-}
-
-const closeMenu = () => {
-  menuOpen.value = false
-}
 
 // Scroll detection
 const handleScroll = () => {
@@ -408,6 +367,12 @@ const checkCollisions = () => {
       createExplosion(enemy.x, enemy.y)
       enemies.value.splice(index, 1)
       
+      // Add screen shake effect
+      document.querySelector('.game-area')?.classList.add('screen-shake')
+      setTimeout(() => {
+        document.querySelector('.game-area')?.classList.remove('screen-shake')
+      }, 200)
+      
       if (lives.value <= 0) {
         endGame()
       }
@@ -515,6 +480,23 @@ const endGame = () => {
     clearInterval(gameLoop.value)
     gameLoop.value = null
   }
+}
+
+// Reset game
+const resetGame = () => {
+  gameScore.value = 0
+  lives.value = 3
+  currentLevel.value = 1
+  gameOver.value = false
+  gameStarted.value = false
+  enemies.value = []
+  projectiles.value = []
+  powerups.value = []
+  explosions.value = []
+  playerPosition.value = 150
+  lastEnemyTime.value = 0
+  lastPowerupTime.value = 0
+  lastShotTime.value = 0
 }
 
 // Handle game click
@@ -694,239 +676,19 @@ const scrollToAdvice = () => {
   100% { transform: translateY(4px); }
 }
 
-/* Header */
-.header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 20px 40px;
-  background: rgba(0, 0, 0, 0.9);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.hamburger {
-  width: 50px;
-  height: 50px;
-  background: transparent;
-  border: 2px solid #ffffff;
-  border-radius: 12px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.hamburger:hover {
-  background: rgba(255, 255, 255, 0.1);
-  transform: scale(1.05);
-}
-
-.hamburger-line {
-  width: 20px;
-  height: 2px;
-  background: #ffffff;
-  border-radius: 1px;
-  transition: all 0.3s ease;
-}
-
-.logo {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.logo-centered {
-  transform: translateX(-50%) scale(0.8);
-}
-
-.logo-text {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 18px;
-  color: #00ff41;
-  text-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
-  letter-spacing: 2px;
-}
-
-.contact-btn {
-  width: 50px;
-  height: 50px;
-  background: transparent;
-  border: 2px solid #ffffff;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.contact-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  transform: scale(1.05);
-}
-
-.contact-icon {
-  font-size: 20px;
-}
-
-/* Navigation Menu */
-.nav-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(10px);
-  z-index: 2000;
-  opacity: 0;
-  visibility: hidden;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.nav-overlay.nav-open {
-  opacity: 1;
-  visibility: visible;
-}
-
-.nav-menu {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 400px;
-  height: 100vh;
-  background: #ffffff;
-  padding: 40px;
-  transform: translateX(-100%);
-  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  display: flex;
-  flex-direction: column;
-  gap: 40px;
-}
-
-.nav-overlay.nav-open .nav-menu {
-  transform: translateX(0);
-}
-
-.nav-close {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  width: 40px;
-  height: 40px;
-  background: transparent;
-  border: none;
-  font-size: 24px;
-  color: #000000;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: all 0.3s ease;
-}
-
-.nav-close:hover {
-  background: rgba(0, 0, 0, 0.1);
-}
-
-.nav-logo {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  margin-top: 20px;
-}
-
-.nav-logo-icon {
-  font-size: 24px;
-}
-
-.nav-logo-text {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 16px;
-  color: #000000;
-  letter-spacing: 1px;
-}
-
-.nav-links {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.nav-link {
-  font-size: 18px;
-  font-weight: 600;
-  color: #000000;
-  text-decoration: none;
-  padding: 10px 0;
-  transition: all 0.3s ease;
-  position: relative;
-}
-
-.nav-link:hover {
-  color: #00ff41;
-  transform: translateX(10px);
-}
-
-.nav-link::before {
-  content: '';
-  position: absolute;
-  left: -20px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 0;
-  height: 2px;
-  background: #00ff41;
-  transition: width 0.3s ease;
-}
-
-.nav-link:hover::before {
-  width: 15px;
-}
-
-.nav-contact {
-  margin-top: auto;
-  padding-top: 20px;
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-.nav-contact-label {
-  font-size: 12px;
-  font-weight: 600;
-  color: #666666;
-  letter-spacing: 1px;
-  margin-bottom: 8px;
-}
-
-.nav-contact-email {
-  font-size: 16px;
-  color: #000000;
-  font-weight: 500;
-}
 
 /* Main Content */
 .main-content {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  height: 100vh;
-  padding-top: 90px;
+  height: calc(100vh - 90px);
+  margin-top: 90px;
   background: transparent;
 }
 
 /* Left Section */
 .left-section {
-  padding: 80px 60px;
+  padding: 40px 60px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -940,10 +702,10 @@ const scrollToAdvice = () => {
 }
 
 .main-title {
-  font-size: 48px;
+  font-size: 36px;
   font-weight: 400;
   line-height: 1.2;
-  margin: 0 0 40px 0;
+  margin: 0 0 30px 0;
   color: #00ff41;
   text-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
   animation: title-glow 2s ease-in-out infinite alternate;
@@ -976,20 +738,40 @@ const scrollToAdvice = () => {
 .weather-stats {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  margin-top: 40px;
+  gap: 15px;
+  margin-top: 30px;
   z-index: 2;
 }
 
 .stat-card {
-  background: rgba(0, 0, 0, 0.8);
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.9) 0%, rgba(0, 20, 40, 0.9) 100%);
   border: 2px solid #00ff41;
-  border-radius: 8px;
-  padding: 20px;
+  border-radius: 12px;
+  padding: 15px;
   display: flex;
   align-items: center;
   gap: 15px;
   animation: stat-pulse 3s ease-in-out infinite;
+  box-shadow: 0 8px 32px rgba(0, 255, 65, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(0, 255, 65, 0.1), transparent);
+  animation: card-shimmer 3s ease-in-out infinite;
+}
+
+@keyframes card-shimmer {
+  0% { left: -100%; }
+  50% { left: 100%; }
+  100% { left: 100%; }
 }
 
 @keyframes stat-pulse {
@@ -1066,7 +848,7 @@ const scrollToAdvice = () => {
 
 /* Right Section - Game */
 .right-section {
-  padding: 40px;
+  padding: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1136,13 +918,24 @@ const scrollToAdvice = () => {
 
 .game-area {
   width: 100%;
-  height: 300px;
+  height: 250px;
   background: linear-gradient(180deg, #001122 0%, #000000 100%);
   border-radius: 8px;
   position: relative;
   overflow: hidden;
   border: 2px solid #333333;
   margin-bottom: 15px;
+  transition: transform 0.1s ease;
+}
+
+.screen-shake {
+  animation: shake 0.2s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
 }
 
 .player-ship {
@@ -1285,6 +1078,67 @@ const scrollToAdvice = () => {
   color: #cccccc;
   margin: 0;
   line-height: 1.4;
+  font-family: 'Orbitron', monospace;
+}
+
+.game-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin: 10px 0;
+}
+
+.reset-btn {
+  background: #ff6b6b !important;
+  border-color: #ff6b6b !important;
+  color: #ffffff !important;
+  animation: reset-pulse 2s ease-in-out infinite;
+}
+
+@keyframes reset-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.start-btn {
+  background: #4caf50 !important;
+  border-color: #4caf50 !important;
+  color: #ffffff !important;
+  animation: start-glow 2s ease-in-out infinite;
+}
+
+@keyframes start-glow {
+  0%, 100% { box-shadow: 0 0 10px rgba(76, 175, 80, 0.3); }
+  50% { box-shadow: 0 0 20px rgba(76, 175, 80, 0.6); }
+}
+
+.game-status {
+  text-align: center;
+  margin-top: 15px;
+  padding: 10px;
+  background: rgba(255, 0, 0, 0.1);
+  border: 1px solid #ff6b6b;
+  border-radius: 8px;
+}
+
+.game-over-text {
+  font-size: 10px;
+  color: #ff6b6b;
+  margin: 0 0 5px 0;
+  font-weight: bold;
+  text-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
+  animation: game-over-flash 1s ease-in-out infinite;
+}
+
+@keyframes game-over-flash {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.final-score {
+  font-size: 8px;
+  color: #ffffff;
+  margin: 0;
   font-family: 'Orbitron', monospace;
 }
 

@@ -1,342 +1,311 @@
 <template>
-  <header class="pacman-navbar">
-    <div class="navbar-container">
-      <!-- Logo -->
-      <router-link to="/" class="logo">
-        <div class="logo-icon">👻</div>
-        <span class="logo-text">KIDPATH</span>
-      </router-link>
-
-      <!-- Navigation -->
-      <nav class="nav-links">
-        <router-link to="/" class="nav-link" active-class="active" @click="closeMobileMenu">
-          <span class="nav-dot"></span>
-          <span class="nav-text">HOME</span>
-        </router-link>
-        <router-link to="/comfort-insights" class="nav-link" active-class="active" @click="closeMobileMenu">
-          <span class="nav-dot"></span>
-          <span class="nav-text">INSIGHTS</span>
-        </router-link>
-        <router-link to="/seasonal-comfort" class="nav-link" active-class="active" @click="closeMobileMenu">
-          <span class="nav-dot"></span>
-          <span class="nav-text">SEASONS</span>
-        </router-link>
-      </nav>
-
-      <!-- Mobile Menu Button -->
-      <button class="mobile-btn" @click="toggleMobileMenu">
-        <div class="btn-line"></div>
-        <div class="btn-line"></div>
-        <div class="btn-line"></div>
-      </button>
+  <header class="header">
+    <button class="hamburger" @click="toggleMenu">
+      <div class="hamburger-line"></div>
+      <div class="hamburger-line"></div>
+      <div class="hamburger-line"></div>
+    </button>
+    
+    <div class="logo" :class="{ 'logo-centered': isScrolled }">
+      <span class="logo-text">KIDPATH</span>
     </div>
+    
+    <button class="contact-btn">
+      <span class="contact-icon">👋</span>
+    </button>
 
-    <!-- Mobile Menu -->
-    <div class="mobile-menu" :class="{ 'mobile-open': mobileMenuOpen }">
-      <router-link to="/" class="mobile-link" @click="closeMobileMenu">
-        <span class="mobile-dot"></span>
-        <span class="mobile-text">HOME</span>
-      </router-link>
-      <router-link to="/comfort-insights" class="mobile-link" @click="closeMobileMenu">
-        <span class="mobile-dot"></span>
-        <span class="mobile-text">INSIGHTS</span>
-      </router-link>
-      <router-link to="/seasonal-comfort" class="mobile-link" @click="closeMobileMenu">
-        <span class="mobile-dot"></span>
-        <span class="mobile-text">SEASONS</span>
-      </router-link>
+    <!-- Sliding Navigation Menu -->
+    <div class="nav-overlay" :class="{ 'nav-open': menuOpen }" @click="closeMenu">
+      <div class="nav-menu" @click.stop>
+        <button class="nav-close" @click="closeMenu">×</button>
+        
+        <div class="nav-logo">
+          <div class="nav-logo-icon">🌱</div>
+          <span class="nav-logo-text">KIDPATH</span>
+        </div>
+        
+        <nav class="nav-links">
+          <router-link to="/" class="nav-link" @click="closeMenu">Home</router-link>
+          <router-link to="/comfort-insights" class="nav-link" @click="closeMenu">Weather Insights</router-link>
+          <router-link to="/seasonal-comfort" class="nav-link" @click="closeMenu">Seasonal Guide</router-link>
+          <router-link to="/about" class="nav-link" @click="closeMenu">About</router-link>
+        </nav>
+        
+        <div class="nav-contact">
+          <div class="nav-contact-label">SAY HELLO</div>
+          <div class="nav-contact-email">hello@kidpath.com</div>
+        </div>
+      </div>
     </div>
   </header>
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useComfortData } from '@/composables/useComfortData'
+import { ref, onMounted, onUnmounted } from 'vue'
 
-const mobileMenuOpen = ref(false)
+const menuOpen = ref(false)
+const isScrolled = ref(false)
 
-const toggleMobileMenu = () => {
-  mobileMenuOpen.value = !mobileMenuOpen.value
+const toggleMenu = () => {
+  menuOpen.value = !menuOpen.value
 }
 
-const closeMobileMenu = () => {
-  mobileMenuOpen.value = false
+const closeMenu = () => {
+  menuOpen.value = false
 }
 
-// Get weather data for the ticker
-const { uvIndex, windSpeed } = useComfortData()
+// Scroll detection
+const handleScroll = () => {
+  isScrolled.value = window.scrollY > 50
+}
+
+onMounted(() => {
+  window.addEventListener('scroll', handleScroll)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll)
+})
 </script>
 
 <style scoped>
 /* Import fonts */
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
-.pacman-navbar {
-  background: #000000;
-  border-bottom: 2px solid #ffff00;
-  position: sticky;
+.header {
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 1000;
-  box-shadow: 0 2px 10px rgba(255, 255, 0, 0.3);
-  height: 60px;
-}
-
-/* Navbar Container */
-.navbar-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 20px;
-  height: 100%;
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: center;
+  padding: 20px 40px;
+  background: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Logo */
-.logo {
-  text-decoration: none;
+.hamburger {
+  width: 50px;
+  height: 50px;
+  background: transparent;
+  border: 2px solid #ffffff;
+  border-radius: 12px;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 10px;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
   transition: all 0.3s ease;
 }
 
-.logo:hover {
+.hamburger:hover {
+  background: rgba(255, 255, 255, 0.1);
   transform: scale(1.05);
-  filter: drop-shadow(0 0 10px #ffff00);
 }
 
-.logo-icon {
-  font-size: 1.5rem;
-  animation: pacman-chomp 1s ease-in-out infinite;
+.hamburger-line {
+  width: 20px;
+  height: 2px;
+  background: #ffffff;
+  border-radius: 1px;
+  transition: all 0.3s ease;
 }
 
-@keyframes pacman-chomp {
-  0%, 100% { transform: rotate(0deg); }
-  50% { transform: rotate(15deg); }
+.logo {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.logo-centered {
+  transform: translateX(-50%) scale(0.8);
 }
 
 .logo-text {
   font-family: 'Press Start 2P', monospace;
-  font-size: 16px;
-  color: #ffff00;
-  text-shadow: 2px 2px 0px #ff6b00;
+  font-size: 18px;
+  color: #00ff41;
+  text-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
   letter-spacing: 2px;
 }
 
-/* Navigation Links */
+.contact-btn {
+  width: 50px;
+  height: 50px;
+  background: transparent;
+  border: 2px solid #ffffff;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.contact-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: scale(1.05);
+}
+
+.contact-icon {
+  font-size: 20px;
+}
+
+/* Navigation Menu */
+.nav-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  z-index: 2000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nav-overlay.nav-open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.nav-menu {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 300px;
+  height: 100vh;
+  background: #000000;
+  padding: 40px;
+  transform: translateX(-100%);
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  border-right: 2px solid #00ff41;
+}
+
+.nav-overlay.nav-open .nav-menu {
+  transform: translateX(0);
+}
+
+.nav-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 40px;
+  height: 40px;
+  background: transparent;
+  border: 2px solid #00ff41;
+  border-radius: 4px;
+  font-size: 18px;
+  color: #00ff41;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  font-family: 'Press Start 2P', monospace;
+}
+
+.nav-close:hover {
+  background: rgba(0, 255, 65, 0.1);
+}
+
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.nav-logo-icon {
+  font-size: 24px;
+  color: #00ff41;
+}
+
+.nav-logo-text {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 14px;
+  color: #00ff41;
+  letter-spacing: 1px;
+}
+
 .nav-links {
   display: flex;
-  gap: 30px;
-  align-items: center;
+  flex-direction: column;
+  gap: 20px;
 }
 
 .nav-link {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 12px;
+  color: #ffffff;
   text-decoration: none;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  border: 2px solid transparent;
-  border-radius: 20px;
+  padding: 12px 0;
   transition: all 0.3s ease;
   position: relative;
-  overflow: hidden;
+  letter-spacing: 1px;
+}
+
+.nav-link:hover {
+  color: #00ff41;
+  transform: translateX(10px);
 }
 
 .nav-link::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 0, 0.2), transparent);
-  transition: left 0.5s ease;
+  left: -20px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 2px;
+  background: #00ff41;
+  transition: width 0.3s ease;
 }
 
 .nav-link:hover::before {
-  left: 100%;
+  width: 15px;
 }
 
-.nav-link:hover {
-  border-color: #ffff00;
-  background: rgba(255, 255, 0, 0.1);
-  box-shadow: 0 0 15px rgba(255, 255, 0, 0.3);
+.nav-contact {
+  margin-top: auto;
+  padding-top: 20px;
+  border-top: 1px solid #00ff41;
 }
 
-.nav-link.active {
-  border-color: #ff6b00;
-  background: rgba(255, 107, 0, 0.1);
-  box-shadow: 0 0 15px rgba(255, 107, 0, 0.3);
-}
-
-.nav-dot {
-  width: 8px;
-  height: 8px;
-  background: #ffff00;
-  border-radius: 50%;
-  animation: dot-pulse 2s ease-in-out infinite;
-}
-
-@keyframes dot-pulse {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.2); opacity: 0.7; }
-}
-
-.nav-text {
+.nav-contact-label {
   font-family: 'Press Start 2P', monospace;
-  font-size: 10px;
-  color: #ffffff;
-  text-shadow: 1px 1px 0px #333;
+  font-size: 8px;
+  color: #00ff41;
   letter-spacing: 1px;
-  transition: all 0.3s ease;
+  margin-bottom: 8px;
 }
 
-.nav-link:hover .nav-text {
-  color: #ffff00;
-  text-shadow: 1px 1px 0px #ff6b00;
-}
-
-.nav-link.active .nav-text {
-  color: #ff6b00;
-  text-shadow: 1px 1px 0px #cc4a00;
-}
-
-/* Mobile Menu Button */
-.mobile-btn {
-  display: none;
-  flex-direction: column;
-  background: none;
-  border: 2px solid #ffff00;
-  cursor: pointer;
-  padding: 8px;
-  gap: 3px;
-  border-radius: 6px;
-  transition: all 0.3s ease;
-}
-
-.mobile-btn:hover {
-  box-shadow: 0 0 10px rgba(255, 255, 0, 0.5);
-  background: rgba(255, 255, 0, 0.1);
-}
-
-.btn-line {
-  width: 20px;
-  height: 2px;
-  background: #ffff00;
-  border-radius: 1px;
-  transition: all 0.3s ease;
-}
-
-.mobile-btn:hover .btn-line {
-  background: #ff6b00;
-}
-
-
-/* Mobile Menu */
-.mobile-menu {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  background: #000000;
-  border: 2px solid #ffff00;
-  border-top: none;
-  transform: translateY(-100%);
-  opacity: 0;
-  visibility: hidden;
-  transition: all 0.3s ease;
-  z-index: 999;
-  box-shadow: 0 4px 15px rgba(255, 255, 0, 0.3);
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 20px;
-}
-
-.mobile-menu.mobile-open {
-  transform: translateY(0);
-  opacity: 1;
-  visibility: visible;
-}
-
-.mobile-link {
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  border: 2px solid transparent;
-  border-radius: 20px;
-  transition: all 0.3s ease;
-  background: rgba(255, 255, 0, 0.05);
-}
-
-.mobile-link:hover {
-  border-color: #ffff00;
-  background: rgba(255, 255, 0, 0.1);
-  box-shadow: 0 0 10px rgba(255, 255, 0, 0.3);
-}
-
-.mobile-dot {
-  width: 6px;
-  height: 6px;
-  background: #ffff00;
-  border-radius: 50%;
-  animation: dot-pulse 2s ease-in-out infinite;
-}
-
-.mobile-text {
+.nav-contact-email {
   font-family: 'Press Start 2P', monospace;
   font-size: 10px;
   color: #ffffff;
-  text-shadow: 1px 1px 0px #333;
   letter-spacing: 1px;
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  .navbar-container {
-    padding: 0 15px;
+  .header {
+    padding: 15px 20px;
   }
   
-  .logo-text {
-    font-size: 14px;
-  }
-  
-  .mobile-btn {
-    display: flex;
-  }
-  
-  .nav-links {
-    display: none;
-  }
-  
-  .nav-text {
-    font-size: 9px;
-  }
-}
-
-@media (max-width: 480px) {
-  .navbar-container {
-    padding: 0 10px;
-  }
-  
-  .logo-text {
-    font-size: 12px;
-  }
-  
-  .logo-icon {
-    font-size: 1.2rem;
-  }
-  
-  .mobile-menu {
-    padding: 15px;
-  }
-  
-  .mobile-text {
-    font-size: 9px;
+  .nav-menu {
+    width: 100%;
+    max-width: 350px;
   }
 }
 </style>
