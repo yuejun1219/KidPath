@@ -33,12 +33,13 @@
 }
 
 .footer-content {
-  max-width: 1200px;
+  max-width: 800px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0 40px;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
+  gap: 60px;
   width: 100%;
   animation: slide-in-out 6s linear infinite;
 }
@@ -101,8 +102,10 @@
 @media (max-width: 768px) {
   .footer-content {
     flex-direction: column;
-    gap: 10px;
+    gap: 15px;
     text-align: center;
+    padding: 0 30px;
+    max-width: 100%;
   }
   
   .footer-links {
@@ -125,8 +128,9 @@
   }
   
   .footer-content {
-    padding: 0 15px;
-    gap: 8px;
+    padding: 0 20px;
+    gap: 12px;
+    max-width: 100%;
   }
   
   .footer-text {

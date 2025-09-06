@@ -725,6 +725,15 @@ input:focus {
   outline-offset: 2px;
 }
 
+/* Prevent horizontal overflow on all elements */
+* {
+  box-sizing: border-box;
+}
+
+.homepage * {
+  max-width: 100%;
+}
+
 /* Video Background */
 .video-bg {
   position: fixed;
@@ -1888,8 +1897,11 @@ input:focus {
 @media (max-width: 768px) {
   .homepage {
     overflow-y: auto;
+    overflow-x: hidden;
     height: auto;
     min-height: 100vh;
+    width: 100%;
+    max-width: 100vw;
   }
   
   .header {
@@ -1901,16 +1913,27 @@ input:focus {
     height: auto;
     min-height: calc(100vh - 90px);
     overflow-y: visible;
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100vw;
   }
   
   .left-section {
     padding: 30px 20px;
     min-height: 50vh;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
   }
   
   .right-section {
     padding: 20px;
     min-height: 50vh;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
   }
   
   .main-title {
@@ -1924,14 +1947,25 @@ input:focus {
   .weather-stats {
     margin-top: 20px;
     gap: 15px;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
   }
   
   .stat-card {
     padding: 12px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
   }
   
   .game-container {
     padding: 15px;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
   }
   
   .game-area {
