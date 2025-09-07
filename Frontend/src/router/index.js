@@ -16,6 +16,11 @@ const routes = [
     path: '/seasonal-comfort',
     name: 'SeasonalComfort',
     component: () => import('../views/SeasonalComfort.vue')
+  },
+  {
+    path: '/about',
+    name: 'About',
+    component: () => import('../views/About.vue')
   }
 ]
 
