@@ -1486,9 +1486,9 @@ input:focus {
 .main-content {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 5px;
+  gap: 3px;
   flex: 1;
-  margin-top: 100px;
+  margin-top: 80px;
   background: transparent;
   overflow: hidden;
   position: relative;
@@ -1498,7 +1498,7 @@ input:focus {
 
 /* Left Section */
 .left-section {
-  padding: 40px 60px;
+  padding: 30px 50px;
   display: flex;
   flex-direction: column;
   justify-content: center;
