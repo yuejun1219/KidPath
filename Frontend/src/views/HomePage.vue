@@ -1488,7 +1488,7 @@ input:focus {
   grid-template-columns: 1fr 1fr;
   gap: 3px;
   flex: 1;
-  margin-top: 80px;
+  margin-top: 60px;
   background: transparent;
   overflow: hidden;
   position: relative;
@@ -1498,7 +1498,7 @@ input:focus {
 
 /* Left Section */
 .left-section {
-  padding: 30px 50px;
+  padding: 25px 40px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -1810,7 +1810,7 @@ input:focus {
 
 /* Right Section - Game */
 .right-section {
-  padding: 20px;
+  padding: 15px;
   display: flex;
   align-items: center;
   justify-content: center;
