@@ -1256,7 +1256,10 @@ const uvAdvice = computed(() => {
 })
 
 onMounted(() => {
-  init()
+  // Delay weather data loading to allow page transition to complete
+  setTimeout(() => {
+    init()
+  }, 500)
   
   
   // Start typewriter animation
@@ -1325,13 +1328,15 @@ const scrollToAdvice = () => {
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
 
 .homepage {
-  height: 100vh;
+  min-height: 100vh;
   background: #000000;
   color: #00ff41;
   font-family: 'Press Start 2P', monospace;
   position: relative;
   transition: filter 0.3s ease;
-  overflow: hidden;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .homepage.blurred {
@@ -1482,12 +1487,13 @@ input:focus {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 5px;
-  height: calc(100vh - 160px);
+  flex: 1;
   margin-top: 100px;
   background: transparent;
   overflow: hidden;
   position: relative;
   z-index: 10;
+  min-height: 0;
 }
 
 /* Left Section */
@@ -2850,7 +2856,6 @@ input:focus {
   .homepage {
     overflow-y: auto;
     overflow-x: hidden;
-    height: auto;
     min-height: 100vh;
     width: 100%;
     max-width: 100vw;
@@ -2862,8 +2867,7 @@ input:focus {
   
   .main-content {
     grid-template-columns: 1fr;
-    height: auto;
-    min-height: calc(100vh - 90px);
+    flex: 1;
     overflow-y: visible;
     overflow-x: hidden;
     width: 100%;
