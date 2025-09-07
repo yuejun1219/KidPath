@@ -10,9 +10,9 @@
       <span class="music-icon">🎵</span>
     </button>
     
-    <div class="logo" :class="{ 'logo-centered': isScrolled }">
+    <router-link to="/" class="logo" :class="{ 'logo-centered': isScrolled }">
       <span class="logo-text">KIDPATH</span>
-    </div>
+    </router-link>
 
     <!-- Sliding Navigation Menu -->
     <div class="nav-overlay" :class="{ 'nav-open': menuOpen }" @click="closeMenu">
@@ -365,6 +365,8 @@ onUnmounted(() => {
   left: 50%;
   transform: translateX(-50%);
   transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  text-decoration: none;
+  cursor: pointer;
 }
 
 .logo-centered {
