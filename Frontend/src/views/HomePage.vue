@@ -72,9 +72,9 @@
               <div class="stat-level" :class="windLevel.toLowerCase().replace(' ', '-')" :aria-label="`Wind Level: ${windLevel}`">{{ windLevel }}</div>
               <div class="quick-decision" :class="windLevel.toLowerCase().replace(' ', '-')" role="note" :aria-label="`Recommendation: ${getWindDecision()}`">
                 {{ getWindDecision() }}
-            </div>
               </div>
-                </div>
+            </div>
+          </div>
         </div>
             </div>
 
@@ -1737,6 +1737,18 @@ input:focus {
   border: 1px solid #4caf50;
 }
 
+.stat-level.strong {
+  color: #ff9800;
+  background: rgba(255, 152, 0, 0.2);
+  border: 1px solid #ff9800;
+}
+
+.stat-level.very-strong {
+  color: #f44336;
+  background: rgba(244, 67, 54, 0.2);
+  border: 1px solid #f44336;
+}
+
 .quick-decision {
   font-size: 10px;
   font-weight: bold;
@@ -1768,6 +1780,18 @@ input:focus {
 }
 
 .quick-decision.very-high {
+  color: #f44336;
+  background: rgba(244, 67, 54, 0.15);
+  border: 1px solid #f44336;
+}
+
+.quick-decision.strong {
+  color: #ff9800;
+  background: rgba(255, 152, 0, 0.15);
+  border: 1px solid #ff9800;
+}
+
+.quick-decision.very-strong {
   color: #f44336;
   background: rgba(244, 67, 54, 0.15);
   border: 1px solid #f44336;
