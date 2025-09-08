@@ -785,10 +785,10 @@ watch([shadeWeight, parkWeight], () => {
   .sidebar{
     /* Override desktop positioning for mobile */
     position: fixed !important;
-    top: 0;
+    top: 100px; /* Start below navbar */
     left: 0;
     width: 100vw;
-    height: 100vh;
+    height: calc(100vh - 100px); /* Full height minus navbar */
     z-index: 999;
     transform: translateY(100%);
     padding: 16px;
