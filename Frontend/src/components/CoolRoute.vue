@@ -785,14 +785,15 @@ watch([shadeWeight, parkWeight], () => {
   .sidebar{
     /* Override desktop positioning for mobile */
     position: fixed !important;
-    top: 100px; /* Start below navbar */
+    top: 0;
     left: 0;
     width: 100vw;
-    height: calc(100vh - 100px); /* Full height minus navbar */
+    height: 100vh;
     z-index: 999;
     transform: translateY(100%);
-    padding: 16px;
+    padding: 120px 16px 16px 16px; /* Top padding to account for navbar */
     overflow-y: auto;
+    box-sizing: border-box;
   }
   
   .sidebar:not(.sidebar-hidden){
