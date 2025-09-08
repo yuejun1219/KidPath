@@ -167,18 +167,25 @@ onUnmounted(() => {
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
 .header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 1000;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 1000 !important;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 20px 40px 20px 40px;
   background: transparent;
   backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   min-height: 80px;
+  width: 100%;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 /* Music Button */
