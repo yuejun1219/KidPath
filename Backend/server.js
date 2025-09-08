@@ -38,7 +38,7 @@ app.use((req, res, next) => {
 app.use('/', routes);
 
 
-app.use("/api/ai", aiRoutes);
+app.use("/api/v1/ai", aiRoutes);
 
 // error handlers
 app.use(notFoundHandler);
