@@ -72,9 +72,9 @@
               <div class="stat-level" :class="windLevel.toLowerCase().replace(' ', '-')" :aria-label="`Wind Level: ${windLevel}`">{{ windLevel }}</div>
               <div class="quick-decision" :class="windLevel.toLowerCase().replace(' ', '-')" role="note" :aria-label="`Recommendation: ${getWindDecision()}`">
                 {{ getWindDecision() }}
-            </div>
               </div>
-                </div>
+            </div>
+          </div>
         </div>
             </div>
 
@@ -1256,7 +1256,10 @@ const uvAdvice = computed(() => {
 })
 
 onMounted(() => {
-  init()
+  // Delay weather data loading to allow page transition to complete
+  setTimeout(() => {
+    init()
+  }, 500)
   
   
   // Start typewriter animation
@@ -1325,13 +1328,15 @@ const scrollToAdvice = () => {
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
 
 .homepage {
-  height: 100vh;
+  min-height: 100vh;
   background: #000000;
   color: #00ff41;
   font-family: 'Press Start 2P', monospace;
   position: relative;
   transition: filter 0.3s ease;
-  overflow: hidden;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .homepage.blurred {
@@ -1481,18 +1486,19 @@ input:focus {
 .main-content {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 5px;
-  height: calc(100vh - 160px);
-  margin-top: 100px;
+  gap: 3px;
+  flex: 1;
+  margin-top: 60px;
   background: transparent;
   overflow: hidden;
   position: relative;
   z-index: 10;
+  min-height: 0;
 }
 
 /* Left Section */
 .left-section {
-  padding: 40px 60px;
+  padding: 25px 40px 25px 60px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -1731,6 +1737,18 @@ input:focus {
   border: 1px solid #4caf50;
 }
 
+.stat-level.strong {
+  color: #ff9800;
+  background: rgba(255, 152, 0, 0.2);
+  border: 1px solid #ff9800;
+}
+
+.stat-level.very-strong {
+  color: #f44336;
+  background: rgba(244, 67, 54, 0.2);
+  border: 1px solid #f44336;
+}
+
 .quick-decision {
   font-size: 10px;
   font-weight: bold;
@@ -1767,6 +1785,18 @@ input:focus {
   border: 1px solid #f44336;
 }
 
+.quick-decision.strong {
+  color: #ff9800;
+  background: rgba(255, 152, 0, 0.15);
+  border: 1px solid #ff9800;
+}
+
+.quick-decision.very-strong {
+  color: #f44336;
+  background: rgba(244, 67, 54, 0.15);
+  border: 1px solid #f44336;
+}
+
 @keyframes decision-pulse {
   0%, 100% { 
     opacity: 1;
@@ -1780,7 +1810,7 @@ input:focus {
 
 /* Right Section - Game */
 .right-section {
-  padding: 20px;
+  padding: 15px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2850,7 +2880,6 @@ input:focus {
   .homepage {
     overflow-y: auto;
     overflow-x: hidden;
-    height: auto;
     min-height: 100vh;
     width: 100%;
     max-width: 100vw;
@@ -2862,8 +2891,7 @@ input:focus {
   
   .main-content {
     grid-template-columns: 1fr;
-    height: auto;
-    min-height: calc(100vh - 90px);
+    flex: 1;
     overflow-y: visible;
     overflow-x: hidden;
     width: 100%;

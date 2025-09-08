@@ -28,6 +28,8 @@
           <router-link to="/" class="nav-link" @click="closeMenu">Home</router-link>
           <router-link to="/comfort-insights" class="nav-link" @click="closeMenu">Weather Insights</router-link>
           <router-link to="/seasonal-comfort" class="nav-link" @click="closeMenu">Seasonal Guide</router-link>
+          <router-link to="/shade-quest" class="nav-link" @click="closeMenu">🌳 Shade Quest</router-link>
+          <router-link to="/comfort-matters" class="nav-link" @click="closeMenu">📚 Comfort Matters</router-link>
           <router-link to="/about" class="nav-link" @click="closeMenu">About</router-link>
         </nav>
         
@@ -167,18 +169,25 @@ onUnmounted(() => {
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
 .header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 1000;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 1000 !important;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 20px 40px 20px 40px;
   background: transparent;
   backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   min-height: 80px;
+  width: 100%;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 /* Music Button */

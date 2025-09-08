@@ -8,8 +8,12 @@ const props = defineProps({
   parksUrl:  { type: String, required: true }, // e.g. https://.../parks.geojson
   treesUrl:  { type: String, required: true }, // e.g. https://.../trees.geojson
   grassUrl:  { type: String, default: '' },    // optional (visual only)
-  basemap:   { type: String, default: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json' }
+  basemap:   { type: String, default: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json' },
+  showSidebar: { type: Boolean, default: false } // Control sidebar visibility
 })
+
+/* ---------- Emits ---------- */
+const emit = defineEmits(['toggle-sidebar'])
 
 /* ---------- State ---------- */
 const mapEl = ref(null)
@@ -32,6 +36,10 @@ let grassFC  = null // visual only
 
 const routes = ref([])           // [{id, feature, distance, duration, shadeScore}]
 const bestRouteId = ref(null)
+const showResultsPanel = ref(false)
+const showAddressPanel = ref(false)
+const startAddress = ref('')
+const endAddress = ref('')
 
 const hasPoints = computed(() => Array.isArray(start.value) && Array.isArray(end.value))
 
@@ -189,8 +197,8 @@ async function fetchAlternatives(startLngLat, endLngLat){
   const controller = new AbortController()
   const t = setTimeout(() => controller.abort('timeout'), 8000) // 8s
 
-  // 1) Try OSRM alternatives
-  let url = `https://router.project-osrm.org/route/v1/foot/${startLngLat[0]},${startLngLat[1]};${endLngLat[0]},${endLngLat[1]}?alternatives=true&steps=false&geometries=geojson&overview=full`
+  // 1) Try OSRM alternatives (using cycling profile for better pedestrian routes)
+  let url = `https://router.project-osrm.org/route/v1/bike/${startLngLat[0]},${startLngLat[1]};${endLngLat[0]},${endLngLat[1]}?alternatives=true&steps=false&geometries=geojson&overview=full`
   try {
     const r = await fetch(url, { signal: controller.signal })
     clearTimeout(t)
@@ -206,7 +214,7 @@ async function fetchAlternatives(startLngLat, endLngLat){
 
   // 2) Fallback: single route only
   const r2 = await fetch(
-    `https://router.project-osrm.org/route/v1/foot/${startLngLat[0]},${startLngLat[1]};${endLngLat[0]},${endLngLat[1]}?alternatives=false&steps=false&geometries=geojson&overview=full`
+    `https://router.project-osrm.org/route/v1/bike/${startLngLat[0]},${startLngLat[1]};${endLngLat[0]},${endLngLat[1]}?alternatives=false&steps=false&geometries=geojson&overview=full`
   )
   if (!r2.ok) throw new Error('OSRM route fetch failed')
   const j2 = await r2.json()
@@ -231,8 +239,8 @@ async function synthesizeAlternatives(startLngLat, endLngLat, baseRoute){
   const alts = []
   for (const c of candidates){
     try {
-      const a = await fetch(`https://router.project-osrm.org/route/v1/foot/${startLngLat[0]},${startLngLat[1]};${c.geometry.coordinates[0]},${c.geometry.coordinates[1]}?alternatives=false&steps=false&geometries=geojson&overview=full`).then(r=>r.json())
-      const b = await fetch(`https://router.project-osrm.org/route/v1/foot/${c.geometry.coordinates[0]},${c.geometry.coordinates[1]};${endLngLat[0]},${endLngLat[1]}?alternatives=false&steps=false&geometries=geojson&overview=full`).then(r=>r.json())
+      const a = await fetch(`https://router.project-osrm.org/route/v1/bike/${startLngLat[0]},${startLngLat[1]};${c.geometry.coordinates[0]},${c.geometry.coordinates[1]}?alternatives=false&steps=false&geometries=geojson&overview=full`).then(r=>r.json())
+      const b = await fetch(`https://router.project-osrm.org/route/v1/bike/${c.geometry.coordinates[0]},${c.geometry.coordinates[1]};${endLngLat[0]},${endLngLat[1]}?alternatives=false&steps=false&geometries=geojson&overview=full`).then(r=>r.json())
       if (a.routes?.length && b.routes?.length){
         alts.push({
           distance: a.routes[0].distance + b.routes[0].distance,
@@ -293,6 +301,8 @@ async function initMap(){
     style: props.basemap,
     center: [144.9631, -37.8136], // Melbourne CBD
     zoom: 12,
+    // Retro video game aesthetic
+    renderWorldCopies: false,
     attributionControl: true
   })
 
@@ -307,30 +317,35 @@ async function initMap(){
     map.addSource('routes-all', { type:'geojson', data:{ type:'FeatureCollection', features: [] } })
     map.addSource('route-best', { type:'geojson', data:{ type:'FeatureCollection', features: [] } })
 
-    // Green layers
-    map.addLayer({ id:'parks-fill', type:'fill', source:'parks', paint:{ 'fill-color':'#a5d6a7', 'fill-opacity':0.35 } })
-    map.addLayer({ id:'parks-line', type:'line', source:'parks', paint:{ 'line-color':'#388e3c', 'line-width':1 } })
+    // Retro green layers
+    map.addLayer({ id:'parks-fill', type:'fill', source:'parks', paint:{ 'fill-color':'#00ff41', 'fill-opacity':0.4 } })
+    map.addLayer({ id:'parks-line', type:'line', source:'parks', paint:{ 'line-color':'#00ff41', 'line-width':2 } })
     if (props.grassUrl){
-      map.addLayer({ id:'grass-fill', type:'fill', source:'grass', paint:{ 'fill-color':'#cdeac5', 'fill-opacity':0.22 } })
+      map.addLayer({ id:'grass-fill', type:'fill', source:'grass', paint:{ 'fill-color':'#00ff41', 'fill-opacity':0.3 } })
     }
     map.addLayer({ id:'trees-circles', type:'circle', source:'trees', paint:{
-      'circle-radius': 2.4, 'circle-color':'#2e7d32', 'circle-opacity':0.55
+      'circle-radius': 3, 'circle-color':'#00ff41', 'circle-opacity':0.8, 'circle-stroke-color':'#000', 'circle-stroke-width':1
     }})
 
-    // Routing layers
+    // Retro routing layers
     map.addLayer({ id:'routes-all-line', type:'line', source:'routes-all', paint:{
-      'line-color':'#8e8e8e', 'line-width':3, 'line-dasharray':[2,2], 'line-opacity':0.7
+      'line-color':'#666', 'line-width':4, 'line-dasharray':[4,4], 'line-opacity':0.8
     }})
+    // Black outline for best route
+    map.addLayer({ id:'route-best-outline', type:'line', source:'route-best', paint:{
+      'line-color':'#000', 'line-width':12, 'line-opacity':1
+    }})
+    // Cyan best route on top
     map.addLayer({ id:'route-best-line', type:'line', source:'route-best', paint:{
-      'line-color':'#1b5e20', 'line-width':6, 'line-opacity':0.95
+      'line-color':'#00ffff', 'line-width':8, 'line-opacity':1
     }})
 
-    // Start/End markers
+    // Retro Start/End markers
     map.addLayer({ id:'start-pt', type:'circle', source:'start', paint:{
-      'circle-radius':6, 'circle-color':'#2962ff', 'circle-stroke-color':'#fff', 'circle-stroke-width':2
+      'circle-radius':8, 'circle-color':'#00ff41', 'circle-stroke-color':'#000', 'circle-stroke-width':3
     }})
     map.addLayer({ id:'end-pt', type:'circle', source:'end', paint:{
-      'circle-radius':6, 'circle-color':'#ff1744', 'circle-stroke-color':'#fff', 'circle-stroke-width':2
+      'circle-radius':8, 'circle-color':'#ff0000', 'circle-stroke-color':'#000', 'circle-stroke-width':3
     }})
 
     // Click to pick
@@ -396,6 +411,103 @@ function clearPoints(){
   setSourceData('route-best', turf.featureCollection([]))
 }
 
+function openInGoogleMaps(route){
+  if (!start.value || !end.value) return
+  
+  // Get start and end coordinates
+  const startCoords = `${start.value[1]},${start.value[0]}`
+  const endCoords = `${end.value[1]},${end.value[0]}`
+  
+  // Create Google Maps URL with cycling directions
+  const googleMapsUrl = `https://www.google.com/maps/dir/${startCoords}/${endCoords}/@${start.value[1]},${start.value[0]},15z/data=!3m1!4b1!4m2!4m1!3e3`
+  
+  // Open in new tab
+  window.open(googleMapsUrl, '_blank')
+}
+
+async function geocodeAddress(address) {
+  try {
+    // Use OpenStreetMap Nominatim API (free and reliable)
+    const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address + ', Melbourne, Australia')}&limit=1&addressdetails=1`)
+    const data = await response.json()
+    
+    if (data && data.length > 0) {
+      const [lng, lat] = [parseFloat(data[0].lon), parseFloat(data[0].lat)]
+      return [lng, lat]
+    }
+    return null
+  } catch (error) {
+    console.error('Geocoding error:', error)
+    return null
+  }
+}
+
+async function searchStartAddress() {
+  if (!startAddress.value.trim()) return
+  
+  const coords = await geocodeAddress(startAddress.value)
+  if (coords) {
+    start.value = coords
+    setSourceData('start', turf.point(coords))
+    // Center map on the new location
+    if (map) {
+      map.flyTo({ center: coords, zoom: 15 })
+    }
+  } else {
+    alert('Address not found. Please try a different address.')
+  }
+}
+
+async function searchEndAddress() {
+  if (!endAddress.value.trim()) return
+  
+  const coords = await geocodeAddress(endAddress.value)
+  if (coords) {
+    end.value = coords
+    setSourceData('end', turf.point(coords))
+    // Center map on the new location
+    if (map) {
+      map.flyTo({ center: coords, zoom: 15 })
+    }
+  } else {
+    alert('Address not found. Please try a different address.')
+  }
+}
+
+async function searchBothAddresses() {
+  if (!startAddress.value.trim() || !endAddress.value.trim()) {
+    alert('Please enter both start and end addresses.')
+    return
+  }
+  
+  const startCoords = await geocodeAddress(startAddress.value)
+  const endCoords = await geocodeAddress(endAddress.value)
+  
+  if (startCoords && endCoords) {
+    start.value = startCoords
+    end.value = endCoords
+    setSourceData('start', turf.point(startCoords))
+    setSourceData('end', turf.point(endCoords))
+    
+    // Center map between the two points
+    if (map) {
+      const bounds = turf.bbox(turf.lineString([startCoords, endCoords]))
+      map.fitBounds(bounds, { padding: 50 })
+    }
+  } else {
+    alert('One or both addresses not found. Please try different addresses.')
+  }
+}
+
+function clearAddresses() {
+  startAddress.value = ''
+  endAddress.value = ''
+  start.value = null
+  end.value = null
+  setSourceData('start', turf.featureCollection([]))
+  setSourceData('end', turf.featureCollection([]))
+}
+
 /* ---------- Lifecycle ---------- */
 onMounted(() => { initMap() })
 onBeforeUnmount(() => { if (map) map.remove() })
@@ -419,7 +531,27 @@ watch([shadeWeight, parkWeight], () => {
 
 <template>
   <div class="cool-route-wrap">
-    <div class="sidebar">
+    <!-- Toggle buttons for mobile only -->
+    <div class="toggle-buttons">
+      <button 
+        v-if="!showSidebar" 
+        @click="emit('toggle-sidebar')" 
+        class="toggle-up-btn"
+        title="Show Menu"
+      >
+        ↑
+      </button>
+      <button 
+        v-if="showSidebar" 
+        @click="emit('toggle-sidebar')" 
+        class="toggle-down-btn"
+        title="Hide Menu"
+      >
+        ↓
+      </button>
+    </div>
+    
+    <div class="sidebar" :class="{ 'sidebar-hidden': !showSidebar }">
       <h2>Cool Route <span class="beta">beta</span></h2>
       <p class="muted">
         Pick two points. We’ll fetch walking routes and choose the
@@ -486,23 +618,18 @@ watch([shadeWeight, parkWeight], () => {
       <div v-if="loading" class="loading">{{ loadingMsg }}</div>
       <div v-if="error" class="err">⚠️ {{ error }}</div>
 
-      <div v-if="routes.length" class="routes-list">
-        <div
-          v-for="r in routes"
-          :key="r.id"
-          class="route-item"
-          :class="{best: r.id===bestRouteId}"
-          @click="bestRouteId=r.id; setSourceData('route-best', {type:'FeatureCollection', features:[r.feature]})"
-        >
-          <div class="row1">
-            <strong>{{ r.id===bestRouteId ? 'Coolest' : 'Alternative' }}</strong>
-            <span class="score">Shade {{ Math.round(r.shadeScore*100) }}%</span>
-          </div>
-          <div class="row2">
-            <span>🛣️ {{ km(r.distance) }} km</span>
-            <span>⏱️ {{ min(r.duration) }} min</span>
-          </div>
-        </div>
+      <!-- Address Search Toggle Button -->
+      <div class="address-toggle">
+        <button @click="showAddressPanel = !showAddressPanel" class="toggle-btn">
+          {{ showAddressPanel ? 'HIDE ADDRESS SEARCH' : 'ADDRESS SEARCH' }}
+        </button>
+      </div>
+
+      <!-- Results Toggle Button -->
+      <div v-if="routes.length" class="results-toggle">
+        <button @click="showResultsPanel = !showResultsPanel" class="toggle-btn">
+          {{ showResultsPanel ? 'HIDE ROUTES' : 'SHOW ROUTES' }}
+        </button>
       </div>
 
       <div v-else class="hint">
@@ -510,29 +637,377 @@ watch([shadeWeight, parkWeight], () => {
       </div>
     </div>
 
-    <div ref="mapEl" class="map"></div>
+  <div ref="mapEl" class="map"></div>
+</div>
+
+<!-- Slide-in Results Panel -->
+<div v-if="routes.length" class="results-panel" :class="{ 'panel-open': showResultsPanel }">
+  <div class="panel-header">
+    <h3>ROUTE OPTIONS</h3>
+    <button @click="showResultsPanel = false" class="close-btn">×</button>
   </div>
+  <div class="route-list">
+    <div
+      v-for="r in routes"
+      :key="r.id"
+      class="route-item"
+      :class="{best: r.id===bestRouteId}"
+      @click="bestRouteId=r.id; setSourceData('route-best', {type:'FeatureCollection', features:[r.feature]})"
+    >
+      <div class="row1">
+        <strong>{{ r.id===bestRouteId ? 'COOLEST' : 'ALTERNATIVE' }}</strong>
+        <span class="score">{{ Math.round(r.shadeScore * 100) }}% COOL</span>
+      </div>
+      <div class="row2">
+        <span>{{ km(r.distance) }} KM</span>
+        <span>{{ min(r.duration) }} MIN</span>
+      </div>
+      <div class="row3">
+        <button @click.stop="openInGoogleMaps(r)" class="google-maps-btn">
+          VIEW IN GOOGLE MAPS
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Slide-in Address Panel -->
+<div class="address-panel" :class="{ 'panel-open': showAddressPanel }">
+  <div class="panel-header">
+    <h3>ADDRESS SEARCH</h3>
+    <button @click="showAddressPanel = false" class="close-btn">×</button>
+  </div>
+  <div class="address-form">
+    <div class="input-group">
+      <label>START ADDRESS</label>
+      <input 
+        v-model="startAddress" 
+        type="text" 
+        placeholder="Enter start address..."
+        class="address-input"
+        @keyup.enter="searchStartAddress"
+      />
+      <button @click="searchStartAddress" class="search-btn">SEARCH</button>
+    </div>
+    
+    <div class="input-group">
+      <label>END ADDRESS</label>
+      <input 
+        v-model="endAddress" 
+        type="text" 
+        placeholder="Enter end address..."
+        class="address-input"
+        @keyup.enter="searchEndAddress"
+      />
+      <button @click="searchEndAddress" class="search-btn">SEARCH</button>
+    </div>
+    
+    <div class="address-actions">
+      <button @click="clearAddresses" class="clear-btn">CLEAR ALL</button>
+      <button @click="searchBothAddresses" class="search-both-btn">SEARCH BOTH</button>
+    </div>
+    
+    <div v-if="routes.length" class="routes-action">
+      <button @click="showResultsPanel = true; showAddressPanel = false" class="show-routes-btn">
+        SHOW ROUTES
+      </button>
+    </div>
+  </div>
+</div>
 </template>
 
 <style scoped>
 .cool-route-wrap{
   display:grid; grid-template-columns: 360px 1fr; gap:16px;
-  height: 72vh; max-height: 780px;
+  height: 100%; min-height: 100%;
+  position: relative;
 }
-@media (max-width: 980px){ .cool-route-wrap{ grid-template-columns: 1fr; height: 70vh } }
+
+/* Toggle buttons */
+.toggle-buttons{
+  position: absolute;
+  top: 120px; /* Below navbar */
+  left: 20px;
+  z-index: 1000;
+  display: none; /* Hidden by default, shown on mobile */
+}
+
+.toggle-up-btn, .toggle-down-btn{
+  width: 50px;
+  height: 50px;
+  border: 3px solid #000;
+  background: #00ff41;
+  color: #000;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 3px 3px 0 #000;
+  transition: all .1s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toggle-up-btn:hover, .toggle-down-btn:hover{
+  background: #fff;
+  transform: translate(1px, 1px);
+  box-shadow: 2px 2px 0 #000;
+}
+
+/* Sidebar visibility */
+.sidebar{
+  background:#fff; border:3px solid #fff;
+  border-radius:0; padding:30px; overflow:auto;
+  box-shadow:0 0 0 2px #fff;
+  transition: transform 0.3s ease;
+  font-family: 'Press Start 2P', monospace;
+  position: relative; /* Ensure proper positioning on desktop */
+}
+
+.sidebar-hidden{
+  transform: translateX(-100%);
+}
+
+/* When sidebar is shown, adjust grid */
+.cool-route-wrap:has(.sidebar:not(.sidebar-hidden)){
+  grid-template-columns: 360px 1fr;
+}
+
+/* Desktop: Show sidebar by default */
+@media (min-width: 981px){
+  .sidebar{
+    display: block !important;
+    position: relative !important;
+    transform: none !important;
+  }
+}
+@media (max-width: 980px){ 
+  .cool-route-wrap{ 
+    grid-template-columns: 1fr !important; 
+    height: 100%; 
+    min-height: 100%; 
+    gap: 8px;
+  }
+  
+  /* Mobile sidebar behavior - force override */
+  .sidebar{
+    /* Override desktop positioning for mobile */
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 999 !important;
+    transform: translateY(100%) !important;
+    padding: 120px 16px 16px 16px !important; /* Top padding to account for navbar */
+    overflow-y: auto !important;
+    box-sizing: border-box !important;
+    display: block !important;
+  }
+  
+  .sidebar:not(.sidebar-hidden){
+    transform: translateY(0) !important;
+  }
+  
+  /* Ensure toggle buttons are visible on mobile */
+  .toggle-buttons{
+    display: block !important;
+    position: fixed !important;
+    top: 120px !important; /* Below navbar */
+    left: 20px !important;
+    z-index: 1000 !important;
+  }
+  
+  
+  
+  .toggle-up-btn, .toggle-down-btn{
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+  }
+  
+  
+  /* Override grid when sidebar is shown on mobile */
+  .cool-route-wrap:has(.sidebar:not(.sidebar-hidden)){
+    grid-template-columns: 1fr;
+  }
+  
+  /* Mobile button adjustments */
+  .steps button{ 
+    padding: 6px 10px; 
+    font-size:.45rem;
+  }
+  
+  .seg button{
+    padding: 4px 8px;
+    font-size:.4rem;
+  }
+  
+  .pill-row button{ 
+    padding: 4px 8px;
+    font-size:.4rem;
+  }
+  
+  /* Mobile address panel */
+  .address-panel{
+    width: 90vw;
+    left: -90vw;
+  }
+  
+  /* Mobile results panel */
+  .results-panel{
+    width: 90vw;
+    right: -90vw;
+  }
+  
+  /* Mobile input adjustments */
+  .address-input{
+    padding: 10px 12px;
+    font-size:.45rem;
+  }
+  
+  .search-btn, .clear-btn, .search-both-btn{
+    padding: 6px 10px;
+    font-size:.4rem;
+  }
+  
+  .show-routes-btn{
+    padding: 10px 14px;
+    font-size:.45rem;
+  }
+}
+
+
+/* Small mobile screens */
+@media (max-width: 480px){
+  .cool-route-wrap{ 
+    gap: 4px;
+  }
+  
+  .sidebar{
+    padding: 12px;
+    max-height: 35vh;
+  }
+  
+  /* Even smaller buttons for small screens */
+  .steps button{ 
+    padding: 4px 8px; 
+    font-size:.4rem;
+  }
+  
+  .seg button{
+    padding: 3px 6px;
+    font-size:.35rem;
+  }
+  
+  .pill-row button{ 
+    padding: 3px 6px;
+    font-size:.35rem;
+  }
+  
+  .toggle-btn{
+    padding: 8px 12px;
+    font-size:.45rem;
+  }
+  
+  /* Smaller panels for small screens */
+  .address-panel, .results-panel{
+    width: 95vw;
+  }
+  
+  .address-panel{
+    left: -95vw;
+  }
+  
+  .results-panel{
+    right: -95vw;
+  }
+  
+  /* Smaller text for small screens */
+  .muted{
+    font-size:.6rem;
+  }
+  
+  .label{
+    font-size:.5rem;
+  }
+  
+  .hint{
+    font-size:.5rem;
+  }
+  
+  /* Panel headers */
+  .panel-header h3{
+    font-size:.55rem;
+  }
+  
+  .close-btn{
+    width:20px;
+    height:20px;
+    font-size:14px;
+  }
+}
+
+/* Landscape mobile orientation */
+@media (max-width: 980px) and (orientation: landscape){
+  .sidebar{
+    max-height: 50vh;
+  }
+  
+  .address-panel, .results-panel{
+    height: calc(100vh - 80px);
+    top: 80px;
+  }
+}
+
+/* Touch-friendly improvements */
+@media (hover: none) and (pointer: coarse){
+  /* Larger touch targets for mobile */
+  .steps button, .seg button, .pill-row button{
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  .toggle-btn, .search-btn, .clear-btn, .search-both-btn, .show-routes-btn{
+    min-height: 44px;
+  }
+  
+  .close-btn{
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Remove hover effects on touch devices */
+  .steps button:hover, .seg button:hover, .pill-row button:hover,
+  .toggle-btn:hover, .search-btn:hover, .clear-btn:hover, 
+  .search-both-btn:hover, .show-routes-btn:hover, .close-btn:hover{
+    transform: none;
+    box-shadow: 2px 2px 0 #000;
+  }
+  
+  .address-input:focus{
+    transform: none;
+    box-shadow: 2px 2px 0 #000;
+  }
+}
 
 .sidebar{
-  background:#fff; border:1px solid rgba(0,0,0,.08);
-  border-radius:16px; padding:12px; overflow:auto;
-  box-shadow:0 14px 32px rgba(0,0,0,.08);
+  background:#fff; border:3px solid #fff;
+  border-radius:0; padding:30px; overflow:auto;
+  box-shadow:0 0 0 2px #fff;
+  font-family: 'Press Start 2P', monospace;
 }
 .beta{
-  font-size:.75rem; background:#e8f5e9; color:#1b5e20;
-  padding:2px 6px; border-radius:999px; border:1px solid #b9dec1
+  font-size:.55rem; background:#00ff41; color:#000;
+  padding:3px 6px; border-radius:0; border:2px solid #000;
+  font-family: 'Press Start 2P', monospace;
+  text-transform: uppercase;
+  box-shadow:2px 2px 0 #000;
 }
-.muted{ color:#566; font-size:.92rem; margin: 4px 0 10px }
+.muted{ color:#333; font-size:.65rem; margin: 10px 0 14px; font-family: 'Press Start 2P', monospace; line-height: 1.5; }
 
-.controls{ display:grid; gap:10px; }
+.controls{ display:grid; gap:16px; }
 .row{
   display:grid; grid-template-columns: 90px 1fr auto;
   align-items:center; gap:8px
@@ -540,76 +1015,343 @@ watch([shadeWeight, parkWeight], () => {
 .seg{ display:flex; gap:6px; flex-wrap:wrap }
 .seg.small button{ font-size:.86rem }
 .seg button{
-  border:1px solid rgba(0,0,0,.12); background:#fff;
-  border-radius:8px; padding:6px 10px; cursor:pointer
+  border:2px solid #000; background:#fff;
+  border-radius:0; padding:6px 10px; cursor:pointer;
+  font-family: 'Press Start 2P', monospace;
+  font-size:.5rem;
+  text-transform: uppercase;
+  box-shadow:2px 2px 0 #000;
+  transition: all .1s;
 }
-.seg button.active{ background:#e8f5e9; color:#1b5e20; border-color:#1b5e20 }
+.seg button:hover{
+  transform: translate(1px, 1px);
+  box-shadow:1px 1px 0 #000;
+}
+.seg button.active{ 
+  background:#00ff41; 
+  color:#000; 
+  border-color:#000;
+  box-shadow:2px 2px 0 #000;
+}
 .link{ background:transparent; border:0; color:#2962ff; cursor:pointer }
 .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 
 .loading{ font-size:.92rem; color:#1b5e20 }
 .err{ color:#b00020; margin-top:6px }
 
-.routes-list{ margin-top:10px; display:grid; gap:8px }
-.route-item{
-  border:1px solid rgba(0,0,0,.08); border-radius:12px;
-  padding:8px 10px; cursor:pointer; background:#fff
+/* Address Toggle Button */
+.address-toggle{ margin-top:16px; }
+
+/* Results Toggle Button */
+.results-toggle{ margin-top:16px; }
+.toggle-btn{
+  width:100%; padding:12px 16px; border:3px solid #000; background:#00ff41;
+  color:#000; font-family: 'Press Start 2P', monospace; font-size:.5rem;
+  text-transform: uppercase; cursor:pointer; box-shadow:3px 3px 0 #000;
+  transition: all .1s;
 }
-.route-item.best{ outline:2px solid #a5d6a7; background:#f7fbf8 }
-.row1{ display:flex; justify-content:space-between; align-items:center; }
-.score{ font-weight:700; color:#1b5e20 }
-.row2{ display:flex; gap:12px; color:#566; font-size:.92rem }
+.toggle-btn:hover{
+  transform: translate(1px, 1px); box-shadow:2px 2px 0 #000;
+}
+
+/* Slide-in Results Panel */
+.results-panel{
+  position:fixed; top:100px; right:-400px; width:380px; height:calc(100vh - 100px);
+  background:#fff; border:3px solid #000; box-shadow:-3px 0 0 #000;
+  transition: right 0.3s ease; z-index:1000; overflow-y:auto;
+}
+.results-panel.panel-open{ right:0; }
+
+.panel-header{
+  display:flex; justify-content:space-between; align-items:center;
+  padding:16px 20px; border-bottom:2px solid #000;
+  background:#00ff41;
+}
+.panel-header h3{
+  font-family: 'Press Start 2P', monospace; font-size:.6rem;
+  color:#000; margin:0; text-transform: uppercase;
+}
+.close-btn{
+  width:24px; height:24px; border:2px solid #000; background:#fff;
+  color:#000; font-size:16px; font-weight:bold; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:2px 2px 0 #000; transition: all .1s;
+}
+.close-btn:hover{
+  transform: translate(1px, 1px); box-shadow:1px 1px 0 #000;
+}
+
+.route-list{ padding:16px; display:grid; gap:12px; }
+.route-item{
+  border:2px solid #000; border-radius:0; padding:12px 16px;
+  cursor:pointer; background:#fff; box-shadow:2px 2px 0 #000;
+  transition: all .1s; font-family: 'Press Start 2P', monospace;
+}
+.route-item:hover{
+  transform: translate(1px, 1px); box-shadow:1px 1px 0 #000;
+}
+.route-item.best{ 
+  background:#00ff41; border-color:#000; box-shadow:2px 2px 0 #000;
+}
+.row1{ display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.row1 strong{ font-size:.5rem; text-transform: uppercase; }
+.score{ font-size:.5rem; font-weight:normal; text-transform: uppercase; }
+.row2{ display:flex; gap:16px; font-size:.45rem; text-transform: uppercase; margin-bottom:8px; }
+.row3{ margin-top:8px; }
+.google-maps-btn{
+  width:100%; padding:8px 12px; border:2px solid #000; background:#fff;
+  color:#000; font-family: 'Press Start 2P', monospace; font-size:.4rem;
+  text-transform: uppercase; cursor:pointer; box-shadow:2px 2px 0 #000;
+  transition: all .1s;
+}
+.google-maps-btn:hover{
+  background:#00ff41; transform: translate(1px, 1px); box-shadow:1px 1px 0 #000;
+}
+
+/* Slide-in Address Panel */
+.address-panel{
+  position:fixed; top:100px; left:-400px; width:380px; height:calc(100vh - 100px);
+  background:#fff; border:3px solid #000; box-shadow:3px 0 0 #000;
+  transition: left 0.3s ease; z-index:1000; overflow-y:auto;
+}
+.address-panel.panel-open{ left:0; }
+
+.address-form{ padding:20px; display:grid; gap:20px; }
+.input-group{ display:grid; gap:8px; }
+.input-group label{
+  font-family: 'Press Start 2P', monospace; font-size:.5rem;
+  color:#333; text-transform: uppercase;
+}
+.address-input{
+  padding:12px 16px; border:2px solid #000; background:#fff;
+  font-family: 'Press Start 2P', monospace; font-size:.5rem;
+  text-transform: uppercase; box-shadow:2px 2px 0 #000;
+  transition: all .1s;
+}
+.address-input:focus{
+  outline:none; background:#00ff41; transform: translate(1px, 1px);
+  box-shadow:1px 1px 0 #000;
+}
+.search-btn{
+  padding:8px 12px; border:2px solid #000; background:#fff;
+  color:#000; font-family: 'Press Start 2P', monospace; font-size:.45rem;
+  text-transform: uppercase; cursor:pointer; box-shadow:2px 2px 0 #000;
+  transition: all .1s;
+}
+.search-btn:hover{
+  background:#00ff41; transform: translate(1px, 1px); box-shadow:1px 1px 0 #000;
+}
+.address-actions{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:8px; }
+.clear-btn{
+  padding:8px 12px; border:2px solid #000; background:#fff;
+  color:#000; font-family: 'Press Start 2P', monospace; font-size:.45rem;
+  text-transform: uppercase; cursor:pointer; box-shadow:2px 2px 0 #000;
+  transition: all .1s;
+}
+.clear-btn:hover{
+  background:#ff6b6b; transform: translate(1px, 1px); box-shadow:1px 1px 0 #000;
+}
+.search-both-btn{
+  padding:8px 12px; border:2px solid #000; background:#00ff41;
+  color:#000; font-family: 'Press Start 2P', monospace; font-size:.45rem;
+  text-transform: uppercase; cursor:pointer; box-shadow:2px 2px 0 #000;
+  transition: all .1s;
+}
+.search-both-btn:hover{
+  background:#fff; transform: translate(1px, 1px); box-shadow:1px 1px 0 #000;
+}
+.routes-action{ margin-top:16px; }
+.show-routes-btn{
+  width:100%; padding:12px 16px; border:3px solid #000; background:#00ff41;
+  color:#000; font-family: 'Press Start 2P', monospace; font-size:.5rem;
+  text-transform: uppercase; cursor:pointer; box-shadow:3px 3px 0 #000;
+  transition: all .1s;
+}
+.show-routes-btn:hover{
+  background:#fff; transform: translate(1px, 1px); box-shadow:2px 2px 0 #000;
+}
 
 .map{
-  width:100%; height:100%; border-radius:16px;
-  overflow:hidden; box-shadow:0 14px 32px rgba(0,0,0,.08)
+  width:100%; height:100%; border-radius:0;
+  overflow:hidden; 
+  border:3px solid #fff;
+  box-shadow:0 0 0 2px #fff;
 }
 
-.steps{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:6px }
-.steps button{ padding:6px 10px; border-radius:10px; border:1px solid rgba(0,0,0,.12); background:#fff; }
-.steps button.on{ background:#e9f7ef; border-color:#1b5e20; color:#1b5e20 }
-.steps .ghost{ background:transparent; border:0; color:#2962ff }
+.steps{ display:flex; flex-wrap:wrap; gap:10px; margin-bottom:14px }
+.steps button{ 
+  padding:8px 12px; 
+  border-radius:0; 
+  border:3px solid #000; 
+  background:#fff; 
+  font-family: 'Press Start 2P', monospace;
+  font-size:.5rem;
+  text-transform: uppercase;
+  box-shadow:3px 3px 0 #000;
+  transition: all .1s;
+  cursor: pointer;
+}
+.steps button:hover{
+  transform: translate(1px, 1px);
+  box-shadow:2px 2px 0 #000;
+}
+.steps button.on{ 
+  background:#00ff41; 
+  border-color:#000; 
+  color:#000;
+  box-shadow:3px 3px 0 #000;
+}
+.steps .ghost{ 
+  background:transparent; 
+  border:2px solid #00ff41; 
+  color:#00ff41;
+  box-shadow:2px 2px 0 #00ff41;
+}
+.steps .ghost:hover{
+  background:#00ff41;
+  color:#000;
+  transform: translate(1px, 1px);
+  box-shadow:1px 1px 0 #00ff41;
+}
 
-.presets .label{ font-size:.85rem; color:#556; margin-bottom:4px; display:block }
+.presets .label{ 
+  font-size:.55rem; 
+  color:#333; 
+  margin-bottom:8px; 
+  display:block;
+  font-family: 'Press Start 2P', monospace;
+  text-transform: uppercase;
+}
 .pill-row{ display:flex; gap:8px; }
-.pill-row button{ border:1px solid rgba(0,0,0,.1); background:#fafafa; border-radius:999px; padding:4px 10px; }
+.pill-row button{ 
+  border:2px solid #000; 
+  background:#fff; 
+  border-radius:0; 
+  padding:6px 10px;
+  font-family: 'Press Start 2P', monospace;
+  font-size:.5rem;
+  text-transform: uppercase;
+  box-shadow:2px 2px 0 #000;
+  transition: all .1s;
+  cursor: pointer;
+}
+.pill-row button:hover{
+  transform: translate(1px, 1px);
+  box-shadow:1px 1px 0 #000;
+}
 
-.field{ margin-top:8px }
-.label{ font-weight:600; display:flex; align-items:center; gap:6px }
-.hint{ display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; border-radius:50%; background:#eef; color:#334; cursor:help; font-size:.8rem }
+.field{ margin-top:18px }
+.label{ 
+  font-weight:normal; 
+  display:flex; 
+  align-items:center; 
+  gap:8px;
+  font-family: 'Press Start 2P', monospace;
+  font-size:.55rem;
+  text-transform: uppercase;
+  color:#333;
+}
+.hint{ 
+  display:inline-flex; 
+  align-items:center; 
+  justify-content:center; 
+  width:20px; 
+  height:20px; 
+  border-radius:0; 
+  background:#00ff41; 
+  color:#000; 
+  cursor:help; 
+  font-size:.5rem;
+  border:2px solid #000;
+  box-shadow:2px 2px 0 #000;
+  font-family: 'Press Start 2P', monospace;
+}
 
-.slider-wrap{ display:grid; grid-template-columns:auto 1fr auto auto; align-items:center; gap:8px }
+.slider-wrap{ display:grid; grid-template-columns:auto 1fr auto auto; align-items:center; gap:8px; margin-top:6px }
 .slider-wrap.two{ grid-template-columns:auto 1fr auto auto }
-.tick{ color:#667; font-size:.86rem }
-.value{ font-family:ui-monospace, Menlo, monospace; color:#334 }
+.tick{ 
+  color:#333; 
+  font-size:.5rem;
+  font-family: 'Press Start 2P', monospace;
+  text-transform: uppercase;
+}
+.value{ 
+  font-family:'Press Start 2P', monospace; 
+  color:#000;
+  font-size:.5rem;
+  text-transform: uppercase;
+}
 
-.mini-legend{ display:flex; gap:8px; margin-top:6px }
-.chip{ font-size:.78rem; padding:2px 8px; border-radius:999px; border:1px solid rgba(0,0,0,.1); }
-.chip.park{ background:#e8f5e9; color:#1b5e20 }
-.chip.tree{ background:#ecf7ec; color:#2e7d32 }
+.mini-legend{ display:flex; gap:8px; margin-top:8px }
+.chip{ 
+  font-size:.5rem; 
+  padding:3px 6px; 
+  border-radius:0; 
+  border:2px solid #000; 
+  font-family: 'Press Start 2P', monospace;
+  text-transform: uppercase;
+  box-shadow:2px 2px 0 #000;
+}
+.chip.park{ 
+  background:#00ff41; 
+  color:#000; 
+  border-color:#000;
+}
+.chip.tree{ 
+  background:#fff; 
+  color:#000; 
+  border-color:#000;
+}
 
-.bar{ display:flex; height:8px; border-radius:6px; overflow:hidden; background:#f0f3f0; margin-top:8px }
-.bar .park{ background:#a5d6a7 }
-.bar .tree{ background:#66bb6a }
-.bar-legend{ font-size:.75rem; color:#6a6a6a; margin-top:2px }
+.bar{ 
+  display:flex; 
+  height:12px; 
+  border-radius:0; 
+  overflow:hidden; 
+  background:#fff; 
+  margin-top:8px;
+  border:2px solid #000;
+  box-shadow:2px 2px 0 #000;
+}
+.bar .park{ background:#00ff41 }
+.bar .tree{ background:#000 }
+.bar-legend{ 
+  font-size:.5rem; 
+  color:#333; 
+  margin-top:6px;
+  font-family: 'Press Start 2P', monospace;
+  text-transform: uppercase;
+}
 /* tiny ? bubble */
 .help-dot{
   display:inline-flex; align-items:center; justify-content:center;
-  width:18px; height:18px; border-radius:50%;
-  background:#eef; color:#334; cursor:help; font-size:.8rem;
+  width:20px; height:20px; border-radius:0;
+  background:#00ff41; color:#000; cursor:help; font-size:.5rem;
+  border:2px solid #000;
+  box-shadow:2px 2px 0 #000;
+  font-family: 'Press Start 2P', monospace;
 }
 
 /* empty-state paragraph */
 div.hint{
-  display:block; width:auto; background:transparent; color:#445;
-  font-size:.95rem; line-height:1.4; margin-top:8px;
+  display:flex; align-items:center; justify-content:center;
+  width:auto; background:#fff; color:#333;
+  font-size:.55rem; line-height:1.5; margin:10px 0 12px 0;
+  font-family: 'Press Start 2P', monospace;
+  text-transform: uppercase;
+  padding:12px 16px;
+  border:2px solid #000;
+  box-shadow:2px 2px 0 #000;
+  text-align:center;
 }
 .label > .hint{
   display:inline-flex; align-items:center; justify-content:center;
-  width:18px; height:18px; border-radius:50%;
-  background:#eef; color:#334; cursor:help; font-size:.8rem;
+  width:20px; height:20px; border-radius:0;
+  background:#00ff41; color:#000; cursor:help; font-size:.5rem;
+  border:2px solid #000;
+  box-shadow:2px 2px 0 #000;
+  font-family: 'Press Start 2P', monospace;
 }
-div.hint{ display:block; width:auto; background:transparent; color:#445; font-size:.95rem; line-height:1.4; margin-top:8px; }
 
 
 </style>
