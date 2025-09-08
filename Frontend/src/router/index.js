@@ -26,6 +26,11 @@ const routes = [
     path: '/shade-quest',
     name: 'ShadeQuest',
     component: () => import('../views/CoolRoute.vue')
+  },
+  {
+    path: '/comfort-matters',
+    name: 'ComfortMatters',
+    component: () => import('../views/ComfortMatters.vue')
   }
 ]
 
