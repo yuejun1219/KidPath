@@ -718,7 +718,7 @@ watch([shadeWeight, parkWeight], () => {
 
 <style scoped>
 .cool-route-wrap{
-  display:grid; grid-template-columns: 0 1fr; gap:16px;
+  display:grid; grid-template-columns: 360px 1fr; gap:16px;
   height: 100%; min-height: 100%;
   position: relative;
 }
@@ -761,6 +761,8 @@ watch([shadeWeight, parkWeight], () => {
   border-radius:0; padding:30px; overflow:auto;
   box-shadow:0 0 0 2px #fff;
   transition: transform 0.3s ease;
+  font-family: 'Press Start 2P', monospace;
+  position: relative; /* Ensure proper positioning on desktop */
 }
 
 .sidebar-hidden{
@@ -777,6 +779,25 @@ watch([shadeWeight, parkWeight], () => {
     height: 100%; 
     min-height: 100%; 
     gap: 8px;
+  }
+  
+  /* Mobile sidebar behavior */
+  .sidebar{
+    /* Override desktop positioning for mobile */
+    position: absolute !important;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 999;
+    transform: translateY(100%);
+    padding: 16px;
+    max-height: 100vh;
+    overflow-y: auto;
+  }
+  
+  .sidebar:not(.sidebar-hidden){
+    transform: translateY(0);
   }
   
   /* Show toggle buttons on mobile */
@@ -796,23 +817,6 @@ watch([shadeWeight, parkWeight], () => {
     font-size: 1rem;
   }
   
-  /* Mobile sidebar */
-  .sidebar{
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 999;
-    transform: translateY(100%);
-    padding: 16px;
-    max-height: 100vh;
-    overflow-y: auto;
-  }
-  
-  .sidebar:not(.sidebar-hidden){
-    transform: translateY(0);
-  }
   
   /* Override grid when sidebar is shown on mobile */
   .cool-route-wrap:has(.sidebar:not(.sidebar-hidden)){

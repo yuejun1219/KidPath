@@ -16,7 +16,7 @@ import { ref, onMounted } from 'vue'
 import CoolRoute from '@/components/CoolRoute.vue'
 
 const ready = ref(false)
-const showSidebar = ref(false) // Start with sidebar hidden
+const showSidebar = ref(true) // Start with sidebar visible on desktop
 
 onMounted(() => {
   // Delay to ensure smooth page transition
