@@ -28,6 +28,7 @@
           <router-link to="/" class="nav-link" @click="closeMenu">Home</router-link>
           <router-link to="/comfort-insights" class="nav-link" @click="closeMenu">Weather Insights</router-link>
           <router-link to="/seasonal-comfort" class="nav-link" @click="closeMenu">Seasonal Guide</router-link>
+          <router-link to="/shade-quest" class="nav-link" @click="closeMenu">🌳 Shade Quest</router-link>
           <router-link to="/about" class="nav-link" @click="closeMenu">About</router-link>
         </nav>
         

@@ -21,6 +21,11 @@ const routes = [
     path: '/about',
     name: 'About',
     component: () => import('../views/About.vue')
+  },
+  {
+    path: '/shade-quest',
+    name: 'ShadeQuest',
+    component: () => import('../views/CoolRoute.vue')
   }
 ]
 

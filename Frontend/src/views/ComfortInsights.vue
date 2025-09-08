@@ -5,7 +5,6 @@ import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import CanopySection from './CanopySection.vue'
 import WaterAccess from '@/components/WaterAccess.vue'
 import NearbyFountains from '@/components/NearbyFountains.vue'
-import CoolRoute from '@/components/CoolRoute.vue'
 import WeatherInsights from '@/components/WeatherInsights.vue'
 
 /* ---------- cross-section plumbing ---------- */
@@ -342,12 +341,13 @@ function switchWaterMode(mode) {
       </aside>
 
       <div class="content card route-card reveal">
-        <CoolRoute
-          v-if="ready"
-          parksUrl="https://kidpath-geojson.s3.ap-southeast-2.amazonaws.com/parks.geojson"
-          treesUrl="https://kidpath-geojson.s3.ap-southeast-2.amazonaws.com/trees.geojson"
-          grassUrl="https://kidpath-geojson.s3.ap-southeast-2.amazonaws.com/grass.geojson"
-        />
+        <div class="route-placeholder">
+          <h3>🌳 Shade Quest</h3>
+          <p>Advanced route planning with shade optimization has moved to its dedicated page.</p>
+          <router-link to="/shade-quest" class="cta-button">
+            Launch Shade Quest →
+          </router-link>
+        </div>
       </div>
     </section>
     <!-- Footer -->
