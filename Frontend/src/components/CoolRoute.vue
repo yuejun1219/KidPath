@@ -726,7 +726,7 @@ watch([shadeWeight, parkWeight], () => {
 /* Toggle buttons */
 .toggle-buttons{
   position: absolute;
-  top: 20px;
+  top: 120px; /* Below navbar */
   left: 20px;
   z-index: 1000;
   display: none; /* Hidden by default, shown on mobile */
@@ -810,16 +810,16 @@ watch([shadeWeight, parkWeight], () => {
     transform: translateY(0) !important;
   }
   
-  /* Show toggle buttons on mobile */
+  /* Ensure toggle buttons are visible on mobile */
   .toggle-buttons{
-    display: block;
+    display: block !important;
+    position: fixed !important;
+    top: 120px !important; /* Below navbar */
+    left: 20px !important;
+    z-index: 1000 !important;
   }
   
-  /* Mobile toggle buttons */
-  .toggle-buttons{
-    top: 10px;
-    left: 10px;
-  }
+  
   
   .toggle-up-btn, .toggle-down-btn{
     width: 40px;
@@ -878,26 +878,6 @@ watch([shadeWeight, parkWeight], () => {
   }
 }
 
-/* Force mobile behavior for all mobile screens */
-@media (max-width: 980px) and (orientation: portrait){
-  .sidebar{
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100vw !important;
-    height: 100vh !important;
-    z-index: 999 !important;
-    transform: translateY(100%) !important;
-    padding: 120px 16px 16px 16px !important;
-    overflow-y: auto !important;
-    box-sizing: border-box !important;
-    display: block !important;
-  }
-  
-  .sidebar:not(.sidebar-hidden){
-    transform: translateY(0) !important;
-  }
-}
 
 /* Small mobile screens */
 @media (max-width: 480px){
