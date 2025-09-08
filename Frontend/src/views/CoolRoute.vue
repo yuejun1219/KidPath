@@ -16,7 +16,7 @@ import { ref, onMounted } from 'vue'
 import CoolRoute from '@/components/CoolRoute.vue'
 
 const ready = ref(false)
-const showSidebar = ref(true) // Start with sidebar visible on desktop
+const showSidebar = ref(false) // Start with sidebar hidden, will be controlled by mobile toggle
 
 onMounted(() => {
   // Delay to ensure smooth page transition
@@ -37,6 +37,15 @@ onMounted(() => {
   top: 100px;
   left: 0;
   z-index: 1;
+}
+
+/* Mobile: Allow full screen coverage */
+@media (max-width: 980px) {
+  .cool-route-page {
+    height: 100vh !important;
+    top: 0 !important;
+    z-index: 0 !important;
+  }
 }
 
 .cool-route-page :deep(.cool-route-container) {

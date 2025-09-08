@@ -773,31 +773,41 @@ watch([shadeWeight, parkWeight], () => {
 .cool-route-wrap:has(.sidebar:not(.sidebar-hidden)){
   grid-template-columns: 360px 1fr;
 }
+
+/* Desktop: Show sidebar by default */
+@media (min-width: 981px){
+  .sidebar{
+    display: block !important;
+    position: relative !important;
+    transform: none !important;
+  }
+}
 @media (max-width: 980px){ 
   .cool-route-wrap{ 
-    grid-template-columns: 1fr; 
+    grid-template-columns: 1fr !important; 
     height: 100%; 
     min-height: 100%; 
     gap: 8px;
   }
   
-  /* Mobile sidebar behavior */
+  /* Mobile sidebar behavior - force override */
   .sidebar{
     /* Override desktop positioning for mobile */
     position: fixed !important;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    z-index: 999;
-    transform: translateY(100%);
-    padding: 120px 16px 16px 16px; /* Top padding to account for navbar */
-    overflow-y: auto;
-    box-sizing: border-box;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 999 !important;
+    transform: translateY(100%) !important;
+    padding: 120px 16px 16px 16px !important; /* Top padding to account for navbar */
+    overflow-y: auto !important;
+    box-sizing: border-box !important;
+    display: block !important;
   }
   
   .sidebar:not(.sidebar-hidden){
-    transform: translateY(0);
+    transform: translateY(0) !important;
   }
   
   /* Show toggle buttons on mobile */
@@ -865,6 +875,27 @@ watch([shadeWeight, parkWeight], () => {
   .show-routes-btn{
     padding: 10px 14px;
     font-size:.45rem;
+  }
+}
+
+/* Force mobile behavior for all mobile screens */
+@media (max-width: 980px) and (orientation: portrait){
+  .sidebar{
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 999 !important;
+    transform: translateY(100%) !important;
+    padding: 120px 16px 16px 16px !important;
+    overflow-y: auto !important;
+    box-sizing: border-box !important;
+    display: block !important;
+  }
+  
+  .sidebar:not(.sidebar-hidden){
+    transform: translateY(0) !important;
   }
 }
 
