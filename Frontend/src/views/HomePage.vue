@@ -1498,7 +1498,7 @@ input:focus {
 
 /* Left Section */
 .left-section {
-  padding: 25px 40px;
+  padding: 25px 40px 25px 60px;
   display: flex;
   flex-direction: column;
   justify-content: center;
