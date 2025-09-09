@@ -27,7 +27,7 @@
     </div>
   </nav>
 </template>
-
+<!-- Navbar functionality -->
 <script setup>
 import { ref } from 'vue'
 
