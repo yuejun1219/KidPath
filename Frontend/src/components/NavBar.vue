@@ -25,12 +25,12 @@
       </div>
       
         <nav class="nav-links">
-          <router-link to="/" class="nav-link" @click="closeMenu">Home</router-link>
-          <router-link to="/comfort-insights" class="nav-link" @click="closeMenu">Weather Insights</router-link>
-          <router-link to="/seasonal-comfort" class="nav-link" @click="closeMenu">Seasonal Guide</router-link>
-          <router-link to="/shade-quest" class="nav-link" @click="closeMenu">🌳 Shade Quest</router-link>
-          <router-link to="/comfort-matters" class="nav-link" @click="closeMenu">📚 Comfort Matters</router-link>
-          <router-link to="/about" class="nav-link" @click="closeMenu">About</router-link>
+          <router-link to="/" class="nav-link" @click="handleNavigation">Home</router-link>
+          <router-link to="/comfort-insights" class="nav-link" @click="handleNavigation">Weather Insights</router-link>
+          <router-link to="/seasonal-comfort" class="nav-link" @click="handleNavigation">Seasonal Guide</router-link>
+          <router-link to="/shade-quest" class="nav-link" @click="handleNavigation">🌳 Shade Quest</router-link>
+          <router-link to="/comfort-matters" class="nav-link" @click="handleNavigation">📚 Comfort Matters</router-link>
+          <router-link to="/about" class="nav-link" @click="handleNavigation">About</router-link>
         </nav>
         
         <div class="nav-contact">
@@ -128,9 +128,10 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
+const router = useRouter()
 const menuOpen = ref(false)
 const isScrolled = ref(false)
 const musicPanelOpen = ref(false)
@@ -155,6 +156,21 @@ const toggleMenu = () => {
 
 const closeMenu = () => {
   menuOpen.value = false
+}
+
+const handleNavigation = (event) => {
+  // Get the href from the router-link
+  const href = event.target.closest('a').getAttribute('href')
+  
+  // Navigate programmatically to ensure it works
+  if (href) {
+    router.push(href)
+  }
+  
+  // Add a small delay to allow navigation to complete before closing menu
+  setTimeout(() => {
+    menuOpen.value = false
+  }, 150)
 }
 
 // Scroll detection
