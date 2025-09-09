@@ -1,6 +1,6 @@
 <template>
   <header class="header">
-    <button class="hamburger" @click="toggleMenu">
+    <button class="hamburger" :class="{ 'hamburger-dark': isComfortMattersPage }" @click="toggleMenu">
       <div class="hamburger-line"></div>
       <div class="hamburger-line"></div>
       <div class="hamburger-line"></div>
@@ -128,10 +128,17 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useRoute } from 'vue-router'
 
+const route = useRoute()
 const menuOpen = ref(false)
 const isScrolled = ref(false)
 const musicPanelOpen = ref(false)
+
+// Check if we're on the ComfortMatters page
+const isComfortMattersPage = computed(() => {
+  return route.path === '/comfort-matters'
+})
 
 // Music panel functions
 const toggleMusicPanel = () => {
@@ -367,6 +374,24 @@ onUnmounted(() => {
 
 .hamburger:hover .hamburger-line {
   background: #4ecdc4;
+}
+
+/* White hamburger for ComfortMatters page */
+.hamburger-dark {
+  background: #fff !important;
+  border: 2px solid #00ff41 !important;
+}
+
+.hamburger-dark .hamburger-line {
+  background: #00ff41 !important;
+}
+
+.hamburger-dark:hover {
+  background: #f0f8ff !important;
+}
+
+.hamburger-dark:hover .hamburger-line {
+  background: #00cc33 !important;
 }
 
 .logo {

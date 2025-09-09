@@ -100,6 +100,8 @@ function closeModal() {
   background: linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 50%, #ddeeff 100%);
 }
 
+/* Make navbar hamburger visible over green hero section */
+
 .hero-section {
   padding: 120px 20px 80px;
   text-align: center;
