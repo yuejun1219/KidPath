@@ -1,5 +1,7 @@
-
 require('dotenv').config();
+
+
+const aiRoutes = require("./src/routes/aiRoutes");
 const express = require('express');
 const cors = require('cors');
 const routes = require('./src/routes');
@@ -34,6 +36,9 @@ app.use((req, res, next) => {
 
 // routes
 app.use('/', routes);
+
+
+app.use("/api/v1/ai", aiRoutes);
 
 // error handlers
 app.use(notFoundHandler);

@@ -138,6 +138,47 @@
           <button @click="fetchData" class="retry-btn">Refresh</button>
         </div>
       </aside>
+      <!-- ===== AI Chat (floating panel on the right) ===== -->
+      <button class="ai-fab" @click="chatOpen = !chatOpen" :aria-expanded="chatOpen">
+        🤖 Ask-AI
+      </button>
+
+      <div v-if="chatOpen" class="ai-chat-panel">
+        <div class="ai-chat-header">
+          <span>Ask-AI · Comfort Education</span>
+          <button class="ai-close" @click="chatOpen = false">✕</button>
+        </div>
+
+        <div class="ai-chat-body" ref="chatScroll">
+          <div v-for="(m, idx) in messages" :key="idx" class="ai-msg" :class="m.role">
+            <div class="ai-bubble">
+              {{ m.content }}
+            </div>
+          </div>
+
+          <div v-if="aiLoading" class="ai-loading-row">
+            <span class="ai-dot"></span><span class="ai-dot"></span><span class="ai-dot"></span>
+          </div>
+
+          <div v-if="aiError" class="ai-error">{{ aiError }}</div>
+        </div>
+
+        <form class="ai-input-row" @submit.prevent="sendChat">
+          <input
+            v-model.trim="userInput"
+            type="text"
+            placeholder="Ask something like: Why are kids more vulnerable to heat?"
+            :disabled="aiLoading"
+            @keydown.enter.exact.prevent="sendChat"
+          />
+          <button type="submit" :disabled="aiLoading || !userInput">Ask</button>
+        </form>
+
+        <div class="ai-hint">
+          Focus: Melbourne CBD · safety & comfort (heat, UV, pollen, shade)
+        </div>
+      </div>
+
     </section>
 
     <!-- Footer -->
@@ -165,6 +206,56 @@ const playgroundLayer = ref(null)
 // local dev backend URL
 const API_BASE = import.meta.env.VITE_API_BASE;
 // const API_BASE = 'https://your-production-backend.com/api/v1' // production backend URL
+// ===== AI Chat state & logic =====
+const chatOpen = ref(false)
+const userInput = ref('')
+const aiLoading = ref(false)
+const aiError = ref('')
+const messages = ref([
+  { role: 'assistant', content: "Hi! I'm here to answer comfort & safety questions for Melbourne's CBD." }
+])
+const chatScroll = ref(null)
+
+function scrollToBottom () {
+  nextTick(() => {
+    if (chatScroll.value) {
+      chatScroll.value.scrollTop = chatScroll.value.scrollHeight
+    }
+  })
+}
+
+async function sendChat() {
+  if (!userInput.value || aiLoading.value) return
+  aiError.value = ''
+
+  // 1) 加入用户消息
+  messages.value.push({ role: 'user', content: userInput.value })
+  const text = userInput.value
+  userInput.value = ''
+  scrollToBottom()
+
+  // 2) 请求后端
+  try {
+    aiLoading.value = true
+    const resp = await fetch(`${API_BASE}/ai/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: text })
+    })
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
+
+    // 后端若返回 { reply: "..." }
+    const data = await resp.json()
+    const reply = data.reply ?? data ?? 'Sorry, no answer.'
+    messages.value.push({ role: 'assistant', content: String(reply) })
+  } catch (e) {
+    console.error(e)
+    aiError.value = 'Failed to get AI reply. Please try again.'
+  } finally {
+    aiLoading.value = false
+    scrollToBottom()
+  }
+}
 
 const titleMap = { summer: 'SUMMER', winter: 'WINTER' }
 const barLabelMap = {
@@ -1024,4 +1115,127 @@ input:checked + .toggle-slider:before {
   margin: 0;
   font-size: 1rem;
 }
+/* ===== AI Chat styles (floating right-bottom) ===== */
+.ai-fab {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 999;
+  background: #2e7d32;
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 10px 16px;
+  font-weight: 800;
+  box-shadow: 0 8px 20px rgba(0,0,0,.12);
+  cursor: pointer;
+}
+.ai-fab:hover { background: #256628; }
+
+.ai-chat-panel {
+  position: fixed;
+  right: 24px;
+  bottom: 84px;
+  width: 360px;
+  max-height: 540px;
+  background: #fff;
+  border: 1px solid #e4efe1;
+  border-radius: 14px;
+  box-shadow: 0 12px 28px rgba(0,0,0,.16);
+  display: flex;
+  flex-direction: column;
+  z-index: 999;
+}
+
+.ai-chat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: #e8f6e3;
+  color: #355f34;
+  font-weight: 900;
+  border-top-left-radius: 14px;
+  border-top-right-radius: 14px;
+}
+
+.ai-close {
+  border: none;
+  background: transparent;
+  font-size: 16px;
+  cursor: pointer;
+  color: #466f45;
+}
+
+.ai-chat-body {
+  padding: 12px;
+  overflow-y: auto;
+  flex: 1;
+  background: #fafdf9;
+}
+
+.ai-msg { display: flex; margin-bottom: 10px; }
+.ai-msg.user   { justify-content: flex-end; }
+.ai-msg.assistant { justify-content: flex-start; }
+
+.ai-bubble {
+  max-width: 78%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  line-height: 1.4;
+  font-size: 14px;
+  border: 1px solid #e5efe3;
+}
+.ai-msg.user .ai-bubble {
+  background: #edfce0; color: #355f34;
+  border-top-right-radius: 4px;
+}
+.ai-msg.assistant .ai-bubble {
+  background: #fff; color: #2f3d2c;
+  border-top-left-radius: 4px;
+}
+
+.ai-input-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  padding: 10px;
+  border-top: 1px solid #eef5ec;
+}
+.ai-input-row input {
+  border: 1px solid #dfead8;
+  border-radius: 8px;
+  padding: 10px 12px;
+  outline: none;
+}
+.ai-input-row button {
+  border: none;
+  background: #2e7d32;
+  color: #fff;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.ai-input-row button[disabled] { opacity: .6; cursor: not-allowed; }
+
+.ai-hint {
+  font-size: 11px;
+  color: #6b7b67;
+  padding: 0 10px 10px;
+}
+
+.ai-loading-row { display: flex; gap: 6px; padding: 6px 4px; }
+.ai-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #9bc285; animation: ai-blink 1s infinite ease-in-out;
+}
+.ai-dot:nth-child(2){ animation-delay: .15s; }
+.ai-dot:nth-child(3){ animation-delay: .3s; }
+@keyframes ai-blink {
+  0%, 100% { opacity: .2; transform: translateY(0); }
+  50%      { opacity: 1;  transform: translateY(-2px); }
+}
+.ai-error { color:#b00020; font-size:12px; padding: 4px 0; }
+
 </style>
