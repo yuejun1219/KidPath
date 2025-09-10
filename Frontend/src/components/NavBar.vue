@@ -125,7 +125,7 @@
     </div>
   </header>
 </template>
-
+<!-- Navbar functionality -->
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
