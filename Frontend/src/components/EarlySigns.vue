@@ -350,407 +350,241 @@ const assessmentResult = computed(() => {
 </script>
 
 <style scoped>
-.early-signs {
-  max-width: 1200px;
-  margin: 0 auto;
+/* ====== KidPath design tokens ====== */
+.early-signs{
+  --kp-green:#2e7d32;
+  --kp-purple:#5e35b1;
+  --kp-text:#2f3d4a;
+  --kp-muted:#667085;
+  --kp-border:rgba(0,0,0,.08);
+  --kp-shadow:0 10px 28px rgba(0,0,0,.12);
+  --kp-shadow-hover:0 16px 36px rgba(0,0,0,.16);
+  max-width:1200px;
+  margin:0 auto;
+  font-family:'Segoe UI','Arial',sans-serif;
+  color:var(--kp-text);
 }
 
-.signs-header {
-  text-align: center;
-  margin-bottom: 40px;
+/* ====== Header ====== */
+.signs-header{ text-align:center; margin:12px auto 28px; padding:0 16px; }
+.signs-header h2{
+  font-weight:800;
+  font-size:clamp(22px,3.2vw,34px);
+  color:var(--kp-green);
+  letter-spacing:.3px;
+  margin-bottom:8px;
+}
+.signs-subtitle{
+  font-size:1.05rem; color:var(--kp-muted);
+  max-width:760px; margin:0 auto; line-height:1.7;
 }
 
-.signs-header h2 {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 1.5rem;
-  color: #333;
-  margin-bottom: 15px;
+/* ====== Overview cards ====== */
+.signs-overview{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+  gap:22px;
+  padding:0 16px;
+  margin-bottom:26px;
+}
+.overview-card{
+  background:#fff;
+  border:1px solid var(--kp-border);
+  border-radius:18px;
+  padding:20px 18px;
+  box-shadow:var(--kp-shadow);
+  transition:transform .18s ease, box-shadow .18s ease;
+}
+.overview-card:hover{ transform:translateY(-2px); box-shadow:var(--kp-shadow-hover); }
+
+.card-header{
+  display:flex; align-items:center; gap:12px; position:relative; margin-bottom:12px;
+}
+.card-icon{
+  width:42px;height:42px;display:grid;place-items:center;flex:0 0 auto;
+  border-radius:50%;
+  background:linear-gradient(135deg,#ede7f6,#f3e5f5);
+  color:var(--kp-purple);
+  box-shadow:0 4px 12px rgba(94,53,177,.18);
+  font-size:22px;
+}
+.card-header h3{ margin:0; font-weight:800; font-size:1.1rem; color:var(--kp-text); }
+
+/* severity badge (右上角小胶囊) */
+.severity-badge{
+  position:absolute; top:-6px; right:-6px;
+  padding:6px 10px; font-size:.7rem; font-weight:800; letter-spacing:.6px;
+  border-radius:999px; border:1px solid rgba(0,0,0,.06);
+  box-shadow:0 6px 16px rgba(0,0,0,.12);
+  background:#eef2ff; color:var(--kp-purple);
+}
+.severity-badge.critical{ background:#ffebee; color:#c62828; border-color:#ffcdd2; }
+.severity-badge.serious{ background:#fff8e1; color:#ef6c00; border-color:#ffe0b2; }
+.severity-badge.moderate{ background:#fffde7; color:#f9a825; border-color:#fff59d; }
+
+/* 内容 */
+.signs-list{ display:flex; flex-direction:column; gap:8px; margin:10px 0 14px; }
+.sign-item{ display:flex; align-items:flex-start; gap:10px; line-height:1.6; }
+.sign-icon{ font-size:18px; opacity:.9; }
+
+.action-required{
+  background:#f7f6ff;
+  border:1px solid rgba(94,53,177,.18);
+  color:#3b3b3b;
+  border-radius:12px;
+  padding:12px 14px;
+  line-height:1.6;
 }
 
-.signs-subtitle {
-  font-size: 1.1rem;
-  color: #666;
-  max-width: 600px;
-  margin: 0 auto;
+/* ====== Symptom checker ====== */
+.symptom-checker{
+  background:#fff;
+  border:1px solid var(--kp-border);
+  border-radius:18px;
+  padding:24px 20px;
+  margin:0 16px 26px;
+  box-shadow:var(--kp-shadow);
+}
+.symptom-checker h3{
+  text-align:center; margin:0 0 6px;
+  font-weight:800; color:var(--kp-green); font-size:1.3rem;
+}
+.symptom-checker>p{
+  text-align:center; color:var(--kp-muted); margin:0 0 16px;
+}
+.symptom-categories{
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:18px;
+}
+.category h4{
+  margin:6px 0 10px; color:var(--kp-purple); font-weight:800; font-size:1rem;
+}
+.symptom-options{ display:flex; flex-direction:column; gap:10px; }
+
+.symptom-option{
+  display:flex; align-items:center; gap:12px;
+  padding:12px;
+  border:1px solid var(--kp-border);
+  border-radius:12px; background:#fff;
+  box-shadow:0 6px 18px rgba(0,0,0,.06);
+  transition:background .18s ease, border-color .18s ease, box-shadow .18s ease;
+  cursor:pointer;
+}
+.symptom-option:hover{ background:rgba(94,53,177,.06); }
+.symptom-option input{ width:18px;height:18px; accent-color:var(--kp-purple); }
+.symptom-option input:checked + span{
+  background:linear-gradient(135deg,#f6f1ff,#eef9f0);
+  border-radius:8px; padding:2px 6px;
 }
 
-.signs-overview {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-  gap: 30px;
-  margin-bottom: 50px;
+/* ====== Assessment result ====== */
+.assessment-result{ margin-top:18px; padding:0 4px; }
+.result-card{
+  border:1px solid var(--kp-border);
+  border-left:6px solid var(--kp-purple);
+  border-radius:16px;
+  padding:18px 16px;
+  box-shadow:var(--kp-shadow);
+  background:#fff;
+}
+.result-card.critical{ border-left-color:#c62828; background:#ffebee; }
+.result-card.serious{ border-left-color:#ef6c00; background:#fff8e1; }
+.result-card.moderate{ border-left-color:#f9a825; background:#fffde7; }
+.result-card.mild{ border-left-color:var(--kp-green); background:#f4fbf5; }
+
+.result-header{
+  display:flex; align-items:center; gap:12px; position:relative; margin-bottom:8px;
+}
+.result-icon{
+  width:40px;height:40px;display:grid;place-items:center;flex:0 0 auto;
+  border-radius:50%;
+  background:#fff; box-shadow:0 4px 12px rgba(0,0,0,.12);
+  font-size:22px;
+}
+.result-header h4{ margin:0; font-weight:800; font-size:1.05rem; color:var(--kp-text); }
+.result-header .severity-badge{ position:static; margin-left:auto; }
+
+.result-description{ color:var(--kp-text); line-height:1.7; margin:10px 0 12px; }
+
+.immediate-actions h5{
+  margin:0 0 8px; color:var(--kp-purple); font-weight:800; font-size:1rem;
+}
+.immediate-actions ul{ margin:0; padding-left:18px; }
+.immediate-actions li{ line-height:1.6; margin:6px 0; }
+
+.emergency-notice{
+  margin-top:10px; text-align:center;
+  background:#c62828; color:#fff; font-weight:800;
+  padding:10px 12px; border-radius:10px;
 }
 
-.overview-card {
-  background: white;
-  border: 3px solid #000;
-  border-radius: 0;
-  padding: 25px;
-  box-shadow: 5px 5px 0 #000;
-  transition: all 0.3s ease;
+/* ====== Prevention tips ====== */
+.prevention-tips{
+  background:linear-gradient(180deg,#f7fcf8,#fff);
+  border:1px solid var(--kp-border);
+  border-radius:18px;
+  padding:22px 20px;
+  margin:0 16px 26px;
+  box-shadow:var(--kp-shadow);
+}
+.prevention-tips h3{
+  text-align:center; margin:0 0 16px;
+  color:var(--kp-green); font-weight:800; font-size:1.25rem;
+}
+.prevention-grid{
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:18px;
+}
+.prevention-card{
+  background:#fff; border:1px solid var(--kp-border);
+  border-radius:14px; padding:16px; text-align:center;
+  box-shadow:0 8px 22px rgba(0,0,0,.08);
+}
+.prevention-icon{ font-size:28px; margin-bottom:8px; }
+.prevention-card h4{ margin:0 0 10px; color:var(--kp-purple); font-weight:800; }
+.prevention-card ul{ text-align:left; margin:0; padding-left:18px; }
+.prevention-card li{ line-height:1.6; margin:6px 0; }
+
+/* ====== Emergency card ====== */
+.emergency-card{
+  background:#fff;
+  border:1px solid var(--kp-border);
+  border-radius:18px;
+  padding:22px 20px;
+  margin:0 16px 30px;
+  box-shadow:var(--kp-shadow);
+}
+.emergency-card h3{
+  text-align:center; margin:0 0 16px;
+  color:var(--kp-green); font-weight:800; font-size:1.25rem;
+}
+.emergency-content{
+  display:grid; grid-template-columns:1fr 1fr; gap:20px;
+}
+.emergency-numbers{ display:flex; flex-direction:column; gap:12px; }
+.emergency-item{
+  display:flex; justify-content:space-between; align-items:center;
+  padding:12px 14px; background:#f7faff;
+  border:1px solid var(--kp-border); border-radius:12px;
+}
+.emergency-label{ font-weight:700; color:var(--kp-text); }
+.emergency-number{
+  font-weight:800; color:var(--kp-purple);
+  background:#fff; border:1px dashed rgba(94,53,177,.35);
+  border-radius:8px; padding:4px 8px;
 }
 
-.overview-card:hover {
-  transform: translate(2px, 2px);
-  box-shadow: 3px 3px 0 #000;
-}
+.emergency-tips h4{ margin:0 0 10px; color:var(--kp-purple); font-weight:800; }
+.emergency-tips ul{ margin:0; padding-left:18px; }
+.emergency-tips li{ line-height:1.6; margin:6px 0; }
 
-.card-header {
-  display: flex;
-  align-items: center;
-  margin-bottom: 20px;
-  position: relative;
-}
-
-.card-icon {
-  font-size: 2rem;
-  margin-right: 15px;
-}
-
-.card-header h3 {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 1rem;
-  color: #333;
-  margin: 0;
-  flex: 1;
-}
-
-.severity-badge {
-  position: absolute;
-  top: -10px;
-  right: -10px;
-  padding: 5px 10px;
-  font-family: 'Press Start 2P', monospace;
-  font-size: 0.6rem;
-  border: 2px solid #000;
-  box-shadow: 2px 2px 0 #000;
-}
-
-.severity-badge.critical {
-  background: #ff4444;
-  color: white;
-}
-
-.severity-badge.serious {
-  background: #ffaa00;
-  color: #000;
-}
-
-.severity-badge.moderate {
-  background: #ffff00;
-  color: #000;
-}
-
-.signs-list {
-  margin-bottom: 20px;
-}
-
-.sign-item {
-  display: flex;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.sign-icon {
-  margin-right: 10px;
-  font-size: 1.2rem;
-}
-
-.sign-text {
-  line-height: 1.4;
-}
-
-.action-required {
-  background: #f0f8ff;
-  border: 2px solid #000;
-  padding: 15px;
-  font-size: 0.9rem;
-  line-height: 1.4;
-}
-
-.symptom-checker {
-  background: white;
-  border: 3px solid #000;
-  padding: 30px;
-  margin-bottom: 40px;
-  box-shadow: 5px 5px 0 #000;
-}
-
-.symptom-checker h3 {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 1.2rem;
-  color: #333;
-  margin-bottom: 20px;
-  text-align: center;
-}
-
-.symptom-categories {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 25px;
-  margin-bottom: 30px;
-}
-
-.category h4 {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 0.8rem;
-  color: #00ff41;
-  margin-bottom: 15px;
-}
-
-.symptom-options {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.symptom-option {
-  display: flex;
-  align-items: center;
-  padding: 10px;
-  border: 2px solid #000;
-  cursor: pointer;
-  transition: all 0.2s;
-  background: white;
-}
-
-.symptom-option:hover {
-  background: #f0f8ff;
-}
-
-.symptom-option input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-  margin-right: 12px;
-  accent-color: #00ff41;
-}
-
-.symptom-option span {
-  font-size: 0.9rem;
-  line-height: 1.3;
-}
-
-.assessment-result {
-  margin-top: 30px;
-}
-
-.result-card {
-  border: 3px solid #000;
-  padding: 25px;
-  box-shadow: 5px 5px 0 #000;
-}
-
-.result-card.critical {
-  background: #fff0f0;
-  border-color: #ff4444;
-}
-
-.result-card.serious {
-  background: #fff8e0;
-  border-color: #ffaa00;
-}
-
-.result-card.moderate {
-  background: #fff8e0;
-  border-color: #ffff00;
-}
-
-.result-card.mild {
-  background: #f0fff0;
-  border-color: #00ff41;
-}
-
-.result-header {
-  display: flex;
-  align-items: center;
-  margin-bottom: 20px;
-  position: relative;
-}
-
-.result-icon {
-  font-size: 2rem;
-  margin-right: 15px;
-}
-
-.result-header h4 {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 1rem;
-  color: #333;
-  margin: 0;
-  flex: 1;
-}
-
-.result-description {
-  font-size: 1.1rem;
-  margin-bottom: 20px;
-  line-height: 1.4;
-}
-
-.immediate-actions h5 {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 0.8rem;
-  color: #00ff41;
-  margin-bottom: 10px;
-}
-
-.immediate-actions ul {
-  margin: 0;
-  padding-left: 20px;
-}
-
-.immediate-actions li {
-  margin-bottom: 8px;
-  line-height: 1.4;
-}
-
-.emergency-notice {
-  background: #ff4444;
-  color: white;
-  padding: 15px;
-  text-align: center;
-  margin-top: 20px;
-  border: 2px solid #000;
-  font-family: 'Press Start 2P', monospace;
-  font-size: 0.8rem;
-}
-
-.prevention-tips {
-  background: #00ff41;
-  border: 3px solid #000;
-  padding: 30px;
-  margin-bottom: 40px;
-  box-shadow: 5px 5px 0 #000;
-}
-
-.prevention-tips h3 {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 1.2rem;
-  color: #000;
-  margin-bottom: 25px;
-  text-align: center;
-}
-
-.prevention-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 25px;
-}
-
-.prevention-card {
-  background: white;
-  border: 2px solid #000;
-  padding: 20px;
-  text-align: center;
-}
-
-.prevention-icon {
-  font-size: 2.5rem;
-  margin-bottom: 15px;
-}
-
-.prevention-card h4 {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 0.8rem;
-  color: #00ff41;
-  margin-bottom: 15px;
-}
-
-.prevention-card ul {
-  text-align: left;
-  margin: 0;
-  padding-left: 20px;
-}
-
-.prevention-card li {
-  margin-bottom: 8px;
-  line-height: 1.4;
-  font-size: 0.9rem;
-}
-
-.emergency-card {
-  background: white;
-  border: 3px solid #000;
-  padding: 30px;
-  box-shadow: 5px 5px 0 #000;
-}
-
-.emergency-card h3 {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 1.2rem;
-  color: #333;
-  margin-bottom: 25px;
-  text-align: center;
-}
-
-.emergency-content {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 30px;
-}
-
-.emergency-numbers {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.emergency-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 15px;
-  background: #f0f8ff;
-  border: 2px solid #000;
-}
-
-.emergency-label {
-  font-weight: bold;
-}
-
-.emergency-number {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 1.2rem;
-  color: #00ff41;
-  font-weight: bold;
-}
-
-.emergency-tips h4 {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 0.8rem;
-  color: #00ff41;
-  margin-bottom: 15px;
-}
-
-.emergency-tips ul {
-  margin: 0;
-  padding-left: 20px;
-}
-
-.emergency-tips li {
-  margin-bottom: 8px;
-  line-height: 1.4;
-}
-
-/* Mobile Responsive */
-@media (max-width: 768px) {
-  .signs-overview {
-    grid-template-columns: 1fr;
-  }
-  
-  .symptom-categories {
-    grid-template-columns: 1fr;
-  }
-  
-  .prevention-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .emergency-content {
-    grid-template-columns: 1fr;
-  }
-  
-  .signs-header h2 {
-    font-size: 1.2rem;
-  }
+/* ====== Responsive ====== */
+@media (max-width:768px){
+  .signs-overview{ grid-template-columns:1fr; }
+  .symptom-categories{ grid-template-columns:1fr; }
+  .prevention-grid{ grid-template-columns:1fr; }
+  .emergency-content{ grid-template-columns:1fr; }
+  .signs-header h2{ font-size:1.35rem; }
 }
 </style>
+

@@ -233,233 +233,248 @@ const progressPercentage = computed(() => {
 </script>
 
 <style scoped>
+/* ========== KidPath base tokens ========== */
 .parent-tips {
+  --kp-green: #2e7d32;
+  --kp-purple: #5e35b1;
+  --kp-text: #2f3d4a;
+  --kp-muted: #667085;
+  --kp-border: rgba(0,0,0,.08);
+  --kp-shadow: 0 10px 28px rgba(0,0,0,.12);
+  --kp-shadow-hover: 0 16px 36px rgba(0,0,0,.16);
   max-width: 1200px;
   margin: 0 auto;
+  font-family: 'Segoe UI','Arial',sans-serif;
+  color: var(--kp-text);
 }
 
+/* ========== Header ========== */
 .tips-header {
   text-align: center;
-  margin-bottom: 40px;
+  margin: 20px auto 40px;
+  padding: 0 16px;
 }
 
 .tips-header h2 {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 1.5rem;
-  color: #333;
-  margin-bottom: 15px;
+  font-weight: 800;
+  font-size: clamp(22px, 3.2vw, 34px);
+  color: var(--kp-green);
+  letter-spacing: .3px;
+  margin-bottom: 10px;
 }
 
 .tips-subtitle {
-  font-size: 1.1rem;
-  color: #666;
-  max-width: 600px;
+  font-size: 1.05rem;
+  color: var(--kp-muted);
+  max-width: 760px;
   margin: 0 auto;
+  line-height: 1.7;
 }
 
+/* ========== Card Grid ========== */
 .tips-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 30px;
-  margin-bottom: 50px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 22px;
+  margin: 28px 16px 50px;
 }
 
 .tip-card {
-  background: white;
-  border: 3px solid #000;
-  border-radius: 0;
-  padding: 25px;
-  box-shadow: 5px 5px 0 #000;
-  transition: all 0.3s ease;
+  background: #fff;
+  border: 1px solid var(--kp-border);
+  border-radius: 18px;
+  padding: 22px 20px;
+  box-shadow: var(--kp-shadow);
+  transition: transform .18s ease, box-shadow .18s ease;
 }
 
 .tip-card:hover {
-  transform: translate(2px, 2px);
-  box-shadow: 3px 3px 0 #000;
+  transform: translateY(-4px);
+  box-shadow: var(--kp-shadow-hover);
 }
 
+/* ========== Card Header ========== */
 .card-header {
   display: flex;
   align-items: center;
-  margin-bottom: 20px;
+  gap: 12px;
+  margin-bottom: 14px;
 }
 
 .card-icon {
-  font-size: 2rem;
-  margin-right: 15px;
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: linear-gradient(135deg,#ede7f6,#f3e5f5);
+  color: var(--kp-purple);
+  box-shadow: 0 4px 12px rgba(94,53,177,.18);
+  font-size: 22px;
 }
 
 .card-header h3 {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 1rem;
-  color: #333;
   margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--kp-green);
+  letter-spacing: .2px;
 }
 
+/* ========== Card Body ========== */
 .science-fact {
-  background: #f0f8ff;
-  padding: 15px;
-  border: 2px solid #000;
-  margin-bottom: 20px;
-  font-weight: bold;
+  background: #f7f6ff;
+  border: 1px solid rgba(94,53,177,.18);
+  color: var(--kp-text);
+  border-radius: 12px;
+  padding: 14px 14px;
+  margin: 8px 0 16px;
+  line-height: 1.6;
 }
+.science-fact strong { color: var(--kp-purple); }
 
 .fact-list {
-  margin: 15px 0;
+  margin: 10px 0 6px;
   padding-left: 20px;
 }
-
 .fact-list li {
-  margin-bottom: 8px;
-  line-height: 1.4;
+  margin: 6px 0;
+  line-height: 1.6;
 }
 
 .practical-tips h4 {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 0.8rem;
-  color: #00ff41;
-  margin: 20px 0 10px 0;
+  margin: 18px 0 8px;
+  color: var(--kp-green);
+  font-size: 1rem;
+  font-weight: 700;
 }
-
 .practical-tips ul {
   margin: 0;
   padding-left: 20px;
 }
+.practical-tips li { margin: 6px 0; line-height: 1.6; }
 
-.practical-tips li {
-  margin-bottom: 8px;
-  line-height: 1.4;
-}
-
+/* ========== Quick Reference ========== */
 .quick-reference {
-  background: #00ff41;
-  border: 3px solid #000;
-  padding: 30px;
-  margin-bottom: 40px;
-  box-shadow: 5px 5px 0 #000;
+  margin: 18px 16px 40px;
+  padding: 26px 22px;
+  background: linear-gradient(135deg,#edf6ed,#cfead3);
+  border: 1px solid var(--kp-border);
+  border-radius: 18px;
+  box-shadow: var(--kp-shadow);
 }
 
 .quick-reference h3 {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 1.2rem;
-  color: #000;
-  margin-bottom: 25px;
   text-align: center;
+  margin: 0 0 18px;
+  color: var(--kp-green);
+  font-size: 1.25rem;
+  font-weight: 800;
 }
 
 .reference-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 14px;
 }
 
 .reference-item {
-  background: white;
-  border: 2px solid #000;
-  padding: 15px;
-  text-align: center;
+  background: #fff;
+  border: 1px solid var(--kp-border);
+  border-radius: 14px;
+  padding: 14px 16px;
+  box-shadow: 0 6px 18px rgba(0,0,0,.06);
 }
 
 .temp-indicator {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 0.8rem;
-  font-weight: bold;
+  display: inline-block;
+  font-weight: 700;
+  font-size: .95rem;
+  padding: 6px 10px;
+  border-radius: 999px;
   margin-bottom: 8px;
+  background: #f6f7f9;
+  color: var(--kp-text);
 }
+.temp-indicator.hot { background: #fff1f1; color: #d32f2f; }
+.temp-indicator.moderate { background: #fff6e6; color: #f57c00; }
+.temp-indicator.cold { background: #eef5ff; color: #1565c0; }
+.temp-indicator.pollen { background: #fff0fa; color: #ad308e; }
 
-.temp-indicator.hot { color: #ff4444; }
-.temp-indicator.moderate { color: #ffaa00; }
-.temp-indicator.cold { color: #4444ff; }
-.temp-indicator.pollen { color: #ff44aa; }
+.action { color: var(--kp-muted); line-height: 1.6; }
 
-.action {
-  font-size: 0.9rem;
-  line-height: 1.3;
-}
-
+/* ========== Safety Checklist ========== */
 .safety-checklist {
-  background: white;
-  border: 3px solid #000;
-  padding: 30px;
-  box-shadow: 5px 5px 0 #000;
+  margin: 0 16px 50px;
+  padding: 26px 22px;
+  background: #fff;
+  border: 1px solid var(--kp-border);
+  border-radius: 18px;
+  box-shadow: var(--kp-shadow);
 }
 
 .safety-checklist h3 {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 1.2rem;
-  color: #333;
-  margin-bottom: 25px;
   text-align: center;
+  margin: 0 0 18px;
+  color: var(--kp-green);
+  font-weight: 800;
+  font-size: 1.25rem;
 }
 
 .checklist-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 25px;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 18px;
 }
 
 .checklist-category h4 {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 0.8rem;
-  color: #00ff41;
-  margin-bottom: 15px;
+  margin: 8px 0 10px;
+  color: var(--kp-purple);
+  font-size: 1rem;
+  font-weight: 700;
 }
 
 .checklist-item {
   display: flex;
   align-items: center;
-  margin-bottom: 10px;
+  gap: 10px;
+  margin: 8px 0;
   cursor: pointer;
 }
-
 .checklist-item input[type="checkbox"] {
-  width: 20px;
-  height: 20px;
-  margin-right: 12px;
-  accent-color: #00ff41;
+  width: 18px; height: 18px;
+  accent-color: var(--kp-purple);
 }
+.checklist-item span { color: var(--kp-text); }
 
-.checklist-item span {
-  font-size: 0.9rem;
-  line-height: 1.3;
-}
-
+/* Progress */
 .checklist-summary {
-  margin-top: 25px;
+  margin-top: 18px;
   text-align: center;
+  color: var(--kp-muted);
 }
-
 .progress-bar {
   width: 100%;
-  height: 20px;
-  background: #f0f0f0;
-  border: 2px solid #000;
-  margin-bottom: 10px;
+  height: 12px;
+  background: #eef2ff;
+  border-radius: 999px;
   overflow: hidden;
+  margin: 0 0 8px;
 }
-
 .progress-fill {
   height: 100%;
-  background: #00ff41;
-  transition: width 0.3s ease;
+  background: linear-gradient(90deg, var(--kp-purple), var(--kp-green));
+  border-radius: 999px;
+  transition: width .3s ease;
 }
 
-/* Mobile Responsive */
+/* ========== Responsive ========== */
 @media (max-width: 768px) {
-  .tips-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .reference-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .checklist-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .tips-header h2 {
-    font-size: 1.2rem;
-  }
+  .tips-header h2 { font-size: 22px; }
+  .tips-grid,
+  .reference-grid,
+  .checklist-grid { grid-template-columns: 1fr; }
+  .tip-card { padding: 18px; }
+  .card-icon { width: 38px; height: 38px; font-size: 20px; }
 }
 </style>

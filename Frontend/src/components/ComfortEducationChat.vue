@@ -282,298 +282,233 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.comfort-education-chat {
-  max-width: 1000px;
-  margin: 0 auto;
+/* ============ KidPath 统一设计 token ============ */
+.comfort-education-chat{
+  --kp-green:#2e7d32;
+  --kp-purple:#5e35b1;
+  --kp-text:#2f3d4a;
+  --kp-muted:#667085;
+  --kp-border:rgba(0,0,0,.10);
+  --kp-shadow:0 12px 30px rgba(0,0,0,.12);
+  --kp-shadow-hover:0 18px 40px rgba(0,0,0,.16);
+  font-family:'Segoe UI','Arial',sans-serif;
+  color:var(--kp-text);
+  max-width:1000px;
+  margin:0 auto;
 }
 
-.chat-header {
-  text-align: center;
-  margin-bottom: 30px;
+/* ============ 顶部 ============ */
+.chat-header{
+  text-align:center;
+  margin:6px 0 22px;
+}
+.chat-header h2{
+  margin:0 0 8px;
+  font-weight:900;
+  letter-spacing:.3px;
+  font-size:clamp(22px,3.2vw,28px);
+  color:#2e7d32;            
+  text-shadow:0 4px 14px rgba(0,0,0,.08);
+  background:none !important;
+  -webkit-background-clip:initial !important;
+  -webkit-text-fill-color:initial !important;
 }
 
-.chat-header h2 {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 1.5rem;
-  color: #333;
-  margin-bottom: 15px;
+.chat-subtitle{
+  margin:0 auto;
+  max-width:700px;
+  color:var(--kp-muted);
+  font-size:1rem;
 }
 
-.chat-subtitle {
-  font-size: 1.1rem;
-  color: #666;
-  max-width: 600px;
-  margin: 0 auto;
+/* ============ 容器 ============ */
+.chat-container{
+  background:#fff;
+  border:1px solid var(--kp-border);
+  border-radius:16px;
+  box-shadow:var(--kp-shadow);
+  margin-bottom:28px;
+  overflow:hidden;
+}
+.chat-messages{
+  height:420px;
+  overflow-y:auto;
+  padding:18px;
+  background:
+    radial-gradient(1200px 300px at 50% -80px, rgba(94,53,177,.08), transparent 60%),
+    linear-gradient(180deg,#ffffff 0%,#f7fbff 100%);
 }
 
-.chat-container {
-  background: white;
-  border: 3px solid #000;
-  border-radius: 0;
-  box-shadow: 5px 5px 0 #000;
-  margin-bottom: 40px;
-  overflow: hidden;
+/* 滚动条（可选） */
+.chat-messages::-webkit-scrollbar{ width:10px; }
+.chat-messages::-webkit-scrollbar-thumb{
+  background:rgba(0,0,0,.12); border-radius:999px;
 }
 
-.chat-messages {
-  height: 400px;
-  overflow-y: auto;
-  padding: 20px;
-  background: #f8f9fa;
+/* ============ 消息 ============ */
+.message{
+  display:flex; gap:12px; align-items:flex-start;
+  margin:0 0 16px;
+}
+.message-avatar{
+  width:36px;height:36px;flex:0 0 36px;
+  display:grid;place-items:center;
+  border-radius:50%;
+  background:linear-gradient(135deg,#ede7f6,#e8f5e9);
+  color:var(--kp-purple);
+  font-size:20px;
+  box-shadow:0 10px 22px rgba(94,53,177,.18);
+}
+.bot-message .message-avatar{ color:var(--kp-purple); }
+.user-message .message-avatar{ color:var(--kp-green); }
+
+.message-content{ flex:1; max-width:82%; }
+
+.message-text{
+  background:#fff;
+  border:1px solid var(--kp-border);
+  border-radius:14px;
+  padding:14px 16px;
+  line-height:1.7;
+  box-shadow:0 10px 22px rgba(0,0,0,.06);
+}
+.user-message .message-text{
+  background:linear-gradient(180deg,#f7fcf8 0%,#ffffff 100%);
+  border-color:rgba(46,125,50,.22);
+}
+.bot-message .message-text{
+  background:linear-gradient(180deg,#ffffff 0%,#f9fbff 100%);
+  border-color:rgba(94,53,177,.20);
 }
 
-.message {
-  display: flex;
-  margin-bottom: 20px;
-  align-items: flex-start;
+.message-time{
+  margin-top:6px; text-align:right;
+  font-size:.86rem; color:#94a3b8;
 }
 
-.message-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  margin-right: 15px;
-  flex-shrink: 0;
+/* 打字中... */
+.typing-indicator{
+  display:flex; gap:6px; align-items:center;
+  border:1px solid var(--kp-border);
+  border-radius:14px;
+  padding:12px 14px;
+  background:#fff;
+  box-shadow:0 10px 22px rgba(0,0,0,.06);
+}
+.typing-indicator span{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--kp-purple);
+  animation:typing 1.2s infinite ease-in-out;
+}
+.typing-indicator span:nth-child(2){ animation-delay:.15s; }
+.typing-indicator span:nth-child(3){ animation-delay:.3s; }
+@keyframes typing{
+  0%,60%,100%{ transform:translateY(0); opacity:.7; }
+  30%{ transform:translateY(-8px); opacity:1; }
 }
 
-.bot-message .message-avatar {
-  background: #00ff41;
-  border: 2px solid #000;
+/* ============ Quick Questions ============ */
+.quick-questions{
+  padding:16px 18px;
+  background:#fff;
+  border-top:1px dashed var(--kp-border);
+}
+.quick-questions h4{
+  margin:0 0 10px;
+  font-weight:800; color:var(--kp-green);
+  font-size:1rem;
+}
+.question-buttons{ display:flex; flex-wrap:wrap; gap:10px; }
+.quick-question-btn{
+  display:inline-flex; align-items:center; gap:6px;
+  padding:10px 14px;
+  border:1px solid var(--kp-border);
+  border-radius:999px;
+  background:#fff; color:var(--kp-text);
+  font-weight:700; font-size:.95rem;
+  box-shadow:0 8px 18px rgba(46,125,50,.08);
+  transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+  cursor:pointer; white-space:nowrap;
+}
+.quick-question-btn:hover{
+  transform:translateY(-1px);
+  border-color:#c9d7cc;
+  box-shadow:var(--kp-shadow-hover);
 }
 
-.user-message .message-avatar {
-  background: #007bff;
-  border: 2px solid #000;
+/* ============ 输入区 ============ */
+.chat-input-container{
+  padding:16px 18px;
+  background:#fff;
+  border-top:1px solid var(--kp-border);
+}
+.chat-input{
+  display:flex; gap:10px; align-items:center; margin-bottom:8px;
+  border:1px solid var(--kp-border);
+  border-radius:12px; padding:8px;
+  background:#fff; box-shadow:0 10px 22px rgba(0,0,0,.06);
+}
+.message-input{
+  flex:1; border:none; outline:none; background:transparent;
+  font-size:1rem; font-family:inherit; color:var(--kp-text);
+}
+.message-input::placeholder{ color:#9aa6b2; }
+.send-btn{
+  background:linear-gradient(135deg,#e8f5e9,#ede7f6);
+  color:var(--kp-purple);
+  border:1px solid rgba(94,53,177,.2);
+  border-radius:10px;
+  font-weight:800; padding:10px 14px;
+  transition:transform .12s ease, box-shadow .12s ease, opacity .12s ease;
+}
+.send-btn:hover:not(:disabled){
+  transform:translateY(-1px);
+  box-shadow:0 12px 26px rgba(94,53,177,.18);
+}
+.send-btn:disabled{ opacity:.5; cursor:not-allowed; }
+
+.input-hints{
+  text-align:center; color:var(--kp-muted); font-size:.9rem;
 }
 
-.message-content {
-  flex: 1;
-  max-width: 80%;
+/* ============ 知识库 ============ */
+.knowledge-base{
+  background:#fff;
+  border:1px solid var(--kp-border);
+  border-radius:16px;
+  box-shadow:var(--kp-shadow);
+  padding:26px;
+}
+.knowledge-base h3{
+  margin:0 0 18px; text-align:center;
+  font-weight:900; color:var(--kp-purple);
+  font-size:clamp(18px,2.6vw,22px);
+}
+.knowledge-categories{
+  display:grid; gap:18px;
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+}
+.knowledge-category{
+  background:linear-gradient(180deg,#ffffff 0%,#f7fbff 100%);
+  border:1px solid var(--kp-border);
+  border-radius:14px;
+  padding:16px 18px;
+  box-shadow:0 10px 22px rgba(0,0,0,.06);
+}
+.knowledge-category h4{
+  margin:0 0 8px; color:var(--kp-green);
+  font-weight:800; font-size:1rem;
+}
+.knowledge-category ul{ margin:0; padding-left:18px; }
+.knowledge-category li{
+  line-height:1.7; color:var(--kp-text); font-size:.98rem;
 }
 
-.message-text {
-  background: white;
-  border: 2px solid #000;
-  padding: 15px;
-  border-radius: 0;
-  line-height: 1.4;
-  box-shadow: 2px 2px 0 #000;
-}
-
-.user-message .message-text {
-  background: #e3f2fd;
-}
-
-.message-time {
-  font-size: 0.8rem;
-  color: #666;
-  margin-top: 5px;
-  text-align: right;
-}
-
-.typing-indicator {
-  display: flex;
-  align-items: center;
-  padding: 15px;
-  background: white;
-  border: 2px solid #000;
-  border-radius: 0;
-  box-shadow: 2px 2px 0 #000;
-}
-
-.typing-indicator span {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #00ff41;
-  margin-right: 4px;
-  animation: typing 1.4s infinite ease-in-out;
-}
-
-.typing-indicator span:nth-child(2) {
-  animation-delay: 0.2s;
-}
-
-.typing-indicator span:nth-child(3) {
-  animation-delay: 0.4s;
-}
-
-@keyframes typing {
-  0%, 60%, 100% {
-    transform: translateY(0);
-  }
-  30% {
-    transform: translateY(-10px);
-  }
-}
-
-.quick-questions {
-  padding: 20px;
-  background: #f0f8ff;
-  border-top: 2px solid #000;
-}
-
-.quick-questions h4 {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 0.8rem;
-  color: #00ff41;
-  margin-bottom: 15px;
-}
-
-.question-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.quick-question-btn {
-  background: #00ff41;
-  color: #000;
-  border: 2px solid #000;
-  padding: 8px 12px;
-  font-size: 0.8rem;
-  cursor: pointer;
-  box-shadow: 2px 2px 0 #000;
-  transition: all 0.1s;
-  white-space: nowrap;
-}
-
-.quick-question-btn:hover {
-  transform: translate(1px, 1px);
-  box-shadow: 1px 1px 0 #000;
-}
-
-.chat-input-container {
-  padding: 20px;
-  background: white;
-  border-top: 2px solid #000;
-}
-
-.chat-input {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-.message-input {
-  flex: 1;
-  padding: 12px;
-  border: 2px solid #000;
-  border-radius: 0;
-  font-size: 1rem;
-  font-family: inherit;
-}
-
-.message-input:focus {
-  outline: none;
-  border-color: #00ff41;
-  box-shadow: 0 0 0 2px rgba(0, 255, 65, 0.2);
-}
-
-.send-btn {
-  background: #00ff41;
-  color: #000;
-  border: 2px solid #000;
-  padding: 12px 20px;
-  font-family: 'Press Start 2P', monospace;
-  font-size: 0.7rem;
-  cursor: pointer;
-  box-shadow: 2px 2px 0 #000;
-  transition: all 0.1s;
-}
-
-.send-btn:hover:not(:disabled) {
-  transform: translate(1px, 1px);
-  box-shadow: 1px 1px 0 #000;
-}
-
-.send-btn:disabled {
-  background: #ccc;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: 2px 2px 0 #000;
-}
-
-.input-hints {
-  font-size: 0.8rem;
-  color: #666;
-  text-align: center;
-}
-
-.knowledge-base {
-  background: white;
-  border: 3px solid #000;
-  padding: 30px;
-  box-shadow: 5px 5px 0 #000;
-}
-
-.knowledge-base h3 {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 1.2rem;
-  color: #333;
-  margin-bottom: 25px;
-  text-align: center;
-}
-
-.knowledge-categories {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 25px;
-}
-
-.knowledge-category {
-  background: #f0f8ff;
-  border: 2px solid #000;
-  padding: 20px;
-}
-
-.knowledge-category h4 {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 0.8rem;
-  color: #00ff41;
-  margin-bottom: 15px;
-}
-
-.knowledge-category ul {
-  margin: 0;
-  padding-left: 20px;
-}
-
-.knowledge-category li {
-  margin-bottom: 8px;
-  line-height: 1.4;
-  font-size: 0.9rem;
-}
-
-/* Mobile Responsive */
-@media (max-width: 768px) {
-  .chat-messages {
-    height: 300px;
-  }
-  
-  .message-content {
-    max-width: 90%;
-  }
-  
-  .question-buttons {
-    flex-direction: column;
-  }
-  
-  .quick-question-btn {
-    white-space: normal;
-    text-align: left;
-  }
-  
-  .knowledge-categories {
-    grid-template-columns: 1fr;
-  }
-  
-  .chat-header h2 {
-    font-size: 1.2rem;
-  }
+/* ============ 响应式 ============ */
+@media (max-width:768px){
+  .chat-messages{ height:320px; }
+  .message-content{ max-width:90%; }
+  .question-buttons{ flex-direction:column; }
+  .quick-question-btn{ white-space:normal; text-align:left; }
 }
 </style>

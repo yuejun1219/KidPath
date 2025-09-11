@@ -1,75 +1,73 @@
 <template>
   <div class="comfort-matters-page">
     <!-- Hero Section -->
-    <section class="hero-section">
-      <div class="hero-content">
-        <h1 class="hero-title">
-          Why Comfort Matters for Young Kids
-        </h1>
-        <p class="hero-subtitle">
-          Science-based tips, quizzes, and interactive tools to keep your family safe and comfortable outdoors
-        </p>
-        <div class="hero-stats">
-          <div class="stat-item">
-            <span class="stat-number">3x</span>
-            <span class="stat-label">More vulnerable to heat</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-number">5x</span>
-            <span class="stat-label">Faster dehydration</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-number">2x</span>
-            <span class="stat-label">Higher sunburn risk</span>
+    <section class="hero">
+      <div class="hero-overlay">
+        <div class="hero-inner">
+          <h1 class="hero-title">Why Comfort Matters for Young Kids</h1>
+          <p class="hero-subtitle">
+            Science-based tips, quizzes, and interactive tools to keep your family safe and comfortable outdoors
+          </p>
+
+          <div class="hero-stats">
+            <div class="stat">
+              <span class="stat-number">3x</span>
+              <span class="stat-label">More vulnerable to heat</span>
+            </div>
+            <div class="stat">
+              <span class="stat-number">5x</span>
+              <span class="stat-label">Faster dehydration</span>
+            </div>
+            <div class="stat">
+              <span class="stat-number">2x</span>
+              <span class="stat-label">Higher sunburn risk</span>
+            </div>
           </div>
         </div>
       </div>
     </section>
 
     <!-- Navigation Cards -->
-    <section class="navigation-section">
+    <section class="navigation">
       <div class="container">
         <h2 class="section-title">Learn & Protect Your Family</h2>
+
         <div class="nav-cards">
-          <div class="nav-card" @click="activeComponent = 'ParentTips'">
+          <button class="nav-card" @click="activeComponent = 'ParentTips'">
             <div class="card-icon">📚</div>
             <h3>Parent Tips</h3>
             <p>Science-based guidance on children's vulnerability to heat, cold, and pollen</p>
-          </div>
-          
-          <div class="nav-card" @click="activeComponent = 'HeatSafetyQuiz'">
+          </button>
+
+          <button class="nav-card" @click="activeComponent = 'HeatSafetyQuiz'">
             <div class="card-icon">🧠</div>
             <h3>Heat Safety Quiz</h3>
             <p>Test your knowledge and identify safety blind spots for summer outings</p>
-          </div>
-          
-          <div class="nav-card" @click="activeComponent = 'EarlySigns'">
+          </button>
+
+          <button class="nav-card" @click="activeComponent = 'EarlySigns'">
             <div class="card-icon">⚠️</div>
             <h3>Early Warning Signs</h3>
             <p>Learn to recognize heatstroke, sunburn, and exhaustion symptoms</p>
-          </div>
-          
-          <div class="nav-card" @click="activeComponent = 'ComfortEducationChat'">
+          </button>
+
+          <button class="nav-card" @click="activeComponent = 'ComfortEducationChat'">
             <div class="card-icon">🤖</div>
             <h3>AI Comfort Assistant</h3>
             <p>Get instant answers to comfort and safety questions</p>
-            <div class="card-badge">AI Powered</div>
-          </div>
+            <span class="card-badge">AI Powered</span>
+          </button>
         </div>
       </div>
     </section>
 
-    <!-- Modal Overlay -->
+    <!-- Modal -->
     <div v-if="activeComponent" class="modal-overlay" @click="closeModal">
-      <div class="modal-content" @click.stop>
+      <div class="modal" @click.stop>
         <div class="modal-header">
-          <button @click="closeModal" class="modal-close-btn">
-            ✕
-          </button>
+          <button class="modal-close" @click="closeModal">×</button>
         </div>
-        
         <div class="modal-body">
-          <!-- Conditional Component Rendering -->
           <ParentTips v-if="activeComponent === 'ParentTips'" />
           <HeatSafetyQuiz v-if="activeComponent === 'HeatSafetyQuiz'" />
           <EarlySigns v-if="activeComponent === 'EarlySigns'" />
@@ -88,196 +86,267 @@ import EarlySigns from '@/components/EarlySigns.vue'
 import ComfortEducationChat from '@/components/ComfortEducationChat.vue'
 
 const activeComponent = ref(null)
-
-function closeModal() {
-  activeComponent.value = null
-}
+const closeModal = () => (activeComponent.value = null)
 </script>
 
 <style scoped>
+/* ====== 基础变量：与首页一致 ====== */
+:root {
+  --kp-green: #2e7d32;
+  --kp-green-weak: #e8f5e9;
+  --kp-purple: #5e35b1;
+  --kp-purple-weak: #ede7f6;
+  --kp-text: #2b2b2b;
+  --kp-muted: #6b7280;
+  --kp-card-bg: #ffffff;
+  --kp-shadow: 0 8px 30px rgba(0,0,0,.08);
+  --kp-shadow-strong: 0 15px 40px rgba(0,0,0,.15);
+  --kp-radius-lg: 20px;
+  --kp-radius-md: 16px;
+  --kp-radius-sm: 12px;
+}
+
 .comfort-matters-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 50%, #ddeeff 100%);
+  background: linear-gradient(180deg, #f8faf8 0%, #e8f5e8 100%);
+  color: var(--kp-text);
+  font-family: 'Segoe UI','Arial',sans-serif;
 }
 
-/* Make navbar hamburger visible over green hero section */
+/* ====== Hero（同首页：大图+覆盖层+柔光） ====== */
+.hero {
+  position: relative;
+  min-height: 520px;
+  background: url('../images/tree-bg.png') center/cover no-repeat;
+  display: grid;
+  place-items: center;
+}
 
-.hero-section {
-  padding: 120px 20px 80px;
+.hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,.35);
+}
+
+.hero-overlay {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  display: grid;
+  place-items: center;
+  padding: 80px 20px;
+}
+
+.hero-inner {
+  max-width: 1100px;
   text-align: center;
-  background: linear-gradient(135deg, #00ff41 0%, #00cc33 50%, #009922 100%);
-  color: white;
-}
-
-.hero-content {
-  max-width: 1200px;
-  margin: 0 auto;
 }
 
 .hero-title {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 2.5rem;
-  margin-bottom: 20px;
-  text-shadow: 3px 3px 0 #000;
+  font-size: 3rem;
   line-height: 1.2;
+  font-weight: 800;
+  letter-spacing: .2px;
+  margin: 0 0 16px;
+  color: #8efaf7;                  /* 首页同款青色标题 */
+  text-shadow: 1px 1px 3px rgba(0,0,0,.5);
 }
 
 .hero-subtitle {
-  font-size: 1.2rem;
-  margin-bottom: 40px;
-  opacity: 0.9;
-  max-width: 800px;
-  margin-left: auto;
-  margin-right: auto;
+  color: #fff;
+  font-size: 1.15rem;
+  line-height: 1.7;
+  max-width: 850px;
+  margin: 0 auto 28px;
+  text-shadow: 1px 1px 2px rgba(0,0,0,.6);
 }
 
+/* Hero Section */
+.hero {
+  position: relative;
+  min-height: 520px;
+  background: linear-gradient(135deg, #c8f7cc 0%, #f3d7f7 100%) no-repeat center/cover;
+  display: grid;
+  place-items: center;
+}
+
+.hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35); /* ✅ 黑色半透明遮罩，保证文字可读 */
+}
+
+.hero-overlay {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  display: grid;
+  place-items: center;
+  padding: 80px 20px;
+}
+
+.hero-inner {
+  max-width: 1100px;
+  text-align: center;
+}
+
+.hero-title {
+  font-size: 3rem;
+  line-height: 1.2;
+  font-weight: 800;
+  color: #8efaf7;
+  margin: 0 0 16px;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+.hero-subtitle {
+  color: #fff;
+  font-size: 1.15rem;
+  line-height: 1.7;
+  max-width: 850px;
+  margin: 0 auto 28px;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+/* Stats 卡片优化 */
 .hero-stats {
   display: flex;
+  gap: 28px;
+  flex-wrap: wrap;
   justify-content: center;
-  gap: 60px;
-  margin-top: 40px;
 }
 
-.stat-item {
+.stat {
+  background: rgba(255, 255, 255, 0.9); 
+  backdrop-filter: blur(10px);          
+  border-radius: 16px;                 
+  padding: 24px 30px;
+  min-width: 200px;
   text-align: center;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1); 
 }
 
 .stat-number {
   display: block;
-  font-family: 'Press Start 2P', monospace;
-  font-size: 2rem;
-  font-weight: bold;
-  text-shadow: 2px 2px 0 #000;
+  font-weight: 800;
+  font-size: 2.2rem;
+  color: #5e35b1; /* 紫色高亮 */
+  margin-bottom: 6px;
 }
 
 .stat-label {
-  font-size: 0.9rem;
-  opacity: 0.8;
-  margin-top: 8px;
+  color: #2e7d32; /* 绿色副标题 */
+  font-size: 1rem;
+  font-weight: 500;
 }
 
-.navigation-section {
-  padding: 80px 20px;
-}
 
+/* ====== 通用容器/标题（同首页） ====== */
 .container {
   max-width: 1200px;
   margin: 0 auto;
+  padding: 0 20px;
 }
 
 .section-title {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 1.5rem;
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--kp-green);
   text-align: center;
-  margin-bottom: 60px;
-  color: #333;
+  margin: 60px 0 30px;
+}
+
+/* ====== 导航卡片（同首页卡片风格） ====== */
+.navigation {
+  padding: 60px 0 90px;
+  position: relative;
 }
 
 .nav-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 30px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 24px;
 }
 
 .nav-card {
-  background: white;
-  border: 3px solid #000;
-  border-radius: 0;
-  padding: 30px;
+  border: 1px solid rgba(0,0,0,.08);
+  background: var(--kp-card-bg);
+  border-radius: var(--kp-radius-lg);
+  padding: 28px 22px;
   text-align: center;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 5px 5px 0 #000;
+  box-shadow: var(--kp-shadow);
+  transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
   position: relative;
+  color: var(--kp-text);
 }
 
 .nav-card:hover {
-  transform: translate(2px, 2px);
-  box-shadow: 3px 3px 0 #000;
-  background: #f0f8ff;
+  transform: translateY(-6px);
+  box-shadow: var(--kp-shadow-strong);
+  border-color: rgba(94,53,177,.25);
 }
 
 .card-icon {
-  font-size: 3rem;
-  margin-bottom: 20px;
+  font-size: 2.4rem;
+  margin-bottom: 12px;
 }
 
 .nav-card h3 {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 1rem;
-  margin-bottom: 15px;
-  color: #333;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--kp-green);
+  margin: 6px 0 8px;
 }
 
 .nav-card p {
-  color: #666;
-  line-height: 1.5;
-  margin-bottom: 20px;
+  font-size: .98rem;
+  line-height: 1.6;
+  color: var(--kp-muted);
 }
 
-.card-badge {
+/* 小角标（AI Powered 徽章） */
+.card-badge{
   position: absolute;
-  top: -10px;
-  right: -10px;
-  background: #00ff41;
-  color: #000;
-  padding: 5px 10px;
-  font-family: 'Press Start 2P', monospace;
-  font-size: 0.6rem;
-  border: 2px solid #000;
-  box-shadow: 2px 2px 0 #000;
+  top: 10px;
+  right: 10px;
+  padding: 6px 12px;
+  font-size: .78rem;
+  font-weight: 700;
+  letter-spacing: .2px;
+  color: #fff !important;
+  background: linear-gradient(135deg,#37c275 0%,#5e35b1 100%) !important; /* 更亮的绿→紫渐变 */
+  border-radius: 999px;
+  border: none;
+  box-shadow: 0 8px 22px rgba(0,0,0,.15), 0 0 0 2px #fff; /* 白色描边，提高对比度 */
+  text-shadow: 0 1px 1px rgba(0,0,0,.25);
+}
+.nav-card:hover .card-badge{
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px rgba(0,0,0,.18), 0 0 0 2px #fff;
 }
 
-.content-section {
-  padding: 40px 20px 80px;
-  background: white;
-}
 
-.content-header {
-  margin-bottom: 40px;
-}
-
-.back-btn {
-  background: #00ff41;
-  color: #000;
-  border: 3px solid #000;
-  padding: 12px 24px;
-  font-family: 'Press Start 2P', monospace;
-  font-size: 0.7rem;
-  cursor: pointer;
-  box-shadow: 3px 3px 0 #000;
-  transition: all 0.1s;
-}
-
-.back-btn:hover {
-  transform: translate(1px, 1px);
-  box-shadow: 2px 2px 0 #000;
-}
-
-/* Modal Styles */
+/* ====== Modal（毛玻璃、圆角、柔影） ====== */
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.8);
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(0,0,0,.45);
+  backdrop-filter: blur(4px);
   z-index: 1000;
-  padding: 20px;
-  box-sizing: border-box;
+  padding: 16px;
 }
 
-.modal-content {
-  background: white;
-  border: 3px solid #000;
-  border-radius: 0;
-  box-shadow: 10px 10px 0 #000;
-  max-width: 95vw;
-  max-height: 95vh;
-  width: 100%;
+.modal {
+  width: min(980px, 96vw);
+  max-height: 92vh;
+  background: #fff;
+  border-radius: var(--kp-radius-lg);
+  box-shadow: var(--kp-shadow-strong);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -286,65 +355,42 @@ function closeModal() {
 .modal-header {
   display: flex;
   justify-content: flex-end;
-  padding: 15px 20px;
-  background: #00ff41;
-  border-bottom: 3px solid #000;
+  padding: 12px 12px 0 0;
 }
 
-.modal-close-btn {
-  background: #ff4444;
-  color: white;
-  border: 2px solid #000;
+.modal-close {
   width: 40px;
   height: 40px;
-  border-radius: 0;
-  font-size: 1.2rem;
-  font-weight: bold;
+  border: 1px solid rgba(0,0,0,.08);
+  background: #fff;
+  color: var(--kp-purple);
+  border-radius: 12px;
+  font-size: 22px;
+  line-height: 1;
+  display: grid;
+  place-items: center;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 2px 2px 0 #000;
-  transition: all 0.1s;
+  transition: all .2s ease;
+  box-shadow: 0 6px 18px rgba(0,0,0,.08);
 }
 
-.modal-close-btn:hover {
-  transform: translate(1px, 1px);
-  box-shadow: 1px 1px 0 #000;
+.modal-close:hover {
+  transform: translateY(-1px);
+  background: #f7f7fb;
+  box-shadow: 0 10px 24px rgba(0,0,0,.12);
 }
 
 .modal-body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 0;
+  padding: 10px 16px 18px;
+  overflow: auto;
 }
 
-/* Mobile Responsive */
+/* ====== 响应式 ====== */
 @media (max-width: 768px) {
-  .hero-title {
-    font-size: 1.8rem;
-  }
-  
-  .hero-stats {
-    flex-direction: column;
-    gap: 30px;
-  }
-  
-  .nav-cards {
-    grid-template-columns: 1fr;
-  }
-  
-  .nav-card {
-    padding: 20px;
-  }
-  
-  .modal-overlay {
-    padding: 10px;
-  }
-  
-  .modal-content {
-    max-width: 100vw;
-    max-height: 100vh;
-  }
+  .hero-title { font-size: 2.2rem; }
+  .hero-subtitle { font-size: 1rem; }
+  .stat { min-width: 180px; }
+  .section-title { font-size: 1.8rem; margin-bottom: 24px; }
+  .nav-card { padding: 22px 18px; }
 }
 </style>
