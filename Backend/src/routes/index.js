@@ -9,9 +9,9 @@ const router = express.Router();
 const API_VERSION = '/api/v1';
 
 // routes
-router.use(API_VERSION, seasonalComfortRoutes);
-router.use('/', healthRoutes);
 router.use(`${API_VERSION}/ai`, aiRoutes);
+router.use(`${API_VERSION}/seasonal-comfort`, seasonalComfortRoutes);
+router.use('/', healthRoutes);
 
 // API root endpoint
 router.get('/api', (req, res) => {
