@@ -1,6 +1,7 @@
 const express = require('express');
 const seasonalComfortRoutes = require('./seasonalComfort');
 const healthRoutes = require('./health');
+const aiRoutes = require('./aiRoutes');
 
 const router = express.Router();
 
@@ -10,6 +11,7 @@ const API_VERSION = '/api/v1';
 // routes
 router.use(API_VERSION, seasonalComfortRoutes);
 router.use('/', healthRoutes);
+router.use(`${API_VERSION}/ai`, aiRoutes);
 
 // API root endpoint
 router.get('/api', (req, res) => {

@@ -54,7 +54,7 @@ ${userMessage}
 }
 
 async function chatWithGemini(message) {
-  // 把用户问题包在统一模板里（轻量“微调”）
+  // Wrap user questions in a unified template 
   const userPrompt = buildUserPrompt(message);
   const result = await model.generateContent(userPrompt);
   return result.response.text();
