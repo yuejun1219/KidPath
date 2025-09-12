@@ -24,7 +24,8 @@ router.get('/api', (req, res) => {
       seasonal_comfort: '/api/v1/seasonal-comfort',
       playground_detail: '/api/v1/playground/:id',
       nearest_playgrounds: '/api/v1/playgrounds/nearest',
-      statistics: '/api/v1/statistics'
+      statistics: '/api/v1/statistics',
+      ai: '/api/v1/ai/chat'
     },
     documentation: 'https://github.com/your-repo/seasonal-comfort-api'
   });

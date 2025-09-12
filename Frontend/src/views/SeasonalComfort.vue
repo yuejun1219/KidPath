@@ -237,7 +237,7 @@ async function sendChat() {
   // 2) 请求后端
   try {
     aiLoading.value = true
-    const resp = await fetch(`${API_BASE}/api/v1/ai/chat`, {
+    const resp = await fetch(`${API_BASE}/ai/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message: text })
