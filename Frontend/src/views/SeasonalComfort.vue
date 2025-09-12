@@ -205,7 +205,7 @@ const playgroundLayer = ref(null)
 
 // local dev backend URL
 const API_BASE = import.meta.env.VITE_API_BASE;
-// const API_BASE = 'https://your-production-backend.com/api/v1' // production backend URL
+
 // ===== AI Chat state & logic =====
 const chatOpen = ref(false)
 const userInput = ref('')
@@ -237,7 +237,7 @@ async function sendChat() {
   // 2) 请求后端
   try {
     aiLoading.value = true
-    const resp = await fetch(`${API_BASE}/ai/chat`, {
+    const resp = await fetch(`${API_BASE}/api/v1/ai/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message: text })
