@@ -4,9 +4,8 @@ import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
 
 import CanopySection from './CanopySection.vue'
 import WaterAccess from '@/components/WaterAccess.vue'
-import NearbyFountains from '@/components/NearbyFountains.vue'
 import WeatherInsights from '@/components/WeatherInsights.vue'
-import AskAiWidget from '@/components/AskAiWidget.vue'   // AI 悬浮按钮
+import AskAiWidget from '@/components/AskAiWidget.vue'
 
 /* ---------- cross-section plumbing ---------- */
 const selectedSuburbs = ref([])
@@ -15,7 +14,7 @@ function onPlanCoolRoute(ids){
   document.querySelector('#water')?.scrollIntoView({ behavior:'smooth' })
 }
 
-/* ---------- page-level reliability: mount maps after first paint ---------- */
+/* ---------- page-level reliability ---------- */
 const ready = ref(false)
 function nudgeResize(times = 2){
   let i = 0
@@ -42,21 +41,6 @@ onBeforeUnmount(() => {
   document.removeEventListener('visibilitychange', onVisChange)
 })
 
-/* ---------- Jumpbar active link (on scroll) ---------- */
-const activeId = ref('shade')
-let obs
-onMounted(() => {
-  const sections = [...document.querySelectorAll('section[id]')]
-  obs = new IntersectionObserver((entries) => {
-    const visible = entries
-      .filter(e => e.isIntersecting)
-      .sort((a,b)=> b.intersectionRatio - a.intersectionRatio)[0]
-    if (visible) activeId.value = visible.target.id
-  }, { rootMargin: '-30% 0px -60% 0px', threshold: [0.1, 0.25, 0.5] })
-  sections.forEach(s => obs.observe(s))
-})
-onBeforeUnmount(() => { if (obs) obs.disconnect() })
-
 /* ---------- Fancy-hero parallax ---------- */
 const heroEl = ref(null)
 function handleHeroMove(e) {
@@ -70,14 +54,10 @@ function handleHeroMove(e) {
   el.style.setProperty('--tiltX', (x * 7) + 'deg')
   el.style.setProperty('--tiltY', (-y * 7) + 'deg')
 }
-onMounted(() => {
-  heroEl.value?.addEventListener('mousemove', handleHeroMove, { passive: true })
-})
-onBeforeUnmount(() => {
-  heroEl.value?.removeEventListener('mousemove', handleHeroMove)
-})
+onMounted(() => { heroEl.value?.addEventListener('mousemove', handleHeroMove, { passive: true }) })
+onBeforeUnmount(() => { heroEl.value?.removeEventListener('mousemove', handleHeroMove) })
 
-/* ---------- reveal-on-scroll for text blocks ---------- */
+/* ---------- reveal-on-scroll ---------- */
 let revealObs
 function observeRevealsIn(scope = document) {
   const els = scope.querySelectorAll('.reveal:not(.visible)')
@@ -105,16 +85,14 @@ onMounted(() => {
 onBeforeUnmount(() => { if (revealObs) revealObs.disconnect() })
 
 /* ---------- Water tabs ---------- */
-const waterMode = ref('overview')  // 'overview' | 'nearby'
-
+const waterMode = ref('overview')  // Nearby 走独立页面
 function forceRevealInWater() {
   const wrap = document.getElementById('water')
   if (!wrap) return
   wrap.querySelectorAll('.reveal:not(.visible)').forEach(el => el.classList.add('visible'))
 }
-
 function switchWaterMode(mode) {
-  if (mode !== 'overview' && mode !== 'nearby') return
+  if (mode !== 'overview') return
   if (waterMode.value === mode) return
   waterMode.value = mode
   nextTick(() => {
@@ -123,8 +101,14 @@ function switchWaterMode(mode) {
   })
 }
 
+/* ---------- Hero buttons scroll ---------- */
+function scrollToSection(id) {
+  const el = document.getElementById(id)
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+
 /* ---------- API base for AskAiWidget ---------- */
-const API_BASE = import.meta.env.VITE_API_BASE    // 例如 https://api.kidpath.me/api/v1
+const API_BASE = import.meta.env.VITE_API_BASE
 </script>
 
 <template>
@@ -146,11 +130,10 @@ const API_BASE = import.meta.env.VITE_API_BASE    // 例如 https://api.kidpath.
             Plan <strong>shade-first</strong> routes and find <strong>nearby drinking water</strong>, all in one place.
           </p>
 
-          <!-- 已按你的要求删除“Plan a route”按钮 -->
-
-          <div class="mode-switch glass small">
-            <a class="seg" href="#shade"><i>🌳</i><span>Shade</span></a>
-            <a class="seg" href="#water"><i>🚰</i><span>Water</span></a>
+          <!-- 这里改成两个按钮 -->
+          <div class="cta-row">
+            <button class="btn btn-primary" @click="scrollToSection('shade')">🌳 Shade</button>
+            <button class="btn btn-soft" @click="scrollToSection('water')">🚰 Water</button>
           </div>
         </div>
 
@@ -237,14 +220,16 @@ const API_BASE = import.meta.env.VITE_API_BASE    // 例如 https://api.kidpath.
         </p>
 
         <div class="tabs">
-          <button class="tab" :class="{ active: waterMode === 'overview' }"
-                  @click="switchWaterMode('overview')" :aria-pressed="waterMode === 'overview'">
+          <button
+            class="tab"
+            :class="{ active: waterMode === 'overview' }"
+            @click="switchWaterMode('overview')"
+            :aria-pressed="waterMode === 'overview'">
             Overview
           </button>
-          <button class="tab" :class="{ active: waterMode === 'nearby' }"
-                  @click="switchWaterMode('nearby')" :aria-pressed="waterMode === 'nearby'">
-            Nearby
-          </button>
+
+          <!-- Nearby 走独立页面（保持你之前的路由设置） -->
+          <router-link class="tab" to="/nearby-fountains">Nearby</router-link>
         </div>
 
         <div class="info-cards">
@@ -266,14 +251,12 @@ const API_BASE = import.meta.env.VITE_API_BASE    // 例如 https://api.kidpath.
         </div>
       </aside>
 
-      <div v-if="waterMode==='overview'" key="water-overview" class="stack-col content card water-card reveal">
+      <div key="water-overview" class="stack-col content card water-card reveal">
         <WaterAccess v-if="ready" :focusSuburbs="selectedSuburbs" />
       </div>
-
-      <div v-else key="water-nearby" class="stack-col content card fountains-card reveal">
-        <NearbyFountains v-if="ready" />
-      </div>
     </section>
+
+    <!-- ✅ 已删除整块 Route/Shade Quest Section -->
 
     <!-- Footer -->
     <footer class="footer">
@@ -282,7 +265,7 @@ const API_BASE = import.meta.env.VITE_API_BASE    // 例如 https://api.kidpath.
       </div>
     </footer>
 
-    <!-- 右下角 AI（全站悬浮） -->
+    <!-- 右下角 AI -->
     <AskAiWidget
       :api-base="API_BASE"
       placement="bottom-right"
@@ -375,7 +358,7 @@ const API_BASE = import.meta.env.VITE_API_BASE    // 例如 https://api.kidpath.
 .aside:hover .title-underline::after{ transform: scaleX(1); }
 .lead{ margin-top: 4px; }
 
-/* ========= Info cards ========= */
+/* ========= Info cards (保留样式，方便以后复用) ========= */
 .info-cards{
   margin-top: 10px;
   display: grid;
@@ -433,7 +416,7 @@ const API_BASE = import.meta.env.VITE_API_BASE    // 例如 https://api.kidpath.
 /* heights */
 .shade-card     :deep(.map-wrap){ height: 64vh !important; }
 .water-card     :deep(.map-wrap){ height: 60vh !important; }
-.fountains-card :deep(.map-wrap){ height: 62vh !important; }
+.route-card     :deep(.cool-route-wrap){ height: 52vh !important; }
 
 /* Footer */
 .footer {
@@ -444,11 +427,10 @@ const API_BASE = import.meta.env.VITE_API_BASE    // 例如 https://api.kidpath.
 }
 .footer p { margin: 0; font-size: 1rem; }
 
-/* Responsive */
 @media (max-width: 1200px){
   .shade-card     :deep(.map-wrap){ height: 50vh !important; }
   .water-card     :deep(.map-wrap){ height: 46vh !important; }
-  .fountains-card :deep(.map-wrap){ height: 46vh !important; }
+  .route-card     :deep(.cool-route-wrap){ height: 54vh !important; }
 }
 
 /* ========= Reveal-on-scroll ========= */
@@ -490,146 +472,73 @@ const API_BASE = import.meta.env.VITE_API_BASE    // 例如 https://api.kidpath.
 .s1{ left: 12%; top: 28%; animation-delay: .2s }
 .s2{ left: 22%; top: 18%; animation-delay: 1.2s }
 .s3{ left: 32%; top: 26%; animation-delay: 2.0s }
-@keyframes blobFloat{ 0%,100%{ transform: translateY(0) } 50%{ transform: translateY(-18px) } }
 
-.parallax{ list-style:none; margin:0; padding:0; display:grid; gap:10px; align-content:center; }
-.chip{
-  display:flex; align-items:center; gap:8px; padding:10px 12px;
-  background:#f4fbf6; border:1px solid rgba(0,0,0,.06); border-radius: 14px;
-  transform: translate3d(var(--parX,0), var(--parY,0), 0) rotateX(var(--tiltY,0)) rotateY(var(--tiltX,0));
-  transition: transform .12s ease, background .12s ease;
-}
-.chip span{ display:inline-grid; place-items:center; width:28px; height:28px; border-radius: 999px; background:#e8f5e9; }
-
-/* ========= Hero wave ========= */
 .wave{ display:block; width:100%; height:90px; margin-top:8px; z-index:1; overflow: hidden; }
 .wave path{ fill:#e8f5e9; }
 
 @media (prefers-reduced-motion: no-preference){
-  @keyframes spark{
-    0%{ transform: translateY(0) scale(.8); opacity: 0; }
-    15%{ opacity: 1; }
-    70%{ transform: translateY(-28px) scale(1.05); opacity: .9; }
-    100%{ transform: translateY(-36px) scale(.9); opacity: 0; }
-  }
-  @keyframes waveBob{
-    0%,100%{ transform: translateX(0) }
-    50%{ transform: translateX(-22px) }
-  }
-  .wave path{
-    transform-origin: 50% 50%;
-    animation: waveBob 7.5s ease-in-out infinite;
-  }
+  @keyframes waveBob{ 0%,100%{ transform: translateX(0) } 50%{ transform: translateX(-22px) } }
+  .wave path{ transform-origin: 50% 50%; animation: waveBob 7.5s ease-in-out infinite; }
 }
 
-.page{
-  padding-inline: clamp(10px, 4vw, 20px);
-}
-.page > section,
-.page > nav{
+.page{ padding-inline: clamp(10px, 4vw, 20px); }
+.page > section, .page > nav{
   max-width: var(--page-max);
   margin-inline: auto;
   padding-inline: clamp(16px, 3.5vw, 32px);
 }
-.content.card{
-  margin-inline: clamp(4px, 1vw, 22px);
-  border-radius: var(--card-radius);
-}
-.content.card :deep(.map-wrap){
-  width: 100%;
-  border-radius: 14px;
-  overflow: hidden;
-}
+.content.card{ margin-inline: clamp(4px, 1vw, 22px); border-radius: var(--card-radius); }
+.content.card :deep(.map-wrap){ width: 100%; border-radius: 14px; overflow: hidden; }
 .page [style*="100vw"]{ width: 100% !important; }
 
-.hero {
-  max-width: none !important;
-  padding-inline: 0 !important;
-  margin-inline: 0 !important;
-  width: 100vw;
-}
-.full-bleed{
-  max-width: none !important;
-  padding-inline: 0 !important;
-  margin-inline: calc(var(--gutter) * -1);
-  width: auto;
-}
-.full-bleed .content.card{
-  margin-inline: 0;
-  border-radius: 0;
-  box-shadow: none;
-  border-left: 0;
-  border-right: 0;
-}
+.hero { max-width: none !important; padding-inline: 0 !important; margin-inline: 0 !important; width: 100vw; }
+.full-bleed{ max-width: none !important; padding-inline: 0 !important; margin-inline: calc(var(--gutter) * -1); width: auto; }
+.full-bleed .content.card{ margin-inline: 0; border-radius: 0; box-shadow: none; border-left: 0; border-right: 0; }
 .fancy-hero{ border-radius: 0 !important; }
 .fancy-hero .hero-inner{ border-radius: 0; }
-.fancy-hero .wave{
-  width: 100vw; max-width: none;
-  position: relative; left: 50%; transform: translateX(-50%);
+.fancy-hero .wave{ width: 100vw; max-width: none; position: relative; left: 50%; transform: translateX(-50%); }
+.page > header.hero{
+  position: relative; left: 50%; right: 50%;
+  margin-left: -50vw !important; margin-right: -50vw !important;
+  width: 100vw !important; max-width: 100vw !important;
+  padding-left: 0 !important; padding-right: 0 !important;
 }
+.hero .hero-inner{ border: 0; border-radius: 0; box-shadow: none; }
+.hero .wave{ width: 100vw !important; max-width: 100vw !important; position: relative; left: 50%; transform: translateX(-50%); }
 
-/* ===== Bigger, bolder hero type ===== */
-.headline-xl{
-  font-weight: 900;
-  line-height: 1.05;
-  letter-spacing: -0.02em;
-  font-size: clamp(32px, 4.6vw, 64px);
-  margin: 2px 0 8px;
-}
-.lede-xl{
-  font-size: clamp(16px, 1.6vw, 20px);
-  color: #365a3d;
-  max-width: 48ch;
-  margin-bottom: clamp(14px, 2.2vw, 18px);
-}
-.grad{
-  background: linear-gradient(90deg, #2e7d32 0%, #0d47a1 85%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
+/* ===== Bigger hero type ===== */
+.headline-xl{ font-weight: 900; line-height:1.05; letter-spacing:-.02em; font-size:clamp(32px,4.6vw,64px); margin:2px 0 8px; }
+.lede-xl{ font-size:clamp(16px,1.6vw,20px); color:#365a3d; max-width:48ch; margin-bottom:clamp(14px,2.2vw,18px); }
+.grad{ background: linear-gradient(90deg, #2e7d32 0%, #0d47a1 85%); -webkit-background-clip: text; background-clip:text; color:transparent; }
 
-/* Buttons (目前不再用到主按钮，保留样式以备复用) */
+.hero-grid{ display:grid; grid-template-columns: 1.15fr 0.85fr; align-items:center; gap:clamp(12px,3vw,24px); padding-block: clamp(22px, 6vw, 48px); }
+@media (max-width: 900px){ .hero-grid{ grid-template-columns:1fr; } }
+
+/* Buttons */
+.cta-row{
+  display:flex; gap:10px; flex-wrap:wrap; margin-top: 14px;
+}
+.btn{
+  appearance: none;
+  border: 0;
+  padding: 10px 16px;
+  border-radius: 999px;
+  font-weight: 800;
+  cursor: pointer;
+}
 .btn-primary{
-  background: #2e7d32; color:#fff; border: 1px solid #2e7d32;
-  padding: 10px 16px; border-radius: 999px; font-weight: 700;
+  color: #fff;
+  background: #2e7d32;
+  border: 1px solid #2e7d32;
   box-shadow: 0 10px 24px rgba(46,125,50,.25);
 }
 .btn-primary:hover{ filter: brightness(1.05); transform: translateY(-1px); }
+.btn-soft{
+  color:#2e7d32;
+  background:#fff;
+  border:1px solid rgba(46,125,50,.25);
+  box-shadow: 0 6px 18px rgba(0,0,0,.08);
+}
+.btn-soft:hover{ transform: translateY(-1px); }
 
-.mode-switch{
-  display:grid;
-  grid-template-columns: repeat(3, minmax(0,1fr));
-  gap: 10px;
-  padding: 10px;
-  border-radius: 16px;
-  background: linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.86));
-  border: 1px solid rgba(0,0,0,.06);
-  box-shadow: 0 14px 36px rgba(0,0,0,.10);
-}
-.mode-switch .seg{
-  display:flex; align-items:center; justify-content:center; gap:8px;
-  padding: 10px 12px;
-  border-radius: 12px;
-  text-decoration:none;
-  border: 1px solid rgba(0,0,0,.08);
-  background:#f7fbf8;
-  color:#275e2b; font-weight: 800;
-  transition: transform .12s ease, background .12s ease, border-color .12s ease;
-}
-.mode-switch .seg:hover{ transform: translateY(-1px); background:#eef7f0; }
-.mode-switch .seg i{ font-style: normal; }
-
-/* Animated route illustration */
-.hero-graphic{ display:grid; place-items:center; }
-.route-illo{
-  width: min(520px, 100%);
-  height: auto;
-  filter: drop-shadow(0 16px 36px rgba(0,0,0,.10));
-}
-
-/* Respect reduced-motion */
-@media (prefers-reduced-motion: reduce){
-  .route-illo animateMotion { display:none; }
-}
 </style>
