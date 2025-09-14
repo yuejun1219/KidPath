@@ -6,6 +6,7 @@ import CanopySection from './CanopySection.vue'
 import WaterAccess from '@/components/WaterAccess.vue'
 import NearbyFountains from '@/components/NearbyFountains.vue'
 import WeatherInsights from '@/components/WeatherInsights.vue'
+import AskAiWidget from '@/components/AskAiWidget.vue'   // ★ 新增
 
 /* ---------- cross-section plumbing ---------- */
 const selectedSuburbs = ref([])
@@ -107,7 +108,6 @@ onBeforeUnmount(() => { if (revealObs) revealObs.disconnect() })
 const waterMode = ref('overview')  // 'overview' | 'nearby'
 
 function forceRevealInWater() {
-  // Make sure newly mounted .reveal content in #water is visible
   const wrap = document.getElementById('water')
   if (!wrap) return
   wrap.querySelectorAll('.reveal:not(.visible)').forEach(el => el.classList.add('visible'))
@@ -118,91 +118,70 @@ function switchWaterMode(mode) {
   if (waterMode.value === mode) return
   waterMode.value = mode
   nextTick(() => {
-    forceRevealInWater()  // <— fix: reveal newly mounted card
-    nudgeResize(3)        // <— fix: maps re-measure after DOM swap
+    forceRevealInWater()
+    nudgeResize(3)
   })
 }
+
+/* ---------- API base for AskAiWidget ---------- */
+const API_BASE = import.meta.env.VITE_API_BASE    // 例如 https://api.kidpath.me/api/v1
 </script>
 
 <template>
   <main class="page">
-
-
- <!-- HERO -->
-<header class="hero fancy-hero full-bleed" ref="heroEl">
-  <div class="bg">
-    <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
-    <div class="spark s1"></div><div class="spark s2"></div><div class="spark s3"></div>
-  </div>
-
-  <div class="hero-inner hero-grid">
-    <!-- Left: Big copy -->
-    <div class="hero-copy">
-      <p class="eyebrow">KidPath · Comfort Insights</p>
-      <h1 class="headline-xl">
-        Cooler walks, <span class="grad">happier kids</span>.
-      </h1>
-      <p class="lede-xl">
-        Plan <strong>shade-first</strong> routes and find <strong>nearby drinking water</strong>, all in one place.
-      </p>
-
-      <div class="cta-row">
-        <!-- SINGLE primary CTA -->
-        <a class="btn btn-primary" href="#route">🧭 Plan a route</a>
-
-        <!-- Optional secondary: links to shade section (not Water to avoid dup) -->
-
+    <!-- HERO -->
+    <header class="hero fancy-hero full-bleed" ref="heroEl">
+      <div class="bg">
+        <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+        <div class="spark s1"></div><div class="spark s2"></div><div class="spark s3"></div>
       </div>
 
-      <!-- Two-segment quick nav (no Plan here to avoid duplication) -->
-      <div class="mode-switch glass small">
-        <a class="seg" href="#shade"><i>🌳</i><span>Shade</span></a>
-        <a class="seg" href="#water"><i>🚰</i><span>Water</span></a>
+      <div class="hero-inner hero-grid">
+        <div class="hero-copy">
+          <p class="eyebrow">KidPath · Comfort Insights</p>
+          <h1 class="headline-xl">
+            Cooler walks, <span class="grad">happier kids</span>.
+          </h1>
+          <p class="lede-xl">
+            Plan <strong>shade-first</strong> routes and find <strong>nearby drinking water</strong>, all in one place.
+          </p>
+
+          <div class="cta-row">
+            <a class="btn btn-primary" href="#route">🧭 Plan a route</a>
+          </div>
+
+          <div class="mode-switch glass small">
+            <a class="seg" href="#shade"><i>🌳</i><span>Shade</span></a>
+            <a class="seg" href="#water"><i>🚰</i><span>Water</span></a>
+          </div>
+        </div>
+
+        <div class="hero-graphic">
+          <svg class="route-illo" viewBox="0 0 360 240" fill="none" aria-hidden="true">
+            <rect x="8" y="8" width="344" height="224" rx="18" fill="#fff" stroke="rgba(0,0,0,.06)"/>
+            <circle cx="70" cy="70" r="26" fill="#e8f5e9"/>
+            <circle cx="300" cy="100" r="20" fill="#e8f5e9"/>
+            <circle cx="210" cy="55" r="14" fill="#e8f5e9"/>
+            <path id="routePath" d="M60 180 C 110 150, 160 120, 190 140 S 280 190, 300 110"
+                  stroke="#2e7d32" stroke-width="4" stroke-linecap="round" stroke-dasharray="8 10" />
+            <circle r="6" fill="#0d47a1">
+              <animateMotion dur="6s" repeatCount="indefinite" keyTimes="0;1"
+                             keySplines="0.25 0.1 0.25 1" calcMode="spline">
+                <mpath xlink:href="#routePath"/>
+              </animateMotion>
+            </circle>
+            <g>
+              <circle cx="60"  cy="180" r="7" fill="#2e7d32"/>
+              <circle cx="300" cy="110" r="7" fill="#2e7d32"/>
+            </g>
+          </svg>
+        </div>
       </div>
-    </div>
 
-    <!-- Right: Animated route graphic (SVG) -->
-    <div class="hero-graphic">
-      <svg class="route-illo" viewBox="0 0 360 240" fill="none" aria-hidden="true">
-        <!-- soft card -->
-        <rect x="8" y="8" width="344" height="224" rx="18"
-              fill="#fff" stroke="rgba(0,0,0,.06)"/>
-        <!-- parks blobs -->
-        <circle cx="70" cy="70" r="26" fill="#e8f5e9"/>
-        <circle cx="300" cy="100" r="20" fill="#e8f5e9"/>
-        <circle cx="210" cy="55" r="14" fill="#e8f5e9"/>
-
-        <!-- dashed path (animated) -->
-        <path id="routePath"
-              d="M60 180 C 110 150, 160 120, 190 140 S 280 190, 300 110"
-              stroke="#2e7d32" stroke-width="4" stroke-linecap="round"
-              stroke-dasharray="8 10" />
-
-        <!-- moving dot -->
-        <circle r="6" fill="#0d47a1">
-          <animateMotion dur="6s" repeatCount="indefinite" keyTimes="0;1"
-                         keySplines="0.25 0.1 0.25 1" calcMode="spline">
-            <mpath xlink:href="#routePath"/>
-          </animateMotion>
-        </circle>
-
-        <!-- start/end pins -->
-        <g>
-          <circle cx="60"  cy="180" r="7" fill="#2e7d32"/>
-          <circle cx="300" cy="110" r="7" fill="#2e7d32"/>
-        </g>
+      <svg class="wave" viewBox="0 0 1440 120" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M0,60 C240,120 480,0 720,60 C960,120 1200,10 1440,60 L1440,120 L0,120 Z"></path>
       </svg>
-
-      <!-- (Optional) drop-in GIF/Lottie goes here -->
-      <!-- <img class="hero-gif" src="/img/walk-loop.gif" alt="" decoding="async" /> -->
-    </div>
-  </div>
-
-  <svg class="wave" viewBox="0 0 1440 120" preserveAspectRatio="none" aria-hidden="true">
-    <path d="M0,60 C240,120 480,0 720,60 C960,120 1200,10 1440,60 L1440,120 L0,120 Z"></path>
-  </svg>
-</header>
-
+    </header>
 
     <!-- SHADE / CANOPY (STACKED) -->
     <section id="shade" class="section-grid band stack-first">
@@ -236,7 +215,8 @@ function switchWaterMode(mode) {
         <CanopySection v-if="ready" @planCoolRoute="onPlanCoolRoute" />
       </div>
     </section>
-    <!-- CLIMATE (compact!) -->
+
+    <!-- CLIMATE -->
     <section id="climate" class="section-grid stack-first">
       <aside class="aside reveal">
         <h2 class="title-underline">Local climate</h2>
@@ -250,7 +230,7 @@ function switchWaterMode(mode) {
       </div>
     </section>
 
-    <!-- WATER (STACKED) -->
+    <!-- WATER -->
     <section id="water" class="section-grid stack-first">
       <aside class="aside reveal">
         <h2 class="title-underline">Drinking water access</h2>
@@ -258,25 +238,17 @@ function switchWaterMode(mode) {
           Find refill-friendly places quickly. Suburb coverage first; then check taps near a point.
         </p>
 
-        <!-- Overview / Nearby tabs -->
         <div class="tabs">
-          <button
-            class="tab"
-            :class="{ active: waterMode === 'overview' }"
-            @click="switchWaterMode('overview')"
-            :aria-pressed="waterMode === 'overview'">
+          <button class="tab" :class="{ active: waterMode === 'overview' }"
+                  @click="switchWaterMode('overview')" :aria-pressed="waterMode === 'overview'">
             Overview
           </button>
-          <button
-            class="tab"
-            :class="{ active: waterMode === 'nearby' }"
-            @click="switchWaterMode('nearby')"
-            :aria-pressed="waterMode === 'nearby'">
+          <button class="tab" :class="{ active: waterMode === 'nearby' }"
+                  @click="switchWaterMode('nearby')" :aria-pressed="waterMode === 'nearby'">
             Nearby
           </button>
         </div>
 
-        <!-- Info cards -->
         <div class="info-cards">
           <div class="info-card">
             <div class="icon">🏞️</div>
@@ -296,24 +268,16 @@ function switchWaterMode(mode) {
         </div>
       </aside>
 
-      <!-- Overview map -->
-      <div
-        v-if="waterMode==='overview'"
-        key="water-overview"
-        class="stack-col content card water-card reveal">
+      <div v-if="waterMode==='overview'" key="water-overview" class="stack-col content card water-card reveal">
         <WaterAccess v-if="ready" :focusSuburbs="selectedSuburbs" />
       </div>
 
-      <!-- Nearby map -->
-      <div
-        v-else
-        key="water-nearby"
-        class="stack-col content card fountains-card reveal">
+      <div v-else key="water-nearby" class="stack-col content card fountains-card reveal">
         <NearbyFountains v-if="ready" />
       </div>
     </section>
 
-    <!-- ROUTE (STACKED) -->
+    <!-- ROUTE -->
     <section id="route" class="section-grid band stack-first">
       <aside class="aside reveal">
         <h2 class="title-underline">Plan a cool route</h2>
@@ -350,12 +314,21 @@ function switchWaterMode(mode) {
         </div>
       </div>
     </section>
+
     <!-- Footer -->
     <footer class="footer">
       <div class="container">
         <p>&copy; 2025 KidPath. Helping families explore safely.</p>
       </div>
     </footer>
+
+    <!-- ★ 右下角 AI（全站悬浮，不受 scoped 样式影响） -->
+    <AskAiWidget
+      :api-base="API_BASE"
+      placement="bottom-right"
+      title="Ask-AI · Comfort Insights"
+      placeholder="Ask about shade, UV, water taps…"
+    />
   </main>
 </template>
 
