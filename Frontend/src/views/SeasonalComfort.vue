@@ -1,6 +1,5 @@
 <template>
   <div class="seasonal-comfort-page">
-
     <!-- Hero -->
     <section class="hero">
       <div class="hero-overlay">
@@ -138,47 +137,16 @@
           <button @click="fetchData" class="retry-btn">Refresh</button>
         </div>
       </aside>
-      <!-- ===== AI Chat (floating panel on the right) ===== -->
-      <button class="ai-fab" @click="chatOpen = !chatOpen" :aria-expanded="chatOpen">
-        🤖 Ask-AI
-      </button>
 
-      <div v-if="chatOpen" class="ai-chat-panel">
-        <div class="ai-chat-header">
-          <span>Ask-AI · Comfort Education</span>
-          <button class="ai-close" @click="chatOpen = false">✕</button>
-        </div>
-
-        <div class="ai-chat-body" ref="chatScroll">
-          <div v-for="(m, idx) in messages" :key="idx" class="ai-msg" :class="m.role">
-            <div class="ai-bubble">
-              {{ m.content }}
-            </div>
-          </div>
-
-          <div v-if="aiLoading" class="ai-loading-row">
-            <span class="ai-dot"></span><span class="ai-dot"></span><span class="ai-dot"></span>
-          </div>
-
-          <div v-if="aiError" class="ai-error">{{ aiError }}</div>
-        </div>
-
-        <form class="ai-input-row" @submit.prevent="sendChat">
-          <input
-            v-model.trim="userInput"
-            type="text"
-            placeholder="Ask something like: Why are kids more vulnerable to heat?"
-            :disabled="aiLoading"
-            @keydown.enter.exact.prevent="sendChat"
-          />
-          <button type="submit" :disabled="aiLoading || !userInput">Ask</button>
-        </form>
-
-        <div class="ai-hint">
-          Focus: Melbourne CBD · safety & comfort (heat, UV, pollen, shade)
-        </div>
-      </div>
-
+      <!-- 右下角浮动 AI 组件（可在任意页面复用） -->
+      <AskAiWidget
+        title="Ask-AI · Comfort Education"
+        btnText="Ask-AI"
+        :endpoint="`${API_BASE}/ai/chat`"
+        replyKey="reply"
+        placeholder="Ask something like: Why are kids more vulnerable to heat?"
+        hint="Focus: Melbourne CBD · safety & comfort (heat, UV, pollen, shade)"
+      />
     </section>
 
     <!-- Footer -->
@@ -194,6 +162,7 @@
 import { ref, onMounted, watch, computed, nextTick } from 'vue'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
+import AskAiWidget from '@/components/AskAiWidget.vue'
 
 const season = ref('summer')
 const loading = ref(false)
@@ -204,58 +173,7 @@ const map = ref(null)
 const playgroundLayer = ref(null)
 
 // local dev backend URL
-const API_BASE = import.meta.env.VITE_API_BASE;
-
-// ===== AI Chat state & logic =====
-const chatOpen = ref(false)
-const userInput = ref('')
-const aiLoading = ref(false)
-const aiError = ref('')
-const messages = ref([
-  { role: 'assistant', content: "Hi! I'm here to answer comfort & safety questions for Melbourne's CBD." }
-])
-const chatScroll = ref(null)
-
-function scrollToBottom () {
-  nextTick(() => {
-    if (chatScroll.value) {
-      chatScroll.value.scrollTop = chatScroll.value.scrollHeight
-    }
-  })
-}
-
-async function sendChat() {
-  if (!userInput.value || aiLoading.value) return
-  aiError.value = ''
-
-  // 1) 加入用户消息
-  messages.value.push({ role: 'user', content: userInput.value })
-  const text = userInput.value
-  userInput.value = ''
-  scrollToBottom()
-
-  // 2) 请求后端
-  try {
-    aiLoading.value = true
-    const resp = await fetch(`${API_BASE}/ai/chat`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: text })
-    })
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
-
-    // 后端若返回 { reply: "..." }
-    const data = await resp.json()
-    const reply = data.reply ?? data ?? 'Sorry, no answer.'
-    messages.value.push({ role: 'assistant', content: String(reply) })
-  } catch (e) {
-    console.error(e)
-    aiError.value = 'Failed to get AI reply. Please try again.'
-  } finally {
-    aiLoading.value = false
-    scrollToBottom()
-  }
-}
+const API_BASE = import.meta.env.VITE_API_BASE
 
 const titleMap = { summer: 'SUMMER', winter: 'WINTER' }
 const barLabelMap = {
@@ -370,7 +288,6 @@ async function toggleSeason(event) {
 
 // map initialization
 function initMap() {
-  console.log('Initializing map...')
   map.value = L.map('shade-map').setView([-37.8136, 144.9631], 14)
   
   // add tile layer
@@ -379,9 +296,7 @@ function initMap() {
   }).addTo(map.value)
   
   map.value.zoomControl.setPosition('topright')
-  console.log('Map initialized successfully')
 }
-
 
 /* ====== update map layer ====== */
 function updateMapLayer(geojsonData) {
@@ -452,25 +367,11 @@ function getPlaygroundSize(shadePercentage, currentSeason) {
   }
 }
 
-/* ====== UI related functions ====== */
-function getMainFeature(features) {
-  if (!features) return 'Playground'
-  const lowerFeatures = features.toLowerCase()
-  if (lowerFeatures.includes('shade')) return 'Shaded'
-  if (lowerFeatures.includes('basketball')) return 'Basketball'
-  if (lowerFeatures.includes('playground')) return 'Playground'
-  return 'Park'
-}
-
-function formatShadeInfo(shadeCoverage) {
-  return `${Math.round(shadeCoverage || 0)}% shade`
-}
-
+/* ====== UI helpers ====== */
 function getDescription(item, currentSeason, index) {
   const shade = Math.round(item.shade_coverage || 0)
   const sun = 100 - shade
   
-  // Create unique descriptions based on index for variety
   const summerDescriptions = [
     `"Perfect tree canopy: Your little ones can play safely under nature's umbrella (${shade}% shade)"`,
     `"Green oasis: Cool, comfortable, and perfect for family fun in the shade (${shade}% shade)"`,
@@ -493,12 +394,9 @@ function getDescription(item, currentSeason, index) {
     `"Sunny haven: Bright and cheerful spot for cold weather activities (${sun}% sun)"`
   ]
   
-  // Use index to cycle through descriptions for variety
-  if (currentSeason === 'summer') {
-    return summerDescriptions[index % summerDescriptions.length]
-  } else {
-    return winterDescriptions[index % winterDescriptions.length]
-  }
+  return currentSeason === 'summer'
+    ? summerDescriptions[index % summerDescriptions.length]
+    : winterDescriptions[index % winterDescriptions.length]
 }
 
 function getTags(item, season) {
@@ -507,19 +405,16 @@ function getTags(item, season) {
   const shade = Math.round(item.shade_coverage || 0)
   const sun = 100 - shade
   
-  // Add seasonal comfort level tag
   if (season === 'summer') {
     if (shade > 60) tags.push('High Shade')
     else if (shade > 30) tags.push('Medium Shade')
     else tags.push('Low Shade')
   } else {
-    // winter - opposite logic
     if (sun > 70) tags.push('High Sun')
     else if (sun > 40) tags.push('Medium Sun')
     else tags.push('Low Sun')
   }
   
-  // Add feature tags
   if (features.toLowerCase().includes('swing')) tags.push('Swings')
   if (features.toLowerCase().includes('slide')) tags.push('Slides')
   if (features.toLowerCase().includes('climb')) tags.push('Climbing')
@@ -527,7 +422,7 @@ function getTags(item, season) {
   if (features.toLowerCase().includes('barbecue')) tags.push('BBQ')
   if (features.toLowerCase().includes('disabled')) tags.push('Accessible')
   
-  return tags.slice(0, 3) // Limit to 3 tags
+  return tags.slice(0, 3)
 }
 
 function getPhotoStyle(name) {
@@ -545,41 +440,23 @@ function navigateToPlayground(item) {
   const lng = item.coordinates ? item.coordinates[0] : null
   
   let url = 'https://www.google.com/maps/dir/?api=1&origin=Current+Location&travelmode=WALKING'
-  
-  if (lat && lng) {
-    url += `&destination=${lat},${lng}`
-  } else {
-    url += `&destination=${encodeURIComponent(item.name)}`
-  }
-  
+  if (lat && lng) url += `&destination=${lat},${lng}`
+  else url += `&destination=${encodeURIComponent(item.name)}`
   window.open(url, '_blank', 'noopener')
 }
-
-// goTo function for navigation button
-function goTo(item) {
-  navigateToPlayground(item)
-}
+function goTo(item) { navigateToPlayground(item) }
 
 /* ====== life cycle ====== */
 onMounted(async () => {
-  // wait for DOM to be ready
   await nextTick()
-  
-  // map init
   initMap()
-  
-  // data fetch
   await fetchData()
 })
 
-// season change
 watch(season, () => {
-  if (playgroundsData.value) {
-    updateMapLayer(playgroundsData.value)
-  }
+  if (playgroundsData.value) updateMapLayer(playgroundsData.value)
 })
 </script>
-
 
 <style scoped>
 /* background */
@@ -620,97 +497,35 @@ watch(season, () => {
   opacity: 0.95;
 }
 
-/* Tabs */
-/* Season Toggle Slider */
+/* Season Toggle */
 .season-toggle-container {
   display: flex;
   justify-content: left;
   margin-top: 10px;
   margin-bottom: 15px;
 }
-
-.season-toggle {
-  position: relative;
-  display: inline-block;
-  width: 180px;
-  height: 45px;
-}
-
-.season-toggle input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
+.season-toggle { position: relative; display: inline-block; width: 180px; height: 45px; }
+.season-toggle input { opacity: 0; width: 0; height: 0; }
 .toggle-slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: #f5f5f5;
-  border-radius: 22px;
-  border: 2px solid #e0e0e0;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+  background: #f5f5f5; border-radius: 22px; border: 2px solid #e0e0e0;
+  transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
-
-/* Winter background when checked */
-input:checked + .toggle-slider {
-  background: #f9d39b;
-  border: 2px solid #fccf87;
-}
-
+input:checked + .toggle-slider { background: #f9d39b; border: 2px solid #fccf87; }
 .toggle-slider:before {
-  position: absolute;
-  content: "";
-  height: 39px;
-  width: 87px;
-  left:1.5px;
-  bottom: 1.5px;
-  background: #80ad26f6;
-  transition: all 0.3s ease;
-  border-radius: 19px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  position: absolute; content: ""; height: 39px; width: 87px; left:1.5px; bottom: 1.5px;
+  background: #80ad26f6; transition: all 0.3s ease; border-radius: 19px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
-
-/* Winter color (orange) when checked */
-input:checked + .toggle-slider:before {
-  transform: translateX(87px);
-  background: #fcaa2f;
-}
-
+input:checked + .toggle-slider:before { transform: translateX(87px); background: #fcaa2f; }
 .toggle-text {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  font-weight: 600;
-  font-size: 13px;
-  transition: all 0.3s ease;
-  pointer-events: none;
-  width: 50%;
-  text-align: center;
+  position: absolute; top: 50%; transform: translateY(-50%); font-weight: 600; font-size: 13px;
+  transition: all 0.3s ease; pointer-events: none; width: 50%; text-align: center;
 }
+.toggle-text.summer-text { left: 0; color: #708601; }
+.toggle-text.winter-text { right: 0; color: #da660e; }
+.toggle-text.active { color: white; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); }
 
-.toggle-text.summer-text {
-  left: 0;
-  color: #708601;
-}
-
-.toggle-text.winter-text {
-  right: 0;
-  color: #da660e;
-}
-
-.toggle-text.active {
-  color: white;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-}
-
-
-
-/* left and right main columns */
+/* main layout */
 .main {
   display: grid;
   grid-template-columns: minmax(320px, 740px) minmax(280px, 520px);
@@ -719,55 +534,20 @@ input:checked + .toggle-slider:before {
   align-items: start;
 }
 @media (max-width: 980px) {
-  .main { 
-    grid-template-columns: 1fr;
-    padding: 30px 20px 20px 20px;
-  }
+  .main { grid-template-columns: 1fr; padding: 30px 20px 20px 20px; }
 }
-
 @media (max-width: 768px) {
-  .main {
-    padding: 20px 15px 20px 15px;
-    gap: 20px;
-  }
-  
-  .map-container {
-    height: 400px;
-  }
-  
-  .map-panel {
-    min-height: 450px;
-  }
+  .main { padding: 20px 15px; gap: 20px; }
+  .map-container { height: 400px; }
+  .map-panel { min-height: 450px; }
 }
-
 @media (max-width: 480px) {
-  .main {
-    padding: 15px 10px 15px 10px;
-    gap: 15px;
-  }
-  
-  .map-container {
-    height: 350px;
-  }
-  
-  .map-panel {
-    min-height: 400px;
-    padding: 12px;
-  }
-  
-  .season-toggle-container {
-    margin-bottom: 12px;
-  }
-  
-  .rec-title {
-    font-size: 16px;
-    padding: 8px 12px;
-  }
-  
-  .rec-subtitle {
-    font-size: 12px;
-    margin-bottom: 12px;
-  }
+  .main { padding: 15px 10px; gap: 15px; }
+  .map-container { height: 350px; }
+  .map-panel { min-height: 400px; padding: 12px; }
+  .season-toggle-container { margin-bottom: 12px; }
+  .rec-title { font-size: 16px; padding: 8px 12px; }
+  .rec-subtitle { font-size: 12px; margin-bottom: 12px; }
 }
 
 /* map container */
@@ -783,118 +563,36 @@ input:checked + .toggle-slider:before {
   min-height: 600px;
 }
 .panel-header {
-  color: #4a5a3b;
-  font-weight: 800;
-  font-size: 20px;
-  letter-spacing: 1.2px;
-  margin: 15px 0 5px 15px;
+  color: #4a5a3b; font-weight: 800; font-size: 20px; letter-spacing: 1.2px; margin: 15px 0 5px 15px;
 }
-.map-wrap {
-  display: grid;
-  grid-template-columns: 1fr 64px;
-  gap: 12px;
-  align-items: start;
-}
-
+.map-wrap { display: grid; grid-template-columns: 1fr 64px; gap: 12px; align-items: start; }
 .map-container {
-  height: 650px;
-  border-radius: 12px;
-  border: 1px solid #e1eadf;
-  position: relative;
-  overflow: hidden;
-  margin: 15px 0 10px 10px;
+  height: 650px; border-radius: 12px; border: 1px solid #e1eadf; position: relative; overflow: hidden; margin: 15px 0 10px 10px;
 }
-
 .map-loading, .map-error {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: #f0f6ef;
-  color: #6d7a64;
-  gap: 12px;
+  height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f0f6ef; color: #6d7a64; gap: 12px;
 }
+.loading-spinner { width: 24px; height: 24px; border: 2px solid #e1eadf; border-top: 2px solid #2e7d32; border-radius: 50%; animation: spin 1s linear infinite; }
+@keyframes spin { 0% { transform: rotate(0deg);} 100% { transform: rotate(360deg);} }
+.retry-btn { padding: 8px 16px; background: #2e7d32; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
+.retry-btn:hover { background: #1b5e20; }
 
-.loading-spinner {
-  width: 24px;
-  height: 24px;
-  border: 2px solid #e1eadf;
-  border-top: 2px solid #2e7d32;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.retry-btn {
-  padding: 8px 16px;
-  background: #2e7d32;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-}
-.retry-btn:hover {
-  background: #1b5e20;
-}
-
-/* right color bar */
+/* color bar */
 .colorbar { display: flex; flex-direction: column; align-items: center; }
 .colorbar .bar {
-  width: 18px;
-  height: 280px;
-  border-radius: 8px;
-  border: 1px solid #d9e9d6;
-  background: linear-gradient(180deg, #1f8f3a 0%, #a7d6a1 100%); /* summer default */
+  width: 18px; height: 280px; border-radius: 8px; border: 1px solid #d9e9d6;
+  background: linear-gradient(180deg, #1f8f3a 0%, #a7d6a1 100%);
   margin-top: 70px;
 }
-.colorbar.winter .bar {
-  background: linear-gradient(180deg, #f6c35b 0%, #fde8b2 100%);
-}
-
-.bar-label {
-  writing-mode: vertical-rl;
-  transform: rotate(180deg);
-  font-size: 12px;
-  color: #456049;
-  margin-top: 8px;
-}
-.bar-scale {
-  display: grid;
-  gap: 4px;
-  margin-top: 6px;
-  font-size: 11px;
-  color: #6b7b67;
-}
+.colorbar.winter .bar { background: linear-gradient(180deg, #f6c35b 0%, #fde8b2 100%); }
+.bar-label { writing-mode: vertical-rl; transform: rotate(180deg); font-size: 12px; color: #456049; margin-top: 8px; }
+.bar-scale { display: grid; gap: 4px; margin-top: 6px; font-size: 11px; color: #6b7b67; }
 
 /* legend */
-.map-caption {
-  margin: 65px 2px 8px 10px;
-  font-size: 12px;
-  color: #6b7b67;
-}
-.legend {
-  display: grid;
-  gap: 6px;
-  margin-top: 4px;
-  margin-left: 10px;
-  margin-bottom: -50px;
-}
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: #4f5f48;
-  font-size: 14px;
-}
-.legend-box {
-  width: 18px; height: 18px; border-radius: 4px; border: 1px solid #cfe3cc;
-}
+.map-caption { margin: 65px 2px 8px 10px; font-size: 12px; color: #6b7b67; }
+.legend { display: grid; gap: 6px; margin-top: 4px; margin-left: 10px; margin-bottom: -50px; }
+.legend-item { display: flex; align-items: center; gap: 10px; color: #4f5f48; font-size: 14px; }
+.legend-box { width: 18px; height: 18px; border-radius: 4px; border: 1px solid #cfe3cc; }
 .legend-box.more { background: #2e7d32; }
 .legend-box.more.winter { background: #f6c35b; }
 .legend-box.more.pollen { background: #cc6ad8; }
@@ -902,340 +600,56 @@ input:checked + .toggle-slider:before {
 
 /* right recommendation cards */
 .recommendation {
-  background: #f4f9f0cc;
-  border-radius: 18px;
-  padding: 18px;
-  box-shadow: 0 4px 18px rgba(0,0,0,0.06);
-  border: 1px solid rgba(46, 125, 50, 0.08);
-  height: 100%;
-  min-height: 600px;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  overflow: hidden;
+  background: #f4f9f0cc; border-radius: 18px; padding: 18px; box-shadow: 0 4px 18px rgba(0,0,0,0.06);
+  border: 1px solid rgba(46, 125, 50, 0.08); height: 100%; min-height: 600px; display: flex; flex-direction: column; position: relative; overflow: hidden;
 }
-
-/* Playground decoration */
-.playground-decoration {
-  display: flex;
-  justify-content: right;
-  margin-top: -100px;
-  margin-right: -30px;
-  margin-bottom: -90px;
-  pointer-events: none;
-}
-
-.playground-icon {
-  width: 400px;
-  height: 400px;
-  object-fit: contain;
-  opacity: 0.9;
-  animation: float 4s ease-in-out infinite;
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0px) rotate(-18deg) scale(1); }
-  50% { transform: translateY(-2px) rotate(-15deg) scale(1.02); }
-}
-
+.playground-decoration { display: flex; justify-content: right; margin-top: -100px; margin-right: -30px; margin-bottom: -90px; pointer-events: none; }
+.playground-icon { width: 400px; height: 400px; object-fit: contain; opacity: 0.9; animation: float 4s ease-in-out infinite; }
+@keyframes float { 0%, 100% { transform: translateY(0px) rotate(-18deg) scale(1); } 50% { transform: translateY(-2px) rotate(-15deg) scale(1.02); } }
 .rec-title {
-  background: #e4f5d9;
-  color: #355f34;
-  font-weight: 900;
-  letter-spacing: 1px;
-  border-radius: 999px;
-  padding: 10px 16px;
-  display: inline-block;
-  box-shadow: inset 0 -1px 0 rgba(0,0,0,0.04);
-  margin: 2px 0 8px;
-  text-align: center;
+  background: #e4f5d9; color: #355f34; font-weight: 900; letter-spacing: 1px; border-radius: 999px; padding: 10px 16px; display: inline-block;
+  box-shadow: inset 0 -1px 0 rgba(0,0,0,0.04); margin: 2px 0 8px; text-align: center;
 }
-
-.rec-subtitle {
-  color: #6b7b67;
-  font-size: 14px;
-  margin-bottom: 16px;
-  font-style: italic;
-  text-align: center;
-}
-
-.rec-loading {
-  display: grid;
-  gap: 14px;
-}
+.rec-subtitle { color: #6b7b67; font-size: 14px; margin-bottom: 16px; font-style: italic; text-align: center; }
+.rec-loading { display: grid; gap: 14px; }
 .rec-skeleton {
-  height: 180px;
-  background: linear-gradient(90deg, #e7efe6, #f4faf3, #e7efe6);
-  background-size: 200% 100%;
-  animation: shimmer 1.4s infinite;
-  border-radius: 16px;
+  height: 180px; background: linear-gradient(90deg, #e7efe6, #f4faf3, #e7efe6);
+  background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 16px;
 }
-
-@keyframes shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-
-.rec-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: grid;
-  gap: 14px;
-  flex: 1;
-  overflow-y: auto;
-}
-.rec-card {
-  background: #fff;
-  border-radius: 16px;
-  border: 1px solid #e4efe1;
-  padding: 14px;
-  display: grid;
-  gap: 10px;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
-}
-.rec-head {
-  display: grid;
-  grid-template-columns: 28px 1fr;
-  gap: 10px;
-  align-items: center;
-}
+@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+.rec-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 14px; flex: 1; overflow-y: auto; }
+.rec-card { background: #fff; border-radius: 16px; border: 1px solid #e4efe1; padding: 14px; display: grid; gap: 10px; box-shadow: 0 6px 18px rgba(0,0,0,0.06); }
+.rec-head { display: grid; grid-template-columns: 28px 1fr; gap: 10px; align-items: center; }
 .rec-icon { font-size: 22px; }
-.rec-name {
-  margin: 0;
-  color: #355f34;
-  font-size: 1.05rem;
-  font-weight: 800;
-}
-.rec-tags {
-  grid-column: 1 / -1;
-  display: flex; flex-wrap: wrap; gap: 8px; margin-top: 2px;
-}
-.tag {
-  background: #f3fbef;
-  border: 1px solid #d8ecd4;
-  border-radius: 999px;
-  padding: 4px 10px;
-  font-size: 12px;
-  color: #547a54;
-}
-.rec-body {
-  display: grid;
-  grid-template-columns: 120px 1fr;
-  gap: 12px;
-  align-items: start;
-}
-
-.rec-content {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.rec-stats {
-  background: #f8f9fa;
-  border-radius: 8px;
-  padding: 8px 12px;
-  border-left: 3px solid #5c9823;
-}
-
-.stat-item {
-  font-size: 13px;
-  color: #48652e;
-}
-
-.rec-features {
-  font-size: 13px;
-  color: #440661;
-  line-height: 1.4;
-  background: #efe1f134;
-  padding: 8px 12px;
-  border-radius: 8px;
-  border-left: 3px solid #9b58b3;
-}
+.rec-name { margin: 0; color: #355f34; font-size: 1.05rem; font-weight: 800; }
+.rec-tags { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; margin-top: 2px; }
+.tag { background: #f3fbef; border: 1px solid #d8ecd4; border-radius: 999px; padding: 4px 10px; font-size: 12px; color: #547a54; }
+.rec-body { display: grid; grid-template-columns: 120px 1fr; gap: 12px; align-items: start; }
+.rec-content { display: flex; flex-direction: column; gap: 8px; }
+.rec-stats { background: #f8f9fa; border-radius: 8px; padding: 8px 12px; border-left: 3px solid #5c9823; }
+.stat-item { font-size: 13px; color: #48652e; }
+.rec-features { font-size: 13px; color: #440661; line-height: 1.4; background: #efe1f134; padding: 8px 12px; border-radius: 8px; border-left: 3px solid #9b58b3; }
 .rec-photo {
   width: 120px; height: 84px; border-radius: 10px;
-  background: url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=800&auto=format&fit=crop') center/cover no-repeat;
-  border: 1px solid #e5efe3;
+  background: url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=800&auto=format&fit=crop') center/cover no-repeat; border: 1px solid #e5efe3;
 }
-.rec-desc {
-  margin: 0;
-  font-size: 16px;
-  font-family: "Sour Gummy", cursive;
-  color: #f4a3ee;
-  line-height: 1.5;
-}
+.rec-desc { margin: 0; font-size: 16px; font-family: "Sour Gummy", cursive; color: #f4a3ee; line-height: 1.5; }
 .rec-foot { display: flex; justify-content: flex-end; }
 .nav-btn {
-  border: none;
-  background: #edfce0;
-  color: #59912b;
-  border-radius: 999px;
-  padding: 8px 14px;
-  font-weight: 700;
-  cursor: pointer;
-  box-shadow: inset 0 0 0 2px #e1f3d9;
-  transition: transform 0.08s ease, box-shadow 0.2s ease, background 0.2s ease;
+  border: none; background: #edfce0; color: #59912b; border-radius: 999px; padding: 8px 14px; font-weight: 700; cursor: pointer;
+  box-shadow: inset 0 0 0 2px #e1f3d9; transition: transform 0.08s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 .nav-btn:hover { transform: translateY(-1px); background: #f7fff4; }
 
-.empty-state {
-  text-align: center;
-  padding: 32px;
-  color: #6d7a64;
-}
+.empty-state { text-align: center; padding: 32px; color: #6d7a64; }
 
-:global(.popup-content) {
-  max-width: 200px;
-}
-:global(.popup-content h4) {
-  margin: 0 0 8px 0;
-  color: #2e7d32;
-}
+:global(.popup-content) { max-width: 200px; }
+:global(.popup-content h4) { margin: 0 0 8px 0; color: #2e7d32; }
 :global(.popup-nav-btn) {
-  margin-top: 8px;
-  padding: 4px 8px;
-  background: #2e7d32;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 12px;
+  margin-top: 8px; padding: 4px 8px; background: #2e7d32; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;
 }
 
 /* Footer */
-.footer {
-  background: #2e7d32;
-  color: white;
-  text-align: center;
-  padding: 30px 0;
-}
-
-.footer p {
-  margin: 0;
-  font-size: 1rem;
-}
-/* ===== AI Chat styles (floating right-bottom) ===== */
-.ai-fab {
-  position: fixed;
-  right: 24px;
-  bottom: 24px;
-  z-index: 999;
-  background: #2e7d32;
-  color: #fff;
-  border: none;
-  border-radius: 999px;
-  padding: 10px 16px;
-  font-weight: 800;
-  box-shadow: 0 8px 20px rgba(0,0,0,.12);
-  cursor: pointer;
-}
-.ai-fab:hover { background: #256628; }
-
-.ai-chat-panel {
-  position: fixed;
-  right: 24px;
-  bottom: 84px;
-  width: 360px;
-  max-height: 540px;
-  background: #fff;
-  border: 1px solid #e4efe1;
-  border-radius: 14px;
-  box-shadow: 0 12px 28px rgba(0,0,0,.16);
-  display: flex;
-  flex-direction: column;
-  z-index: 999;
-}
-
-.ai-chat-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 12px;
-  background: #e8f6e3;
-  color: #355f34;
-  font-weight: 900;
-  border-top-left-radius: 14px;
-  border-top-right-radius: 14px;
-}
-
-.ai-close {
-  border: none;
-  background: transparent;
-  font-size: 16px;
-  cursor: pointer;
-  color: #466f45;
-}
-
-.ai-chat-body {
-  padding: 12px;
-  overflow-y: auto;
-  flex: 1;
-  background: #fafdf9;
-}
-
-.ai-msg { display: flex; margin-bottom: 10px; }
-.ai-msg.user   { justify-content: flex-end; }
-.ai-msg.assistant { justify-content: flex-start; }
-
-.ai-bubble {
-  max-width: 78%;
-  padding: 10px 12px;
-  border-radius: 12px;
-  line-height: 1.4;
-  font-size: 14px;
-  border: 1px solid #e5efe3;
-}
-.ai-msg.user .ai-bubble {
-  background: #edfce0; color: #355f34;
-  border-top-right-radius: 4px;
-}
-.ai-msg.assistant .ai-bubble {
-  background: #fff; color: #2f3d2c;
-  border-top-left-radius: 4px;
-}
-
-.ai-input-row {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 8px;
-  padding: 10px;
-  border-top: 1px solid #eef5ec;
-}
-.ai-input-row input {
-  border: 1px solid #dfead8;
-  border-radius: 8px;
-  padding: 10px 12px;
-  outline: none;
-}
-.ai-input-row button {
-  border: none;
-  background: #2e7d32;
-  color: #fff;
-  border-radius: 8px;
-  padding: 10px 14px;
-  font-weight: 700;
-  cursor: pointer;
-}
-.ai-input-row button[disabled] { opacity: .6; cursor: not-allowed; }
-
-.ai-hint {
-  font-size: 11px;
-  color: #6b7b67;
-  padding: 0 10px 10px;
-}
-
-.ai-loading-row { display: flex; gap: 6px; padding: 6px 4px; }
-.ai-dot {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: #9bc285; animation: ai-blink 1s infinite ease-in-out;
-}
-.ai-dot:nth-child(2){ animation-delay: .15s; }
-.ai-dot:nth-child(3){ animation-delay: .3s; }
-@keyframes ai-blink {
-  0%, 100% { opacity: .2; transform: translateY(0); }
-  50%      { opacity: 1;  transform: translateY(-2px); }
-}
-.ai-error { color:#b00020; font-size:12px; padding: 4px 0; }
-
+.footer { background: #2e7d32; color: white; text-align: center; padding: 30px 0; }
+.footer p { margin: 0; font-size: 1rem; }
 </style>
