@@ -52,10 +52,9 @@
           </button>
 
           <button class="nav-card" @click="activeComponent = 'ComfortEducationChat'">
-            <div class="card-icon">🤖</div>
-            <h3>AI Comfort Assistant</h3>
+            <div class="card-icon">💡</div>
+            <h3>Frequently Asked Questions</h3>
             <p>Get instant answers to comfort and safety questions</p>
-            <span class="card-badge">AI Powered</span>
           </button>
         </div>
       </div>
@@ -149,7 +148,7 @@ const closeModal = () => (activeComponent.value = null)
   font-weight: 800;
   letter-spacing: .2px;
   margin: 0 0 16px;
-  color: #8efaf7;                  /* 首页同款青色标题 */
+  color: #8efaf7;                  
   text-shadow: 1px 1px 3px rgba(0,0,0,.5);
 }
 
@@ -160,54 +159,6 @@ const closeModal = () => (activeComponent.value = null)
   max-width: 850px;
   margin: 0 auto 28px;
   text-shadow: 1px 1px 2px rgba(0,0,0,.6);
-}
-
-/* Hero Section */
-.hero {
-  position: relative;
-  min-height: 520px;
-  background: linear-gradient(135deg, #c8f7cc 0%, #f3d7f7 100%) no-repeat center/cover;
-  display: grid;
-  place-items: center;
-}
-
-.hero::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.35); /* ✅ 黑色半透明遮罩，保证文字可读 */
-}
-
-.hero-overlay {
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  display: grid;
-  place-items: center;
-  padding: 80px 20px;
-}
-
-.hero-inner {
-  max-width: 1100px;
-  text-align: center;
-}
-
-.hero-title {
-  font-size: 3rem;
-  line-height: 1.2;
-  font-weight: 800;
-  color: #8efaf7;
-  margin: 0 0 16px;
-  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.6);
-}
-
-.hero-subtitle {
-  color: #fff;
-  font-size: 1.15rem;
-  line-height: 1.7;
-  max-width: 850px;
-  margin: 0 auto 28px;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
 }
 
 /* Stats 卡片优化 */
@@ -232,12 +183,12 @@ const closeModal = () => (activeComponent.value = null)
   display: block;
   font-weight: 800;
   font-size: 2.2rem;
-  color: #5e35b1; /* 紫色高亮 */
+  color: #5e35b1;
   margin-bottom: 6px;
 }
 
 .stat-label {
-  color: #2e7d32; /* 绿色副标题 */
+  color: #2e7d32;
   font-size: 1rem;
   font-weight: 500;
 }
@@ -258,7 +209,7 @@ const closeModal = () => (activeComponent.value = null)
   margin: 60px 0 30px;
 }
 
-/* ====== 导航卡片（同首页卡片风格） ====== */
+/* ====== 导航卡片 ====== */
 .navigation {
   padding: 60px 0 90px;
   position: relative;
@@ -307,29 +258,7 @@ const closeModal = () => (activeComponent.value = null)
   color: var(--kp-muted);
 }
 
-/* 小角标（AI Powered 徽章） */
-.card-badge{
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  padding: 6px 12px;
-  font-size: .78rem;
-  font-weight: 700;
-  letter-spacing: .2px;
-  color: #fff !important;
-  background: linear-gradient(135deg,#37c275 0%,#5e35b1 100%) !important; /* 更亮的绿→紫渐变 */
-  border-radius: 999px;
-  border: none;
-  box-shadow: 0 8px 22px rgba(0,0,0,.15), 0 0 0 2px #fff; /* 白色描边，提高对比度 */
-  text-shadow: 0 1px 1px rgba(0,0,0,.25);
-}
-.nav-card:hover .card-badge{
-  transform: translateY(-1px);
-  box-shadow: 0 12px 28px rgba(0,0,0,.18), 0 0 0 2px #fff;
-}
-
-
-/* ====== Modal（毛玻璃、圆角、柔影） ====== */
+/* ====== Modal ====== */
 .modal-overlay {
   position: fixed;
   inset: 0;

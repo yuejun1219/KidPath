@@ -1,18 +1,19 @@
 <template>
   <div class="comfort-education-chat">
+    <!-- Header -->
     <div class="chat-header">
-      <h2>🤖 AI Comfort Assistant</h2>
+      <h2>💡 Frequently Asked Questions</h2>
       <p class="chat-subtitle">Get instant answers to comfort and safety questions</p>
     </div>
 
     <div class="chat-container">
-      <!-- Chat Messages -->
+      <!-- Initial bot welcome message -->
       <div class="chat-messages" ref="chatMessages">
         <div class="message bot-message">
-          <div class="message-avatar">🤖</div>
+          <div class="message-avatar">💡</div>
           <div class="message-content">
             <div class="message-text">
-              Hi! I'm your AI Comfort Assistant. I can help you with questions about:
+              Hi! This is the Frequently Asked Questions section. I can help you with:
               <ul>
                 <li>Heat safety for children</li>
                 <li>Sun protection tips</li>
@@ -26,8 +27,13 @@
           </div>
         </div>
 
-        <div v-for="message in messages" :key="message.id" class="message" :class="message.type + '-message'">
-          <div class="message-avatar">{{ message.type === 'user' ? '👤' : '🤖' }}</div>
+        <div 
+          v-for="message in messages" 
+          :key="message.id" 
+          class="message" 
+          :class="message.type + '-message'"
+        >
+          <div class="message-avatar">{{ message.type === 'user' ? '👤' : '💡' }}</div>
           <div class="message-content">
             <div class="message-text" v-html="message.text"></div>
             <div class="message-time">{{ message.time }}</div>
@@ -35,7 +41,7 @@
         </div>
 
         <div v-if="isTyping" class="message bot-message">
-          <div class="message-avatar">🤖</div>
+          <div class="message-avatar">💡</div>
           <div class="message-content">
             <div class="typing-indicator">
               <span></span>
@@ -128,6 +134,7 @@
     </div>
   </div>
 </template>
+
 
 <script setup>
 import { ref, nextTick, onMounted } from 'vue'
@@ -484,16 +491,23 @@ onMounted(() => {
   font-weight:900; color:var(--kp-purple);
   font-size:clamp(18px,2.6vw,22px);
 }
+
+/* ✅ 改成两列卡片（桌面端） */
 .knowledge-categories{
-  display:grid; gap:18px;
-  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  display:grid;
+  gap:18px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
 }
+
 .knowledge-category{
   background:linear-gradient(180deg,#ffffff 0%,#f7fbff 100%);
   border:1px solid var(--kp-border);
   border-radius:14px;
   padding:16px 18px;
   box-shadow:0 10px 22px rgba(0,0,0,.06);
+  display:flex;            /* 让内容更均匀 */
+  flex-direction:column;
 }
 .knowledge-category h4{
   margin:0 0 8px; color:var(--kp-green);
@@ -502,6 +516,13 @@ onMounted(() => {
 .knowledge-category ul{ margin:0; padding-left:18px; }
 .knowledge-category li{
   line-height:1.7; color:var(--kp-text); font-size:.98rem;
+}
+
+/* ✅ 窄屏回落为一列 */
+@media (max-width: 900px){
+  .knowledge-categories{
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ============ 响应式 ============ */

@@ -1,64 +1,64 @@
 <template>
   <div class="about-page">
-    <!-- Hero Section with News Articles Image -->
+    <!-- Hero（无背景图，干净渐变 + 装饰） -->
     <section class="hero-section">
-      <img 
-        src="/images/news-articles.png" 
-        alt="News Articles" 
-        class="hero-banner"
-      />
-      <div class="hero-text">
+      <div class="hero-inner">
         <h1 class="hero-title">About KidPath</h1>
-        <p class="hero-subtitle">Making outdoor adventures safe and comfortable for families</p>
+        <p class="hero-subtitle">
+          Making outdoor adventures safe and comfortable for families
+        </p>
       </div>
+      <!-- 装饰泡泡 -->
+      <span class="blob b1"></span>
+      <span class="blob b2"></span>
+      <span class="blob b3"></span>
     </section>
 
-    <!-- Main Content Section -->
+    <!-- 主内容：四卡片并列 -->
     <section class="content-section">
       <div class="container">
-        <div class="about-content">
-          <div class="content-grid">
-            <div class="content-card">
-              <h2 class="card-title">Our Mission</h2>
-              <p class="card-text">
-                KidPath is dedicated to helping families discover safe, comfortable outdoor spaces 
-                for children. We provide real-time weather insights, seasonal comfort guides, and 
-                interactive maps to ensure every outdoor adventure is both fun and safe.
-              </p>
-            </div>
+        <div class="content-grid">
+          <article class="content-card">
+            <h2 class="card-title">Our Mission</h2>
+            <p class="card-text">
+              KidPath is dedicated to helping families discover safe, comfortable
+              outdoor spaces for children. We provide real-time weather insights,
+              seasonal comfort guides, and interactive maps so every adventure is
+              both fun and safe.
+            </p>
+          </article>
 
-            <div class="content-card">
-              <h2 class="card-title">What We Do</h2>
-              <p class="card-text">
-                Our platform combines weather data, spatial analysis, and user-friendly interfaces 
-                to help parents make informed decisions about outdoor activities. From finding 
-                nearby water fountains to checking seasonal comfort levels, we've got you covered.
-              </p>
-            </div>
+          <article class="content-card">
+            <h2 class="card-title">What We Do</h2>
+            <p class="card-text">
+              We combine weather data, spatial analysis, and user-friendly
+              interfaces to help parents make informed outdoor decisions — from
+              nearby water access to seasonal comfort levels.
+            </p>
+          </article>
 
-            <div class="content-card">
-              <h2 class="card-title">Technology</h2>
-              <p class="card-text">
-                Built with modern web technologies including Vue.js, Node.js, and advanced 
-                geospatial services, KidPath delivers accurate, real-time information to help 
-                families enjoy the great outdoors safely.
-              </p>
-            </div>
+          <article class="content-card">
+            <h2 class="card-title">Technology</h2>
+            <p class="card-text">
+              Built with Vue, Node.js and modern geospatial services, KidPath
+              delivers accurate, real-time information to help families enjoy the
+              outdoors safely.
+            </p>
+          </article>
 
-            <div class="content-card">
-              <h2 class="card-title">Community</h2>
-              <p class="card-text">
-                We believe in the power of community-driven insights. Our platform grows stronger 
-                with every family that shares their experiences and helps others discover new 
-                safe spaces for children to play and explore.
-              </p>
-            </div>
-          </div>
+          <article class="content-card">
+            <h2 class="card-title">Community</h2>
+            <p class="card-text">
+              We believe in community-driven insights. KidPath grows stronger
+              when families share experiences and help others discover new safe
+              spaces to play and explore.
+            </p>
+          </article>
         </div>
       </div>
     </section>
 
-    <!-- Features Section -->
+    <!-- 可选：功能一览（保留更清爽的风格） -->
     <section class="features-section">
       <div class="container">
         <h2 class="section-title">Key Features</h2>
@@ -66,25 +66,22 @@
           <div class="feature-item">
             <div class="feature-icon">🌡️</div>
             <h3 class="feature-title">Weather Insights</h3>
-            <p class="feature-description">Real-time weather data to help you plan outdoor activities</p>
+            <p class="feature-description">Real-time weather to plan activities</p>
           </div>
-          
           <div class="feature-item">
             <div class="feature-icon">🗺️</div>
             <h3 class="feature-title">Interactive Maps</h3>
-            <p class="feature-description">Discover nearby playgrounds, fountains, and safe spaces</p>
+            <p class="feature-description">Find playgrounds & family spots</p>
           </div>
-          
           <div class="feature-item">
             <div class="feature-icon">🌱</div>
             <h3 class="feature-title">Seasonal Guides</h3>
-            <p class="feature-description">Comfort recommendations based on current weather conditions</p>
+            <p class="feature-description">Comfort tips by season & weather</p>
           </div>
-          
           <div class="feature-item">
             <div class="feature-icon">💧</div>
             <h3 class="feature-title">Water Access</h3>
-            <p class="feature-description">Find nearby water fountains and hydration stations</p>
+            <p class="feature-description">Nearby fountains & refill stations</p>
           </div>
         </div>
       </div>
@@ -93,111 +90,85 @@
 </template>
 
 <script setup>
-// Component logic can be added here if needed
+// 无逻辑即可
 </script>
 
 <style scoped>
-/* KidPath tokens（与首页一致） */
+/* ========= Tokens ========= */
 .about-page{
   --kp-green:#2e7d32;
   --kp-purple:#5e35b1;
   --kp-text:#2f3d4a;
   --kp-muted:#667085;
   --kp-border:rgba(0,0,0,.08);
-  --kp-shadow:0 12px 30px rgba(0,0,0,.12);
-  --kp-shadow-hover:0 18px 40px rgba(0,0,0,.16);
+  --shadow-1:0 10px 24px rgba(0,0,0,.08);
+  --shadow-2:0 18px 40px rgba(0,0,0,.14);
   font-family:'Segoe UI','Arial',sans-serif;
   color:var(--kp-text);
   background:#fff;
-  min-height:100vh;
 }
 
-/* ===== Hero ===== */
+/* ========= Hero（无图） ========= */
 .hero-section{
   position:relative;
-  padding-top:120px;
-  min-height:420px;
+  padding:120px 20px 72px;
+  background:
+    radial-gradient(1200px 300px at 10% -20%, rgba(13,71,161,.06), transparent 60%),
+    radial-gradient(1100px 300px at 110% -10%, rgba(46,125,50,.08), transparent 60%),
+    linear-gradient(180deg,#f6fbff 0%, #f8fff9 100%);
   overflow:hidden;
-  background:linear-gradient(180deg,#eef5ff 0%,#f7fcf8 100%);
 }
-.hero-section::after{ /* 顶部轻微渐变压黑，让标题更清晰 */
-  content:"";
-  position:absolute; inset:0;
-  background:linear-gradient(0deg,rgba(0,0,0,.00) 40%,rgba(0,0,0,.18) 100%);
-  pointer-events:none;
-}
-.hero-banner{
-  position:absolute; inset:0;
-  width:100%; height:100%;
-  object-fit:cover;
-  filter:brightness(.85) saturate(1.05);
-}
-.hero-text{
-  position:relative; z-index:1;
-  max-width:1100px; margin:0 auto;
-  padding:48px 20px 64px;
-  text-align:center;
-  color:#fff;
-}
+.hero-inner{ max-width:1100px; margin:0 auto; text-align:center; }
 .hero-title{
-  font-weight:900;
-  letter-spacing:.4px;
-  font-size:clamp(28px,4vw,44px);
   margin:0 0 10px;
-  text-shadow:0 6px 18px rgba(0,0,0,.25);
+  font-weight:900;
+  font-size:clamp(28px,4vw,44px);
+  letter-spacing:.3px;
+  background:linear-gradient(90deg,#2e7d32 0%, #5e35b1 85%);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
 }
 .hero-subtitle{
   margin:0 auto;
-  max-width:780px;
+  max-width:760px;
+  color:var(--kp-muted);
   font-size:clamp(15px,1.8vw,18px);
   line-height:1.8;
-  color:#ffffff;                        
-  text-shadow:0 3px 16px rgba(0,0,0,.55);
-  display:inline-block;
-  padding:8px 14px;
-  background:rgba(0,0,0,.28);
-  backdrop-filter:blur(3px);
-  border-radius:12px;
 }
 
+/* 装饰 blob */
+.blob{ position:absolute; border-radius:50%; filter: blur(18px); opacity:.25; }
+.b1{ width:280px; height:280px; left:-80px; top:-60px; background:#c8e6c9; }
+.b2{ width:240px; height:240px; right:-60px; top:-40px; background:#d1c4e9; }
+.b3{ width:160px; height:160px; right:16%; top:40%; background:#e3f2fd; }
 
-/* ===== Content ===== */
-.content-section{
-  padding:64px 0;
-  background:linear-gradient(180deg,#f7fcf8 0%,#ffffff 100%);
-}
+/* ========= Content（四列并列） ========= */
+.content-section{ padding:64px 0; }
 .container{ max-width:1200px; margin:0 auto; padding:0 20px; }
 
 .content-grid{
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  grid-template-columns:repeat(4, minmax(0, 1fr)); /* ← 桌面端固定四列 */
   gap:22px;
-  margin-top:28px;
 }
 .content-card{
-  background:linear-gradient(180deg,#ffffff 0%,#f9fbff 100%);
+  background:linear-gradient(180deg,#ffffff 0%,#fbfcff 100%);
   border:1px solid var(--kp-border);
   border-radius:18px;
   padding:22px;
-  box-shadow:var(--kp-shadow);
-  transition:transform .18s ease, box-shadow .18s ease;
+  box-shadow:var(--shadow-1);
+  transition:transform .16s ease, box-shadow .16s ease, border-color .16s ease;
 }
-.content-card:hover{ transform:translateY(-3px); box-shadow:var(--kp-shadow-hover); }
+.content-card:hover{ transform:translateY(-3px); box-shadow:var(--shadow-2); border-color:rgba(46,125,50,.2); }
 .card-title{
   margin:2px 0 10px;
   font-weight:800;
   font-size:1.1rem;
   color:var(--kp-green);
-  letter-spacing:.2px;
 }
-.card-text{
-  color:var(--kp-muted);
-  line-height:1.8;
-  font-size:1rem;
-}
+.card-text{ color:var(--kp-muted); line-height:1.8; font-size:1rem; }
 
-/* ===== Features ===== */
-.features-section{ padding:64px 0; background:#fff; }
+/* ========= Features ========= */
+.features-section{ padding:64px 0 80px; background:#fff; }
 .section-title{
   text-align:center;
   font-weight:900;
@@ -207,7 +178,7 @@
 }
 .features-grid{
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  grid-template-columns:repeat(4, minmax(0, 1fr)); /* 这里也四列保持一致 */
   gap:20px;
 }
 .feature-item{
@@ -216,10 +187,10 @@
   background:#fff;
   border:1px solid var(--kp-border);
   border-radius:16px;
-  box-shadow:var(--kp-shadow);
-  transition:transform .18s ease, box-shadow .18s ease;
+  box-shadow:var(--shadow-1);
+  transition:transform .16s ease, box-shadow .16s ease;
 }
-.feature-item:hover{ transform:translateY(-3px); box-shadow:var(--kp-shadow-hover); }
+.feature-item:hover{ transform:translateY(-3px); box-shadow:var(--shadow-2); }
 .feature-icon{
   width:56px; height:56px; margin:0 auto 12px; display:grid; place-items:center;
   border-radius:50%;
@@ -228,17 +199,15 @@
   font-size:28px;
   box-shadow:0 10px 24px rgba(94,53,177,.18);
 }
-.feature-title{
-  margin:0 0 8px; font-weight:800; color:var(--kp-text); font-size:1.05rem;
-}
-.feature-description{
-  color:var(--kp-muted); line-height:1.7; font-size:.98rem;
-}
+.feature-title{ margin:0 0 8px; font-weight:800; color:var(--kp-text); font-size:1.05rem; }
+.feature-description{ color:var(--kp-muted); line-height:1.7; font-size:.98rem; }
 
-/* ===== Responsive ===== */
-@media (max-width:768px){
-  .hero-section{ padding-top:96px; min-height:360px; }
-  .hero-text{ padding:40px 16px 56px; }
+/* ========= 响应式（宽度不足时降级） ========= */
+@media (max-width: 1100px){
+  .content-grid, .features-grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 640px){
+  .content-grid, .features-grid{ grid-template-columns: 1fr; }
+  .hero-section{ padding:100px 16px 56px; }
 }
 </style>
-
