@@ -6,7 +6,7 @@ import CanopySection from './CanopySection.vue'
 import WaterAccess from '@/components/WaterAccess.vue'
 import NearbyFountains from '@/components/NearbyFountains.vue'
 import WeatherInsights from '@/components/WeatherInsights.vue'
-import AskAiWidget from '@/components/AskAiWidget.vue'   // ★ 新增
+import AskAiWidget from '@/components/AskAiWidget.vue'   // AI 悬浮按钮
 
 /* ---------- cross-section plumbing ---------- */
 const selectedSuburbs = ref([])
@@ -146,9 +146,7 @@ const API_BASE = import.meta.env.VITE_API_BASE    // 例如 https://api.kidpath.
             Plan <strong>shade-first</strong> routes and find <strong>nearby drinking water</strong>, all in one place.
           </p>
 
-          <div class="cta-row">
-            <a class="btn btn-primary" href="#route">🧭 Plan a route</a>
-          </div>
+          <!-- 已按你的要求删除“Plan a route”按钮 -->
 
           <div class="mode-switch glass small">
             <a class="seg" href="#shade"><i>🌳</i><span>Shade</span></a>
@@ -183,7 +181,7 @@ const API_BASE = import.meta.env.VITE_API_BASE    // 例如 https://api.kidpath.
       </svg>
     </header>
 
-    <!-- SHADE / CANOPY (STACKED) -->
+    <!-- SHADE / CANOPY -->
     <section id="shade" class="section-grid band stack-first">
       <aside class="aside reveal">
         <h2 class="title-underline">Tree canopy by suburb</h2>
@@ -206,7 +204,7 @@ const API_BASE = import.meta.env.VITE_API_BASE    // 例如 https://api.kidpath.
           <div class="info-card">
             <div class="icon">🛤️</div>
             <div class="title">Street-level picks</div>
-            <div class="desc">Want shady paths? Try <b>Plan a route</b> below.</div>
+            <div class="desc">Want shady paths? Try <b>Shade Quest</b>.</div>
           </div>
         </div>
       </aside>
@@ -277,44 +275,6 @@ const API_BASE = import.meta.env.VITE_API_BASE    // 例如 https://api.kidpath.
       </div>
     </section>
 
-    <!-- ROUTE -->
-    <section id="route" class="section-grid band stack-first">
-      <aside class="aside reveal">
-        <h2 class="title-underline">Plan a cool route</h2>
-        <p class="muted lead">
-          Street-level routing that favours shade. Pick two points; we’ll score walking options using nearby parks & street trees.
-        </p>
-
-        <div class="info-cards">
-          <div class="info-card">
-            <div class="icon">📍</div>
-            <div class="title">Pick start & end</div>
-            <div class="desc">We’ll fetch alternative walking paths.</div>
-          </div>
-          <div class="info-card">
-            <div class="icon">🎚️</div>
-            <div class="title">Tune shade bias</div>
-            <div class="desc">Nudge the mix of parks vs street trees.</div>
-          </div>
-          <div class="info-card">
-            <div class="icon">💧</div>
-            <div class="title">Refill stops</div>
-            <div class="desc">After choosing a route, scroll to Water for taps.</div>
-          </div>
-        </div>
-      </aside>
-
-      <div class="content card route-card reveal">
-        <div class="route-placeholder">
-          <h3>🌳 Shade Quest</h3>
-          <p>Advanced route planning with shade optimization has moved to its dedicated page.</p>
-          <router-link to="/shade-quest" class="cta-button">
-            Launch Shade Quest →
-          </router-link>
-        </div>
-      </div>
-    </section>
-
     <!-- Footer -->
     <footer class="footer">
       <div class="container">
@@ -322,7 +282,7 @@ const API_BASE = import.meta.env.VITE_API_BASE    // 例如 https://api.kidpath.
       </div>
     </footer>
 
-    <!-- ★ 右下角 AI（全站悬浮，不受 scoped 样式影响） -->
+    <!-- 右下角 AI（全站悬浮） -->
     <AskAiWidget
       :api-base="API_BASE"
       placement="bottom-right"
@@ -347,54 +307,32 @@ const API_BASE = import.meta.env.VITE_API_BASE    // 例如 https://api.kidpath.
   --shadow-3: 0 18px 40px rgba(0,0,0,.10);
 }
 
-/* make padding part of width so nothing overflows */
 *, *::before, *::after { box-sizing: border-box; }
 
-/* ========= Page frame (light green, with clear side margins) ========= */
+/* ========= Page frame ========= */
 .page{
   min-height: 100vh;
   background: linear-gradient(180deg, #f2fbf4 0%, #e8f6ec 100%);
-  padding-inline: var(--gutter);     /* visible L/R space at all sizes */
+  padding-inline: var(--gutter);
   padding-top: 0;
   padding-bottom: 36px;
-  overflow-x: hidden;                /* kill accidental horizontal scroll */
+  overflow-x: hidden;
   position: relative;
 }
-
-/* Every direct child of .page is centered and width-limited */
 .page > header,
 .page > section,
 .page > nav {
   max-width: var(--page-max);
   margin-inline: auto;
   width: 100%;
-  padding-inline: var(--inner-pad);  /* inner breathing room */
+  padding-inline: var(--inner-pad);
 }
-
-/* ========= Sticky jumpbar ========= */
-.jumpbar{
-  position: sticky; top: 0; z-index: 9;
-  display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;
-  padding: 10px var(--inner-pad);
-  background: rgba(255,255,255,0.85);
-  backdrop-filter: blur(8px);
-  border-bottom: 1px solid rgba(0,0,0,0.06);
-  border-radius: 0 0 16px 16px;
-  box-shadow: 0 8px 18px rgba(0,0,0,.06);
-}
-.jumpbar a{
-  padding: 6px 12px; border-radius: 999px;
-  text-decoration: none; color: #2e7d32; border: 1px solid rgba(0,0,0,0.12);
-  background: #fff; font-size: .92rem; transition: all .15s ease;
-}
-.jumpbar a:hover{ background:#e8f5e9; }
-.jumpbar a.active{ background:#2e7d32; color:#fff; border-color:#2e7d32; }
 
 /* ========= Sections ========= */
 .section-grid{
   margin: 24px auto 0;
   display: grid;
-  grid-template-columns: minmax(280px, 420px) 1fr; /* aside | content */
+  grid-template-columns: minmax(280px, 420px) 1fr;
   gap: var(--gap);
   align-items: start;
 }
@@ -496,23 +434,6 @@ const API_BASE = import.meta.env.VITE_API_BASE    // 例如 https://api.kidpath.
 .shade-card     :deep(.map-wrap){ height: 64vh !important; }
 .water-card     :deep(.map-wrap){ height: 60vh !important; }
 .fountains-card :deep(.map-wrap){ height: 62vh !important; }
-.route-card     :deep(.cool-route-wrap){ height: 52vh !important; }
-
-/* 2) WATER: side-by-side on desktop */
-.water-grid{
-  display: grid;
-  grid-template-columns: 1.6fr 1fr;
-  gap: var(--gap);
-  align-items: stretch;
-}
-.water-card :deep(.block){ max-width: none !important; padding: 0 !important; }
-.water-card :deep(.map-wrap){ height: 60vh; }
-.fountains-card{ display:flex; flex-direction: column; }
-.subhead{ margin: 6px 8px 10px; color:#1b5e20; font-size:1.05rem; font-weight:800; }
-.fountains-card :deep(.map-wrap){ height: 100%; min-height: 40vh; }
-
-/* 3) ROUTE: keep compact */
-.route-card :deep(.cool-route-wrap){ height: 54vh; }
 
 /* Footer */
 .footer {
@@ -521,18 +442,13 @@ const API_BASE = import.meta.env.VITE_API_BASE    // 例如 https://api.kidpath.
   text-align: center;
   padding: 30px 0;
 }
-
-.footer p {
-  margin: 0;
-  font-size: 1rem;
-}
+.footer p { margin: 0; font-size: 1rem; }
 
 /* Responsive */
 @media (max-width: 1200px){
   .shade-card     :deep(.map-wrap){ height: 50vh !important; }
   .water-card     :deep(.map-wrap){ height: 46vh !important; }
   .fountains-card :deep(.map-wrap){ height: 46vh !important; }
-  .route-card     :deep(.cool-route-wrap){ height: 54vh !important; }
 }
 
 /* ========= Reveal-on-scroll ========= */
@@ -585,7 +501,7 @@ const API_BASE = import.meta.env.VITE_API_BASE    // 例如 https://api.kidpath.
 }
 .chip span{ display:inline-grid; place-items:center; width:28px; height:28px; border-radius: 999px; background:#e8f5e9; }
 
-/* ========= Hero wave (animated, no overflow) ========= */
+/* ========= Hero wave ========= */
 .wave{ display:block; width:100%; height:90px; margin-top:8px; z-index:1; overflow: hidden; }
 .wave path{ fill:#e8f5e9; }
 
@@ -607,56 +523,37 @@ const API_BASE = import.meta.env.VITE_API_BASE    // 例如 https://api.kidpath.
 }
 
 .page{
-  /* bigger, always-visible side space */
   padding-inline: clamp(10px, 4vw, 20px);
 }
-
-/* 2) Center the inner content and give it its own breathing room */
-
 .page > section,
 .page > nav{
   max-width: var(--page-max);
   margin-inline: auto;
-  /* inner space inside the centered block */
   padding-inline: clamp(16px, 3.5vw, 32px);
 }
-
-/* 3) Make every “card” sit off the edges too */
 .content.card{
-  margin-inline: clamp(4px, 1vw, 22px); /* adds visible margin around cards */
+  margin-inline: clamp(4px, 1vw, 22px);
   border-radius: var(--card-radius);
 }
-
-/* 4) Safety: ensure map wrappers don’t overflow and hug the edges */
 .content.card :deep(.map-wrap){
   width: 100%;
   border-radius: 14px;
   overflow: hidden;
 }
-
-/* 5) Optional: if a child sets width:100vw anywhere, neutralize it inside the page */
 .page [style*="100vw"]{ width: 100% !important; }
 
 .hero {
-  max-width: none !important;   /* ignore page limit */
-  padding-inline: 0 !important; /* no inner padding */
-  margin-inline: 0 !important;  /* stretch full width */
-  width: 100vw;                 /* span viewport */
-}
-/* Full-bleed utility: cancels page gutters & child padding */
-.full-bleed{
-  /* ignore the child max-width/padding set by `.page > section, header, nav` */
   max-width: none !important;
   padding-inline: 0 !important;
-
-  /* pull outward to cancel the .page side gutters */
+  margin-inline: 0 !important;
+  width: 100vw;
+}
+.full-bleed{
+  max-width: none !important;
+  padding-inline: 0 !important;
   margin-inline: calc(var(--gutter) * -1);
-
-  /* ensure it spans the viewport on huge screens too */
   width: auto;
 }
-
-/* Make the content truly edge-to-edge */
 .full-bleed .content.card{
   margin-inline: 0;
   border-radius: 0;
@@ -664,62 +561,11 @@ const API_BASE = import.meta.env.VITE_API_BASE    // 例如 https://api.kidpath.
   border-left: 0;
   border-right: 0;
 }
-
-/* Hero specific: remove rounding and make the wave full width */
 .fancy-hero{ border-radius: 0 !important; }
 .fancy-hero .hero-inner{ border-radius: 0; }
 .fancy-hero .wave{
   width: 100vw; max-width: none;
   position: relative; left: 50%; transform: translateX(-50%);
-}
-/* Make ONLY the hero truly full-bleed (ignores parent padding/max-width) */
-.page > header.hero{
-  /* escape the page’s gutters */
-  position: relative;
-  left: 50%;
-  right: 50%;
-  margin-left: -50vw !important;
-  margin-right: -50vw !important;
-
-  /* span the viewport */
-  width: 100vw !important;
-  max-width: 100vw !important;
-
-  /* remove inner padding added by the centering rule */
-  padding-left: 0 !important;
-  padding-right: 0 !important;
-}
-
-/* Optional: remove the inset card look so edges really touch */
-.hero .hero-inner{
-  border: 0;
-  border-radius: 0;
-  box-shadow: none;
-}
-
-/* Ensure the wave is also full width */
-.hero .wave{
-  width: 100vw !important;
-  max-width: 100vw !important;
-  position: relative;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-/* Make the entire route section full-bleed */
-.page > section#route{
-  position: relative;
-  left: 50%;
-  right: 50%;
-  margin-left: -50vw;
-  margin-right: -50vw;
-  width: 100vw !important;
-  max-width: 100vw !important;
-  padding: 0 !important;   /* no inner padding */
-}
-#route .route-card :deep(.cool-route-wrap){
-  height: 100vh !important;  /* take full browser height */
-  width: 100% !important;
 }
 
 /* ===== Bigger, bolder hero type ===== */
@@ -727,7 +573,6 @@ const API_BASE = import.meta.env.VITE_API_BASE    // 例如 https://api.kidpath.
   font-weight: 900;
   line-height: 1.05;
   letter-spacing: -0.02em;
-  /* scales nicely from mobile to desktop */
   font-size: clamp(32px, 4.6vw, 64px);
   margin: 2px 0 8px;
 }
@@ -744,30 +589,14 @@ const API_BASE = import.meta.env.VITE_API_BASE    // 例如 https://api.kidpath.
   color: transparent;
 }
 
-/* ===== Primary/soft buttons (hero only) ===== */
+/* Buttons (目前不再用到主按钮，保留样式以备复用) */
 .btn-primary{
   background: #2e7d32; color:#fff; border: 1px solid #2e7d32;
   padding: 10px 16px; border-radius: 999px; font-weight: 700;
   box-shadow: 0 10px 24px rgba(46,125,50,.25);
 }
 .btn-primary:hover{ filter: brightness(1.05); transform: translateY(-1px); }
-.btn-soft{
-  background: #ffffff; color:#2e7d32; border:1px solid rgba(46,125,50,.25);
-  padding: 10px 16px; border-radius: 999px; font-weight: 700;
-}
-.cta-row{ display:flex; gap:10px; flex-wrap:wrap; }
 
-/* ===== Hero layout: copy left, graphics right ===== */
-.hero-grid{
-  display:grid;
-  grid-template-columns: 1.15fr 0.85fr;
-  align-items:center;
-  gap: clamp(12px, 3vw, 24px);
-  padding-block: clamp(22px, 6vw, 48px);
-}
-.hero-right{ display:grid; gap: 14px; align-content:center; }
-
-/* ===== Segmented quick nav (replaces those 3 small pills at the very top) ===== */
 .mode-switch{
   display:grid;
   grid-template-columns: repeat(3, minmax(0,1fr));
@@ -789,89 +618,7 @@ const API_BASE = import.meta.env.VITE_API_BASE    // 例如 https://api.kidpath.
   transition: transform .12s ease, background .12s ease, border-color .12s ease;
 }
 .mode-switch .seg:hover{ transform: translateY(-1px); background:#eef7f0; }
-.mode-switch .seg.primary{
-  background:#2e7d32; color:#fff; border-color:#2e7d32;
-  box-shadow: 0 10px 22px rgba(46,125,50,.25);
-}
 .mode-switch .seg i{ font-style: normal; }
-
-/* Stack nicely on small screens */
-@media (max-width: 900px){
-  .hero-grid{ grid-template-columns: 1fr; }
-  .mode-switch{ grid-template-columns: 1fr; }
-}
-
-/* ===== Tweak existing hero visuals so it feels more “graphic” ===== */
-.fancy-hero .hero-inner{
-  border-radius: 0; /* flat card inside full-bleed */
-  background:
-    radial-gradient(1100px 320px at -10% -20%, rgba(13,71,161,0.08), transparent 60%),
-    radial-gradient(1000px 300px at 120% 0%, rgba(46,125,50,0.10), transparent 60%),
-    #ffffff;
-}
-
-/* Keep your chips but give them a bit more presence next to big type */
-.chip{ font-weight: 600; }
-.chip span{ width:30px; height:30px; }
-
-/* Optional: keep the sticky jumpbar, but it’s no longer your primary CTA.
-   If you want it to feel subtler, lower its contrast a touch: */
-.jumpbar{ background: rgba(255,255,255,0.78); }
-.fancy-hero .hero-inner{
-  padding: clamp(20px, 8vw, 30px) clamp(24px, 6vw, 64px);
-}
-
-.hero-copy{
-  padding-block: clamp(12px, 3vw, 32px);
-}
-
-.cta-row{
-  margin-top: clamp(16px, 3vw, 36px);
-}
-
-/* give the right-side chips & mode switch more breathing room */
-.hero-right{
-  gap: clamp(18px, 3vw, 32px);
-  padding-block: clamp(12px, 2vw, 28px);
-}
-
-/* Bigger, bolder hero (kept from previous step) */
-.headline-xl{ font-weight:900; line-height:1.05; letter-spacing:-.02em;
-  font-size:clamp(32px,4.6vw,64px); margin:2px 0 8px; }
-.lede-xl{ font-size:clamp(16px,1.6vw,20px); color:#365a3d; max-width:48ch; margin-bottom:clamp(14px,2.2vw,18px); }
-.grad{ background:linear-gradient(90deg,#2e7d32 0%,#0d47a1 85%); -webkit-background-clip:text; background-clip:text; color:transparent; }
-
-.hero-grid{
-  display:grid; grid-template-columns: 1.1fr 0.9fr; align-items:center;
-  gap: clamp(14px,3vw,28px);
-  padding: clamp(36px,8vw,88px) clamp(24px,6vw,64px);
-}
-@media (max-width: 900px){ .hero-grid{ grid-template-columns:1fr; } }
-
-.cta-row{ display:flex; gap:10px; flex-wrap:wrap; margin-top: clamp(16px,3vw,28px); }
-.btn-primary{
-  background:#2e7d32; color:#fff; border:1px solid #2e7d32; padding:10px 16px; border-radius:999px;
-  font-weight:700; box-shadow:0 10px 24px rgba(46,125,50,.25); transition:transform .12s ease, filter .12s ease;
-}
-.btn-primary:hover{ filter:brightness(1.05); transform:translateY(-1px); }
-.btn-soft{
-  background:#fff; color:#2e7d32; border:1px solid rgba(46,125,50,.25); padding:10px 16px; border-radius:999px; font-weight:700;
-}
-
-/* Two-segment switch — small footprint */
-.mode-switch.small{ margin-top:12px; padding:8px; }
-.mode-switch.small .seg{ padding:8px 10px; font-weight:800; }
-.mode-switch{ display:grid; grid-template-columns: repeat(2, minmax(0,1fr));
-  gap:10px; border-radius:16px; background:linear-gradient(180deg,rgba(255,255,255,.92),rgba(255,255,255,.86));
-  border:1px solid rgba(0,0,0,.06); box-shadow:0 14px 36px rgba(0,0,0,.10); }
-.mode-switch .seg{
-  display:flex; align-items:center; justify-content:center; gap:8px;
-  padding:10px 12px; border-radius:12px; text-decoration:none;
-  border:1px solid rgba(0,0,0,.08); background:#f7fbf8; color:#275e2b;
-  transition:transform .12s ease, background .12s ease, border-color .12s ease;
-}
-.mode-switch .seg:hover{ transform:translateY(-1px); background:#eef7f0; }
-.mode-switch .seg i{ font-style:normal; }
 
 /* Animated route illustration */
 .hero-graphic{ display:grid; place-items:center; }
@@ -881,12 +628,8 @@ const API_BASE = import.meta.env.VITE_API_BASE    // 例如 https://api.kidpath.
   filter: drop-shadow(0 16px 36px rgba(0,0,0,.10));
 }
 
-/* Optional GIF/Lottie slot if you use it */
-.hero-gif{ width:140px; height:auto; position:absolute; right:14px; bottom:14px; }
-
 /* Respect reduced-motion */
 @media (prefers-reduced-motion: reduce){
-  .route-illo animateMotion { display:none; } /* stop dot motion */
+  .route-illo animateMotion { display:none; }
 }
-
 </style>
