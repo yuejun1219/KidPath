@@ -4,9 +4,9 @@
       v-if="ready"
       :showSidebar="showSidebar"
       @toggle-sidebar="showSidebar = !showSidebar"
-      parksUrl="https://kidpath-geojson.s3.ap-southeast-2.amazonaws.com/parks.geojson"
-      treesUrl="https://kidpath-geojson.s3.ap-southeast-2.amazonaws.com/trees.geojson"
-      grassUrl="https://kidpath-geojson.s3.ap-southeast-2.amazonaws.com/grass.geojson"
+      parksUrl="https://api.kidpath.me/api/v1/geojson/parks"
+      treesUrl="https://api.kidpath.me/api/v1/geojson/trees"
+      grassUrl="https://api.kidpath.me/api/v1/geojson/grass"
     />
   </div>
 </template>
