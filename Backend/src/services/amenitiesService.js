@@ -1,7 +1,8 @@
 // src/services/amenitiesService.js
 // Service layer for amenities data operations
 
-const { pool } = require('../config/database');
+// Use dedicated amenities pool (seasonal_comfort_db / comfort schema)
+const { amenitiesPool } = require('../config/amenitiesDatabase');
 const { 
   getNearbyAmenitiesQuery,
   getAmenitiesByBboxQuery,
@@ -15,7 +16,7 @@ const {
 // Get nearby amenities using the DS team's function
 const getNearbyAmenities = async (lat, lon, radius, categories, limit) => {
   try {
-    const client = await pool.connect();
+    const client = await amenitiesPool.connect();
     
     try {
       // Use default categories if none provided (as per DS documentation)
@@ -49,7 +50,7 @@ const getNearbyAmenities = async (lat, lon, radius, categories, limit) => {
 // Get amenities by bounding box
 const getAmenitiesByBbox = async (bbox, category, limit) => {
   try {
-    const client = await pool.connect();
+    const client = await amenitiesPool.connect();
     
     try {
       const { minLon, minLat, maxLon, maxLat } = bbox;
@@ -76,7 +77,7 @@ const getAmenitiesByBbox = async (bbox, category, limit) => {
 // Search amenities by name
 const searchAmenitiesByName = async (name, category, limit) => {
   try {
-    const client = await pool.connect();
+    const client = await amenitiesPool.connect();
     
     try {
       // Build parameters for search query
@@ -106,7 +107,7 @@ const searchAmenitiesByName = async (name, category, limit) => {
 // Get available amenity categories
 const getAmenityCategories = async () => {
   try {
-    const client = await pool.connect();
+    const client = await amenitiesPool.connect();
     
     try {
       const result = await client.query(getAmenityCategoriesQuery);
@@ -128,7 +129,7 @@ const getAmenityCategories = async () => {
 // Get amenity by ID
 const getAmenityById = async (amenityId) => {
   try {
-    const client = await pool.connect();
+    const client = await amenitiesPool.connect();
     
     try {
       const result = await client.query(getAmenityByIdQuery, [amenityId]);
@@ -257,7 +258,7 @@ const formatBboxAsGeoJSON = (amenities, metadata = {}) => {
 // Get search suggestions
 const getSearchSuggestions = async (query, limit = 10) => {
   try {
-    const client = await pool.connect();
+    const client = await amenitiesPool.connect();
     
     try {
       const result = await client.query(getSearchSuggestionsQuery, [query, limit]);
