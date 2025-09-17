@@ -7,6 +7,7 @@ const { planRouteController, getCurrentSeasonController } = require('../controll
 const { validateRoutePlanning } = require('../middleware/validation');
 
 // Route planning endpoints
+router.post('/plan', validateRoutePlanning, planRouteController);
 router.get('/plan', validateRoutePlanning, planRouteController);
 router.get('/season', getCurrentSeasonController);
 
