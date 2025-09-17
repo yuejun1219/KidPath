@@ -3,6 +3,7 @@
 
 const fetch = require('node-fetch');
 const turf = require('@turf/turf');
+const { amenitiesPool } = require('../config/amenitiesDatabase');
 
 // OSRM configuration
 const OSRM_BASE_URL = 'https://router.project-osrm.org/route/v1/foot';
@@ -11,25 +12,25 @@ const OSRM_BASE_URL = 'https://router.project-osrm.org/route/v1/foot';
 const SEASONAL_WEIGHTS = {
   summer: {
     treeCanopy: 0.8,
-    parks: 0.6,
+    amenities: 0.6,  // Changed from 'parks' to 'amenities'
     water: 0.4,
     shade: 0.9
   },
   winter: {
     treeCanopy: 0.3,
-    parks: 0.4,
+    amenities: 0.4,  // Changed from 'parks' to 'amenities'
     water: 0.2,
     shade: 0.2
   },
   spring: {
     treeCanopy: 0.6,
-    parks: 0.7,
+    amenities: 0.7,  // Changed from 'parks' to 'amenities'
     water: 0.5,
     shade: 0.6
   },
   autumn: {
     treeCanopy: 0.7,
-    parks: 0.8,
+    amenities: 0.8,  // Changed from 'parks' to 'amenities'
     water: 0.4,
     shade: 0.7
   }
@@ -45,7 +46,7 @@ const getCurrentSeason = () => {
 };
 
 // Calculate comfort score for a route segment
-const calculateComfortScore = (segment, season, treeCanopyData, parksData) => {
+const calculateComfortScore = (segment, season, treeCanopyData, amenitiesData) => {
   const weights = SEASONAL_WEIGHTS[season] || SEASONAL_WEIGHTS.summer;
   let score = 0;
   let factors = 0;
@@ -57,11 +58,11 @@ const calculateComfortScore = (segment, season, treeCanopyData, parksData) => {
     factors += weights.treeCanopy;
   }
 
-  // Check park proximity
-  if (parksData && parksData.features) {
-    const parkProximity = calculateParkProximity(segment, parksData);
-    score += parkProximity * weights.parks;
-    factors += weights.parks;
+  // Check amenity proximity (now considers all facility types)
+  if (amenitiesData && amenitiesData.features) {
+    const amenityProximity = calculateAmenityProximity(segment, amenitiesData);
+    score += amenityProximity * weights.amenities;
+    factors += weights.amenities;
   }
 
   return factors > 0 ? score / factors : 0;
@@ -93,21 +94,40 @@ const calculateTreeCoverage = (segment, treeCanopyData) => {
   }
 };
 
-// Calculate park proximity for a segment
-const calculateParkProximity = (segment, parksData) => {
+// Calculate amenity proximity for a segment (considers all facility types)
+const calculateAmenityProximity = (segment, amenitiesData) => {
   try {
     const segmentCenter = turf.centroid(segment);
     let minDistance = Infinity;
+    let amenityCount = 0;
+    let categoryCounts = {};
 
-    parksData.features.forEach(park => {
-      const distance = turf.distance(segmentCenter, park, { units: 'kilometers' });
+    // Calculate distance to nearest amenity and count amenities within range
+    amenitiesData.features.forEach(amenity => {
+      const distance = turf.distance(segmentCenter, amenity, { units: 'kilometers' });
       minDistance = Math.min(minDistance, distance);
+      
+      // Count amenities within 500m
+      if (distance <= 0.5) {
+        amenityCount++;
+        const category = amenity.properties?.category || 'unknown';
+        categoryCounts[category] = (categoryCounts[category] || 0) + 1;
+      }
     });
 
-    // Convert distance to proximity score (closer = higher score)
-    return Math.max(0, 1 - (minDistance / 0.5)); // 500m max influence
+    // Calculate distance score (closer = higher score)
+    const distanceScore = Math.max(0, 1 - (minDistance / 0.5)); // 500m max influence
+    
+    // Calculate density score (more amenities = higher score)
+    const densityScore = Math.min(1, amenityCount / 5); // Max score at 5 amenities
+    
+    // Calculate diversity score (more categories = higher score)
+    const diversityScore = Math.min(1, Object.keys(categoryCounts).length / 3); // Max score at 3 categories
+    
+    // Combine scores with weights
+    return (distanceScore * 0.4 + densityScore * 0.4 + diversityScore * 0.2);
   } catch (error) {
-    console.error('Error calculating park proximity:', error);
+    console.error('Error calculating amenity proximity:', error);
     return 0;
   }
 };
@@ -147,9 +167,9 @@ const planComfortRoute = async (startLng, startLat, endLng, endLat, options = {}
       throw new Error('No routes found');
     }
 
-    // Get comfort data (this would typically come from your database)
+    // Get comfort data
     const treeCanopyData = await getTreeCanopyData();
-    const parksData = await getParksData();
+    const amenitiesData = await getAmenitiesData();
 
     // Process routes and add comfort scores
     const processedRoutes = osrmRoute.routes.map((route, index) => {
@@ -166,7 +186,7 @@ const planComfortRoute = async (startLng, startLat, endLng, endLat, options = {}
               properties: {
                 distance: step.distance,
                 duration: step.duration,
-                comfort_score: calculateComfortScore(step.geometry, season, treeCanopyData, parksData)
+                comfort_score: calculateComfortScore(step.geometry, season, treeCanopyData, amenitiesData)
               }
             };
             segments.push(segment);
@@ -243,14 +263,47 @@ const getTreeCanopyData = async () => {
   };
 };
 
-// Get parks data (placeholder - would come from your database)
-const getParksData = async () => {
-  // This would typically query your parks table
-  // For now, return empty data
-  return {
-    type: 'FeatureCollection',
-    features: []
-  };
+// Get amenities data from database (all facility types)
+const getAmenitiesData = async () => {
+  try {
+    const client = await amenitiesPool.connect();
+    
+    try {
+      const query = `
+        SELECT 
+          amenity_id,
+          category,
+          name,
+          ST_AsGeoJSON(geom) as geometry
+        FROM comfort.amenities 
+        WHERE category IN ('playground', 'toilet', 'library', 'community_centre', 'park')
+        ORDER BY category, name
+      `;
+      
+      const result = await client.query(query);
+      
+      return {
+        type: 'FeatureCollection',
+        features: result.rows.map(row => ({
+          type: 'Feature',
+          properties: {
+            amenity_id: row.amenity_id,
+            category: row.category,
+            name: row.name
+          },
+          geometry: JSON.parse(row.geometry)
+        }))
+      };
+    } finally {
+      client.release();
+    }
+  } catch (error) {
+    console.error('Error getting amenities data:', error);
+    return {
+      type: 'FeatureCollection',
+      features: []
+    };
+  }
 };
 
 module.exports = {
