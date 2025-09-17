@@ -159,7 +159,7 @@ const validateSearchAmenities = (req, res, next) => {
 const validateRoutePlanning = (req, res, next) => {
   // Support both query parameters and JSON body
   const { startLng, startLat, endLng, endLat } = req.query;
-  const { start, end } = req.body;
+  const { start, end } = req.body || {};
   
   // Check query parameters first
   if (startLng && startLat && endLng && endLat) {
@@ -171,10 +171,10 @@ const validateRoutePlanning = (req, res, next) => {
     return next();
   }
   
-  return res.status(400).json({
-    success: false,
-    error: 'Bad Request',
-    message: 'Start and end coordinates are required'
+  return res.status(400).json({ 
+    success: false, 
+    error: 'Bad Request', 
+    message: 'Start and end coordinates are required' 
   });
 };
 
