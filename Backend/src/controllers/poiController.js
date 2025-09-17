@@ -13,33 +13,40 @@ const { HTTP_STATUS, SUCCESS_MESSAGES, ERROR_MESSAGES } = require('../utils/cons
 // Find POIs along a route
 const findPOIsAlongRouteController = async (req, res) => {
   try {
-    const { route, maxDistance = 0.1 } = req.body;
+    const { lineString, route, maxDistance = 0.1, buffer = 0.1, categories = [] } = req.body;
 
-    if (!route || !route.coordinates || !Array.isArray(route.coordinates)) {
+    // Support both lineString and route formats
+    let routeGeometry;
+    if (lineString && Array.isArray(lineString)) {
+      routeGeometry = { coordinates: lineString };
+    } else if (route && route.coordinates && Array.isArray(route.coordinates)) {
+      routeGeometry = route;
+    } else {
       return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
         error: 'Bad Request',
-        message: 'Route geometry with coordinates is required'
+        message: 'Route geometry with coordinates is required (use lineString or route.coordinates)'
       });
     }
 
-    const maxDistanceNum = parseFloat(maxDistance);
+    const maxDistanceNum = parseFloat(buffer || maxDistance);
     if (isNaN(maxDistanceNum) || maxDistanceNum <= 0) {
       return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
         error: 'Bad Request',
-        message: 'Invalid maxDistance value'
+        message: 'Invalid maxDistance/buffer value'
       });
     }
 
-    const pois = await findPOIsAlongRoute(route, maxDistanceNum);
+    const pois = await findPOIsAlongRoute(routeGeometry, maxDistanceNum);
 
     res.status(HTTP_STATUS.OK).json({
       success: true,
       message: SUCCESS_MESSAGES.DATA_RETRIEVED,
       data: {
-        route: route,
+        route: routeGeometry,
         max_distance: maxDistanceNum,
+        categories: categories,
         pois: pois,
         count: pois.length
       }
@@ -58,33 +65,42 @@ const findPOIsAlongRouteController = async (req, res) => {
 // Find comfort POIs along a route
 const findComfortPOIsAlongRouteController = async (req, res) => {
   try {
-    const { route, maxDistance = 0.1 } = req.body;
+    const { lineString, route, maxDistance = 0.1, buffer = 0.1, categories = [], season, weights } = req.body;
 
-    if (!route || !route.coordinates || !Array.isArray(route.coordinates)) {
+    // Support both lineString and route formats
+    let routeGeometry;
+    if (lineString && Array.isArray(lineString)) {
+      routeGeometry = { coordinates: lineString };
+    } else if (route && route.coordinates && Array.isArray(route.coordinates)) {
+      routeGeometry = route;
+    } else {
       return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
         error: 'Bad Request',
-        message: 'Route geometry with coordinates is required'
+        message: 'Route geometry with coordinates is required (use lineString or route.coordinates)'
       });
     }
 
-    const maxDistanceNum = parseFloat(maxDistance);
+    const maxDistanceNum = parseFloat(buffer || maxDistance);
     if (isNaN(maxDistanceNum) || maxDistanceNum <= 0) {
       return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
         error: 'Bad Request',
-        message: 'Invalid maxDistance value'
+        message: 'Invalid maxDistance/buffer value'
       });
     }
 
-    const pois = await findComfortPOIsAlongRoute(route, maxDistanceNum);
+    const pois = await findComfortPOIsAlongRoute(routeGeometry, maxDistanceNum);
 
     res.status(HTTP_STATUS.OK).json({
       success: true,
       message: SUCCESS_MESSAGES.DATA_RETRIEVED,
       data: {
-        route: route,
+        route: routeGeometry,
         max_distance: maxDistanceNum,
+        categories: categories,
+        season: season,
+        weights: weights,
         comfort_pois: pois,
         count: pois.length
       }
