@@ -2,6 +2,7 @@
 // Comfort analysis service
 
 const { pool } = require('../config/database');
+const { amenitiesPool } = require('../config/amenitiesDatabase');
 const turf = require('@turf/turf');
 
 // Get tree canopy coverage for a point
@@ -64,7 +65,7 @@ const getTreeCanopyCoverage = async (lat, lng, radius = 0.1) => {
 // Get comfort amenities near a point
 const getComfortAmenities = async (lat, lng, radius = 0.1) => {
   try {
-    const client = await pool.connect();
+    const client = await amenitiesPool.connect();
     
     try {
       const query = `

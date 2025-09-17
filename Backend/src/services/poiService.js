@@ -1,13 +1,13 @@
 // src/services/poiService.js
 // Points of Interest service for route-based searches
 
-const { pool } = require('../config/database');
+const { amenitiesPool } = require('../config/amenitiesDatabase');
 const turf = require('@turf/turf');
 
 // Find POIs along a route
 const findPOIsAlongRoute = async (routeGeometry, maxDistance = 0.1) => {
   try {
-    const client = await pool.connect();
+    const client = await amenitiesPool.connect();
     
     try {
       // Convert route geometry to PostGIS format
@@ -55,7 +55,7 @@ const findPOIsAlongRoute = async (routeGeometry, maxDistance = 0.1) => {
 // Find comfort POIs along a route (playgrounds, fountains, etc.)
 const findComfortPOIsAlongRoute = async (routeGeometry, maxDistance = 0.1) => {
   try {
-    const client = await pool.connect();
+    const client = await amenitiesPool.connect();
     
     try {
       const routeWKT = `LINESTRING(${routeGeometry.coordinates.map(coord => `${coord[0]} ${coord[1]}`).join(', ')})`;
@@ -103,7 +103,7 @@ const findComfortPOIsAlongRoute = async (routeGeometry, maxDistance = 0.1) => {
 // Find POIs within a bounding box
 const findPOIsInBbox = async (minLng, minLat, maxLng, maxLat, categories = []) => {
   try {
-    const client = await pool.connect();
+    const client = await amenitiesPool.connect();
     
     try {
       let query = `
@@ -150,7 +150,7 @@ const findPOIsInBbox = async (minLng, minLat, maxLng, maxLat, categories = []) =
 // Get POI categories
 const getPOICategories = async () => {
   try {
-    const client = await pool.connect();
+    const client = await amenitiesPool.connect();
     
     try {
       const query = `
@@ -182,7 +182,7 @@ const getPOICategories = async () => {
 // Find nearby POIs for a specific point
 const findNearbyPOIs = async (lat, lng, radius = 0.1, categories = []) => {
   try {
-    const client = await pool.connect();
+    const client = await amenitiesPool.connect();
     
     try {
       let query = `

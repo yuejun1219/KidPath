@@ -280,7 +280,7 @@ const getSearchSuggestions = async (query, limit = 10) => {
 // Get popular search terms
 const getPopularSearchTerms = async (limit = 20) => {
   try {
-    const client = await pool.connect();
+    const client = await amenitiesPool.connect();
     
     try {
       const result = await client.query(getPopularSearchTermsQuery, [limit]);
