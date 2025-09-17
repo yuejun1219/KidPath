@@ -23,7 +23,7 @@ const getTreeCoverageController = async (req, res) => {
       ({ lat, lng, radius = 0.1 } = req.query);
     }
 
-    if (!lat || !lng) {
+    if (lat === undefined || lng === undefined) {
       return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
         error: 'Bad Request',

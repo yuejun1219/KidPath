@@ -178,18 +178,20 @@ const validateRoutePlanning = (req, res, next) => {
   });
 };
 
-// Validate coordinates
+// Validate coordinates (supports query and JSON body)
 const validateCoordinates = (req, res, next) => {
-  const { lat, lng } = req.query;
-  
-  if (!lat || !lng) {
+  // Prefer query, fallback to body
+  const lat = req.query.lat ?? req.body?.lat;
+  const lng = req.query.lng ?? req.body?.lng ?? req.query.lon ?? req.body?.lon;
+
+  if (lat === undefined || lng === undefined) {
     return res.status(400).json({
       success: false,
       error: 'Bad Request',
       message: 'Latitude and longitude are required'
     });
   }
-  
+
   next();
 };
 
