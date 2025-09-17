@@ -7,7 +7,20 @@ const { HTTP_STATUS, SUCCESS_MESSAGES, ERROR_MESSAGES } = require('../utils/cons
 // Plan comfort-optimized route
 const planRouteController = async (req, res) => {
   try {
-    const { startLng, startLat, endLng, endLat, season } = req.query;
+    // Support both query parameters and JSON body
+    let startLng, startLat, endLng, endLat, season;
+    
+    if (req.body && req.body.start && req.body.end) {
+      // JSON body format
+      startLng = req.body.start.lng;
+      startLat = req.body.start.lat;
+      endLng = req.body.end.lng;
+      endLat = req.body.end.lat;
+      season = req.body.season;
+    } else {
+      // Query parameters format
+      ({ startLng, startLat, endLng, endLat, season } = req.query);
+    }
 
     // Validate required parameters
     if (!startLng || !startLat || !endLng || !endLat) {

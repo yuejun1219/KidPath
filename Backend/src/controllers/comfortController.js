@@ -12,7 +12,16 @@ const { HTTP_STATUS, SUCCESS_MESSAGES, ERROR_MESSAGES } = require('../utils/cons
 // Get tree canopy coverage for a point
 const getTreeCoverageController = async (req, res) => {
   try {
-    const { lat, lng, radius = 0.1 } = req.query;
+    // Support both query parameters and JSON body
+    let lat, lng, radius = 0.1;
+    
+    if (req.body && (req.body.lat || req.body.lng)) {
+      // JSON body format
+      ({ lat, lng, radius = 0.1 } = req.body);
+    } else {
+      // Query parameters format
+      ({ lat, lng, radius = 0.1 } = req.query);
+    }
 
     if (!lat || !lng) {
       return res.status(HTTP_STATUS.BAD_REQUEST).json({
