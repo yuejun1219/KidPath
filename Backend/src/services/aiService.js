@@ -54,10 +54,34 @@ ${userMessage}
 }
 
 async function chatWithGemini(message) {
-  // Wrap user questions in a unified template 
-  const userPrompt = buildUserPrompt(message);
-  const result = await model.generateContent(userPrompt);
-  return result.response.text();
+  const maxRetries = 3;
+  let lastError;
+  
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      // Wrap user questions in a unified template 
+      const userPrompt = buildUserPrompt(message);
+      const result = await model.generateContent(userPrompt);
+      return result.response.text();
+    } catch (error) {
+      console.error(`Gemini API attempt ${attempt} failed:`, error.message);
+      lastError = error;
+      
+      // If it's a 503 error (overloaded), wait and retry
+      if (error.message.includes('503') || error.message.includes('overloaded')) {
+        if (attempt < maxRetries) {
+          console.log(`Waiting ${attempt * 2} seconds before retry...`);
+          await new Promise(resolve => setTimeout(resolve, attempt * 2000));
+          continue;
+        }
+      }
+      
+      // For other errors or max retries reached, throw immediately
+      throw new Error(`Gemini API error: ${error.message}`);
+    }
+  }
+  
+  throw new Error(`Gemini API error after ${maxRetries} attempts: ${lastError.message}`);
 }
 
 module.exports = { chatWithGemini };

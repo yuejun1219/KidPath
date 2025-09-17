@@ -13,11 +13,17 @@ const {
 
 // Validate nearby amenities parameters
 const validateNearbyAmenities = (req, res, next) => {
-  const { lat, lon, radius, limit, cats } = req.query;
+  const { lat, lng, lon, radius, limit, cats } = req.query;
   const errors = [];
 
+  // Use lng if provided, otherwise use lon
+  const longitude = lng || lon;
+  
+  // Debug: log the values
+  console.log('Debug - lat:', lat, 'lng:', lng, 'lon:', lon, 'longitude:', longitude);
+
   // Validate coordinates
-  const coordValidation = validateCoordinateRange(lat, lon);
+  const coordValidation = validateCoordinateRange(lat, longitude);
   if (!coordValidation.isValid) {
     errors.push(...coordValidation.errors);
   }
