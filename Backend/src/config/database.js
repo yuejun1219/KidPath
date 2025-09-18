@@ -13,10 +13,10 @@ const ssl =
 const pool = new Pool({
   host: process.env.DB_HOST,
   port: Number(process.env.DB_PORT || 5432),
-  database: process.env.DB_NAME,
+  database: process.env.DB_NAME || 'seasonal_comfort_db', // Use environment variable
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
-  ssl,
+  ssl: { rejectUnauthorized: false }, // Use SSL as required by RDS
   max: Number(process.env.PGPOOL_MAX || 20),
   idleTimeoutMillis: Number(process.env.PGPOOL_IDLE || 30000),
   connectionTimeoutMillis: Number(process.env.PGPOOL_CONN_TIMEOUT || 2000),

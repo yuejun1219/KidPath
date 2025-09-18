@@ -16,8 +16,10 @@ const port = process.env.PORT || DEFAULT_CONFIG.PORT;
 app.use(cors({
   origin: [
     'http://localhost:5173',      // local test
-    'https://www.kidpath.me',     // Vercel
-    'https://kidpath.me'          // root
+    'http://localhost:5174',      // local test (alternative port)
+    'https://www.kidpath.me',     // Vercel production
+    'https://kidpath.me',         // root production
+    'https://api.kidpath.me'      // API domain (if needed)
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
