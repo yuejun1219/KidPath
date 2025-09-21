@@ -10,6 +10,15 @@ const ssl =
       )
     : undefined;
 
+// Debug: Log environment variables
+console.log('🔍 [DEBUG] Database config environment variables:');
+console.log('DB_HOST:', process.env.DB_HOST);
+console.log('DB_PORT:', process.env.DB_PORT);
+console.log('DB_NAME:', process.env.DB_NAME);
+console.log('DB_USER:', process.env.DB_USER);
+console.log('DB_PASSWORD:', process.env.DB_PASSWORD ? '***已设置***' : '❌未设置');
+console.log('DB_SSL:', process.env.DB_SSL);
+
 const pool = new Pool({
   host: process.env.DB_HOST,
   port: Number(process.env.DB_PORT || 5432),
@@ -20,6 +29,15 @@ const pool = new Pool({
   max: Number(process.env.PGPOOL_MAX || 20),
   idleTimeoutMillis: Number(process.env.PGPOOL_IDLE || 30000),
   connectionTimeoutMillis: Number(process.env.PGPOOL_CONN_TIMEOUT || 2000),
+});
+
+console.log('🔍 [DEBUG] Pool created with config:', {
+  host: process.env.DB_HOST,
+  port: Number(process.env.DB_PORT || 5432),
+  database: process.env.DB_NAME || 'seasonal_comfort_db',
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD ? '***已设置***' : '❌未设置',
+  ssl: { rejectUnauthorized: false }
 });
 
 pool.on('error', (err) => {

@@ -1,5 +1,15 @@
 require('dotenv').config();
 
+// Debug: Log environment variables at startup
+console.log('🔍 [DEBUG] Server startup - Environment variables:');
+console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('DB_HOST:', process.env.DB_HOST);
+console.log('DB_NAME:', process.env.DB_NAME);
+console.log('DB_USER:', process.env.DB_USER);
+console.log('DB_PASSWORD:', process.env.DB_PASSWORD ? '***已设置***' : '❌未设置');
+console.log('AMEN_DB_NAME:', process.env.AMEN_DB_NAME);
+console.log('AMEN_DB_PASSWORD:', process.env.AMEN_DB_PASSWORD ? '***已设置***' : '❌未设置');
+
 const aiRoutes = require("./src/routes/aiRoutes");
 const express = require('express');
 const cors = require('cors');
