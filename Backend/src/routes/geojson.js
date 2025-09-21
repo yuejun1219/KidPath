@@ -1,4 +1,3 @@
-// src/routes/geojson.js
 // Proxy route for S3 GeoJSON files to avoid CORS issues
 
 const express = require('express');

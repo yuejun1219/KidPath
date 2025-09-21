@@ -1,4 +1,3 @@
-// src/routes/routes.js
 // Route planning routes
 
 const express = require('express');

@@ -3,7 +3,7 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// ✅ 系统提示：定义模型角色与风格（你想“微调”的核心）
+// system instruction
 const systemInstruction = `
 You are KidPath's AI guide for parents. Keep answers concise, practical, and action-oriented.
 
@@ -13,25 +13,23 @@ Do NOT give suggestions for other cities or countries.
 When asked about Melbourne outdoor comfort: mention shade (summer), sun exposure (winter), UV safety, water refill spots, and child-friendly places in Melbourne CBD.
 
 Tone: warm, reassuring, and clear. Use short paragraphs and bullets when helpful.
-`;
+`
 
-
-// ✅ 生成参数：温度、长度等
+// generation config
 const generationConfig = {
-  temperature: 0.4,          // 更稳重
+  temperature: 0.4,          
   topP: 0.9,
   topK: 40,
   maxOutputTokens: 512
 };
 
-// 选用较快的模型
 const model = genAI.getGenerativeModel({
   model: "gemini-1.5-flash",
-  systemInstruction,          // ← 挂上你的系统提示
-  generationConfig            // ← 默认生成参数
+  systemInstruction,          
+  generationConfig            
 });
 
-// 可选：简单的用户模板，确保上下文稳定
+// simple user prompt, ensure context stability
 function buildUserPrompt(userMessage) {
   return `
 [User question]

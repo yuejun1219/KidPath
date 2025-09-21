@@ -1,4 +1,3 @@
-// src/controllers/comfortController.js
 // Comfort analysis controller
 
 const { 

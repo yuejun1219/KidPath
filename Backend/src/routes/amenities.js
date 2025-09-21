@@ -1,4 +1,3 @@
-// src/routes/amenities.js
 // Routes for amenities API endpoints
 
 const express = require('express');

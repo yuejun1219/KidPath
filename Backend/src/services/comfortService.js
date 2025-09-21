@@ -1,4 +1,3 @@
-// src/services/comfortService.js
 // Comfort analysis service
 
 const { pool } = require('../config/database');
