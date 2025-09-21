@@ -1,4 +1,3 @@
-// src/services/amenitiesService.js
 // Service layer for amenities data operations
 
 // Use dedicated amenities pool (seasonal_comfort_db / comfort schema)

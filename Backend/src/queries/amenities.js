@@ -1,4 +1,3 @@
-// src/queries/amenities.js
 // SQL queries for amenities data using comfort.amenities table and nearby_amenities function
 
 // Get nearby amenities using the DS team's function

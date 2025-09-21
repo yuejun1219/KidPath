@@ -1,4 +1,3 @@
-// src/routes/comfort.js
 // Comfort analysis routes
 
 const express = require('express');

@@ -1,4 +1,3 @@
-// src/controllers/amenitiesController.js
 // Controller for amenities API endpoints
 
 const { HTTP_STATUS, SUCCESS_MESSAGES } = require('../utils/constants');

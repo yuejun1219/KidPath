@@ -19,7 +19,7 @@ app.use(cors({
     'http://localhost:5174',      // local test (alternative port)
     'https://www.kidpath.me',     // Vercel production
     'https://kidpath.me',         // root production
-    'https://api.kidpath.me'      // API domain (if needed)
+    'https://api.kidpath.me'      // API domain
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -72,7 +72,7 @@ const startServer = async () => {
         }
       });
       
-      // 在开发环境显示启动信息
+      // during development
       if (process.env.NODE_ENV !== 'production') {
         console.log('\n=================================');
         console.log(`   Seasonal Comfort API server started`);

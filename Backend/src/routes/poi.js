@@ -1,4 +1,3 @@
-// src/routes/poi.js
 // Points of Interest routes
 
 const express = require('express');

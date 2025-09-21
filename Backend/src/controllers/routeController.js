@@ -1,4 +1,3 @@
-// src/controllers/routeController.js
 // Route planning controller
 
 const { planComfortRoute, getCurrentSeason } = require('../services/routeService');

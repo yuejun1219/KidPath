@@ -1,4 +1,3 @@
-// src/controllers/poiController.js
 // Points of Interest controller
 
 const { 

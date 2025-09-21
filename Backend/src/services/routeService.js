@@ -248,15 +248,13 @@ const getComfortLevel = (score) => {
 
 // Calculate road crossings (simplified)
 const calculateRoadCrossings = (route) => {
-  // This is a simplified calculation
-  // In reality, you'd analyze the route geometry against road data
+  // simplified calculation
   return Math.floor(route.distance / 200); // Rough estimate: 1 crossing per 200m
 };
 
 // Get tree canopy data (placeholder - would come from your database)
 const getTreeCanopyData = async () => {
-  // This would typically query your tree_canopy table
-  // For now, return empty data
+  // query your tree_canopy table
   return {
     type: 'FeatureCollection',
     features: []
