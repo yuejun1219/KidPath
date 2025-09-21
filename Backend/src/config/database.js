@@ -5,8 +5,8 @@ const fs = require('fs');
 const ssl =
   process.env.DB_SSL === 'true'
     ? (process.env.DB_CA_PATH
-        ? { ca: fs.readFileSync(process.env.DB_CA_PATH, 'utf8') } // 优先用官方 CA
-        : { rejectUnauthorized: false }                           // 没 CA 时临时退化（仅开发）
+        ? { ca: fs.readFileSync(process.env.DB_CA_PATH, 'utf8') } 
+        : { rejectUnauthorized: false }                  
       )
     : undefined;
 
