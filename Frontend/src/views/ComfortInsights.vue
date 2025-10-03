@@ -4,8 +4,8 @@ import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
 
 import CanopySection from './CanopySection.vue'
 import WaterAccess from '@/components/WaterAccess.vue'
-import NearbyFountains from '@/components/NearbyFountains.vue'
 import WeatherInsights from '@/components/WeatherInsights.vue'
+import AskAiWidget from '@/components/AskAiWidget.vue'
 
 /* ---------- cross-section plumbing ---------- */
 const selectedSuburbs = ref([])
@@ -14,7 +14,7 @@ function onPlanCoolRoute(ids){
   document.querySelector('#water')?.scrollIntoView({ behavior:'smooth' })
 }
 
-/* ---------- page-level reliability: mount maps after first paint ---------- */
+/* ---------- page-level reliability ---------- */
 const ready = ref(false)
 function nudgeResize(times = 2){
   let i = 0
@@ -41,21 +41,6 @@ onBeforeUnmount(() => {
   document.removeEventListener('visibilitychange', onVisChange)
 })
 
-/* ---------- Jumpbar active link (on scroll) ---------- */
-const activeId = ref('shade')
-let obs
-onMounted(() => {
-  const sections = [...document.querySelectorAll('section[id]')]
-  obs = new IntersectionObserver((entries) => {
-    const visible = entries
-      .filter(e => e.isIntersecting)
-      .sort((a,b)=> b.intersectionRatio - a.intersectionRatio)[0]
-    if (visible) activeId.value = visible.target.id
-  }, { rootMargin: '-30% 0px -60% 0px', threshold: [0.1, 0.25, 0.5] })
-  sections.forEach(s => obs.observe(s))
-})
-onBeforeUnmount(() => { if (obs) obs.disconnect() })
-
 /* ---------- Fancy-hero parallax ---------- */
 const heroEl = ref(null)
 function handleHeroMove(e) {
@@ -69,14 +54,10 @@ function handleHeroMove(e) {
   el.style.setProperty('--tiltX', (x * 7) + 'deg')
   el.style.setProperty('--tiltY', (-y * 7) + 'deg')
 }
-onMounted(() => {
-  heroEl.value?.addEventListener('mousemove', handleHeroMove, { passive: true })
-})
-onBeforeUnmount(() => {
-  heroEl.value?.removeEventListener('mousemove', handleHeroMove)
-})
+onMounted(() => { heroEl.value?.addEventListener('mousemove', handleHeroMove, { passive: true }) })
+onBeforeUnmount(() => { heroEl.value?.removeEventListener('mousemove', handleHeroMove) })
 
-/* ---------- reveal-on-scroll for text blocks ---------- */
+/* ---------- reveal-on-scroll ---------- */
 let revealObs
 function observeRevealsIn(scope = document) {
   const els = scope.querySelectorAll('.reveal:not(.visible)')
@@ -104,107 +85,86 @@ onMounted(() => {
 onBeforeUnmount(() => { if (revealObs) revealObs.disconnect() })
 
 /* ---------- Water tabs ---------- */
-const waterMode = ref('overview')  // 'overview' | 'nearby'
-
+const waterMode = ref('overview')  // Nearby 走独立页面
 function forceRevealInWater() {
-  // Make sure newly mounted .reveal content in #water is visible
   const wrap = document.getElementById('water')
   if (!wrap) return
   wrap.querySelectorAll('.reveal:not(.visible)').forEach(el => el.classList.add('visible'))
 }
-
 function switchWaterMode(mode) {
-  if (mode !== 'overview' && mode !== 'nearby') return
+  if (mode !== 'overview') return
   if (waterMode.value === mode) return
   waterMode.value = mode
   nextTick(() => {
-    forceRevealInWater()  // <— fix: reveal newly mounted card
-    nudgeResize(3)        // <— fix: maps re-measure after DOM swap
+    forceRevealInWater()
+    nudgeResize(3)
   })
 }
+
+/* ---------- Hero buttons scroll ---------- */
+function scrollToSection(id) {
+  const el = document.getElementById(id)
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+
+/* ---------- API base for AskAiWidget ---------- */
+const API_BASE = import.meta.env.VITE_API_BASE
 </script>
 
 <template>
   <main class="page">
-
-
- <!-- HERO -->
-<header class="hero fancy-hero full-bleed" ref="heroEl">
-  <div class="bg">
-    <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
-    <div class="spark s1"></div><div class="spark s2"></div><div class="spark s3"></div>
-  </div>
-
-  <div class="hero-inner hero-grid">
-    <!-- Left: Big copy -->
-    <div class="hero-copy">
-      <p class="eyebrow">KidPath · Comfort Insights</p>
-      <h1 class="headline-xl">
-        Cooler walks, <span class="grad">happier kids</span>.
-      </h1>
-      <p class="lede-xl">
-        Plan <strong>shade-first</strong> routes and find <strong>nearby drinking water</strong>, all in one place.
-      </p>
-
-      <div class="cta-row">
-        <!-- SINGLE primary CTA -->
-        <a class="btn btn-primary" href="#route">🧭 Plan a route</a>
-
-        <!-- Optional secondary: links to shade section (not Water to avoid dup) -->
-
+    <!-- HERO -->
+    <header class="hero fancy-hero full-bleed" ref="heroEl">
+      <div class="bg">
+        <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+        <div class="spark s1"></div><div class="spark s2"></div><div class="spark s3"></div>
       </div>
 
-      <!-- Two-segment quick nav (no Plan here to avoid duplication) -->
-      <div class="mode-switch glass small">
-        <a class="seg" href="#shade"><i>🌳</i><span>Shade</span></a>
-        <a class="seg" href="#water"><i>🚰</i><span>Water</span></a>
+      <div class="hero-inner hero-grid">
+        <div class="hero-copy">
+          <p class="eyebrow">KidPath · Comfort Insights</p>
+          <h1 class="headline-xl">
+            Cooler walks, <span class="grad">happier kids</span>.
+          </h1>
+          <p class="lede-xl">
+            Plan <strong>shade-first</strong> routes and find <strong>nearby drinking water</strong>, all in one place.
+          </p>
+
+          <!-- 这里改成两个按钮 -->
+          <div class="cta-row">
+            <button class="btn btn-primary" @click="scrollToSection('shade')">🌳 Shade</button>
+            <button class="btn btn-soft" @click="scrollToSection('water')">🚰 Water</button>
+          </div>
+        </div>
+
+        <div class="hero-graphic">
+          <svg class="route-illo" viewBox="0 0 360 240" fill="none" aria-hidden="true">
+            <rect x="8" y="8" width="344" height="224" rx="18" fill="#fff" stroke="rgba(0,0,0,.06)"/>
+            <circle cx="70" cy="70" r="26" fill="#e8f5e9"/>
+            <circle cx="300" cy="100" r="20" fill="#e8f5e9"/>
+            <circle cx="210" cy="55" r="14" fill="#e8f5e9"/>
+            <path id="routePath" d="M60 180 C 110 150, 160 120, 190 140 S 280 190, 300 110"
+                  stroke="#2e7d32" stroke-width="4" stroke-linecap="round" stroke-dasharray="8 10" />
+            <circle r="6" fill="#0d47a1">
+              <animateMotion dur="6s" repeatCount="indefinite" keyTimes="0;1"
+                             keySplines="0.25 0.1 0.25 1" calcMode="spline">
+                <mpath xlink:href="#routePath"/>
+              </animateMotion>
+            </circle>
+            <g>
+              <circle cx="60"  cy="180" r="7" fill="#2e7d32"/>
+              <circle cx="300" cy="110" r="7" fill="#2e7d32"/>
+            </g>
+          </svg>
+        </div>
       </div>
-    </div>
 
-    <!-- Right: Animated route graphic (SVG) -->
-    <div class="hero-graphic">
-      <svg class="route-illo" viewBox="0 0 360 240" fill="none" aria-hidden="true">
-        <!-- soft card -->
-        <rect x="8" y="8" width="344" height="224" rx="18"
-              fill="#fff" stroke="rgba(0,0,0,.06)"/>
-        <!-- parks blobs -->
-        <circle cx="70" cy="70" r="26" fill="#e8f5e9"/>
-        <circle cx="300" cy="100" r="20" fill="#e8f5e9"/>
-        <circle cx="210" cy="55" r="14" fill="#e8f5e9"/>
-
-        <!-- dashed path (animated) -->
-        <path id="routePath"
-              d="M60 180 C 110 150, 160 120, 190 140 S 280 190, 300 110"
-              stroke="#2e7d32" stroke-width="4" stroke-linecap="round"
-              stroke-dasharray="8 10" />
-
-        <!-- moving dot -->
-        <circle r="6" fill="#0d47a1">
-          <animateMotion dur="6s" repeatCount="indefinite" keyTimes="0;1"
-                         keySplines="0.25 0.1 0.25 1" calcMode="spline">
-            <mpath xlink:href="#routePath"/>
-          </animateMotion>
-        </circle>
-
-        <!-- start/end pins -->
-        <g>
-          <circle cx="60"  cy="180" r="7" fill="#2e7d32"/>
-          <circle cx="300" cy="110" r="7" fill="#2e7d32"/>
-        </g>
+      <svg class="wave" viewBox="0 0 1440 120" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M0,60 C240,120 480,0 720,60 C960,120 1200,10 1440,60 L1440,120 L0,120 Z"></path>
       </svg>
+    </header>
 
-      <!-- (Optional) drop-in GIF/Lottie goes here -->
-      <!-- <img class="hero-gif" src="/img/walk-loop.gif" alt="" decoding="async" /> -->
-    </div>
-  </div>
-
-  <svg class="wave" viewBox="0 0 1440 120" preserveAspectRatio="none" aria-hidden="true">
-    <path d="M0,60 C240,120 480,0 720,60 C960,120 1200,10 1440,60 L1440,120 L0,120 Z"></path>
-  </svg>
-</header>
-
-
-    <!-- SHADE / CANOPY (STACKED) -->
+    <!-- SHADE / CANOPY -->
     <section id="shade" class="section-grid band stack-first">
       <aside class="aside reveal">
         <h2 class="title-underline">Tree canopy by suburb</h2>
@@ -227,7 +187,7 @@ function switchWaterMode(mode) {
           <div class="info-card">
             <div class="icon">🛤️</div>
             <div class="title">Street-level picks</div>
-            <div class="desc">Want shady paths? Try <b>Plan a route</b> below.</div>
+            <div class="desc">Want shady paths? Try <b>Shade Quest</b>.</div>
           </div>
         </div>
       </aside>
@@ -236,7 +196,8 @@ function switchWaterMode(mode) {
         <CanopySection v-if="ready" @planCoolRoute="onPlanCoolRoute" />
       </div>
     </section>
-    <!-- CLIMATE (compact!) -->
+
+    <!-- CLIMATE -->
     <section id="climate" class="section-grid stack-first">
       <aside class="aside reveal">
         <h2 class="title-underline">Local climate</h2>
@@ -250,7 +211,7 @@ function switchWaterMode(mode) {
       </div>
     </section>
 
-    <!-- WATER (STACKED) -->
+    <!-- WATER -->
     <section id="water" class="section-grid stack-first">
       <aside class="aside reveal">
         <h2 class="title-underline">Drinking water access</h2>
@@ -258,7 +219,6 @@ function switchWaterMode(mode) {
           Find refill-friendly places quickly. Suburb coverage first; then check taps near a point.
         </p>
 
-        <!-- Overview / Nearby tabs -->
         <div class="tabs">
           <button
             class="tab"
@@ -267,16 +227,11 @@ function switchWaterMode(mode) {
             :aria-pressed="waterMode === 'overview'">
             Overview
           </button>
-          <button
-            class="tab"
-            :class="{ active: waterMode === 'nearby' }"
-            @click="switchWaterMode('nearby')"
-            :aria-pressed="waterMode === 'nearby'">
-            Nearby
-          </button>
+
+          <!-- Nearby 走独立页面（保持你之前的路由设置） -->
+          <router-link class="tab" to="/nearby-fountains">Nearby</router-link>
         </div>
 
-        <!-- Info cards -->
         <div class="info-cards">
           <div class="info-card">
             <div class="icon">🏞️</div>
@@ -296,66 +251,27 @@ function switchWaterMode(mode) {
         </div>
       </aside>
 
-      <!-- Overview map -->
-      <div
-        v-if="waterMode==='overview'"
-        key="water-overview"
-        class="stack-col content card water-card reveal">
+      <div key="water-overview" class="stack-col content card water-card reveal">
         <WaterAccess v-if="ready" :focusSuburbs="selectedSuburbs" />
       </div>
-
-      <!-- Nearby map -->
-      <div
-        v-else
-        key="water-nearby"
-        class="stack-col content card fountains-card reveal">
-        <NearbyFountains v-if="ready" />
-      </div>
     </section>
 
-    <!-- ROUTE (STACKED) -->
-    <section id="route" class="section-grid band stack-first">
-      <aside class="aside reveal">
-        <h2 class="title-underline">Plan a cool route</h2>
-        <p class="muted lead">
-          Street-level routing that favours shade. Pick two points; we’ll score walking options using nearby parks & street trees.
-        </p>
+    <!-- ✅ 已删除整块 Route/Shade Quest Section -->
 
-        <div class="info-cards">
-          <div class="info-card">
-            <div class="icon">📍</div>
-            <div class="title">Pick start & end</div>
-            <div class="desc">We’ll fetch alternative walking paths.</div>
-          </div>
-          <div class="info-card">
-            <div class="icon">🎚️</div>
-            <div class="title">Tune shade bias</div>
-            <div class="desc">Nudge the mix of parks vs street trees.</div>
-          </div>
-          <div class="info-card">
-            <div class="icon">💧</div>
-            <div class="title">Refill stops</div>
-            <div class="desc">After choosing a route, scroll to Water for taps.</div>
-          </div>
-        </div>
-      </aside>
-
-      <div class="content card route-card reveal">
-        <div class="route-placeholder">
-          <h3>🌳 Shade Quest</h3>
-          <p>Advanced route planning with shade optimization has moved to its dedicated page.</p>
-          <router-link to="/shade-quest" class="cta-button">
-            Launch Shade Quest →
-          </router-link>
-        </div>
-      </div>
-    </section>
     <!-- Footer -->
     <footer class="footer">
       <div class="container">
         <p>&copy; 2025 KidPath. Helping families explore safely.</p>
       </div>
     </footer>
+
+    <!-- 右下角 AI -->
+    <AskAiWidget
+      :api-base="API_BASE"
+      placement="bottom-right"
+      title="Ask-AI · Comfort Insights"
+      placeholder="Ask about shade, UV, water taps…"
+    />
   </main>
 </template>
 
@@ -374,54 +290,32 @@ function switchWaterMode(mode) {
   --shadow-3: 0 18px 40px rgba(0,0,0,.10);
 }
 
-/* make padding part of width so nothing overflows */
 *, *::before, *::after { box-sizing: border-box; }
 
-/* ========= Page frame (light green, with clear side margins) ========= */
+/* ========= Page frame ========= */
 .page{
   min-height: 100vh;
   background: linear-gradient(180deg, #f2fbf4 0%, #e8f6ec 100%);
-  padding-inline: var(--gutter);     /* visible L/R space at all sizes */
+  padding-inline: var(--gutter);
   padding-top: 0;
   padding-bottom: 36px;
-  overflow-x: hidden;                /* kill accidental horizontal scroll */
+  overflow-x: hidden;
   position: relative;
 }
-
-/* Every direct child of .page is centered and width-limited */
 .page > header,
 .page > section,
 .page > nav {
   max-width: var(--page-max);
   margin-inline: auto;
   width: 100%;
-  padding-inline: var(--inner-pad);  /* inner breathing room */
+  padding-inline: var(--inner-pad);
 }
-
-/* ========= Sticky jumpbar ========= */
-.jumpbar{
-  position: sticky; top: 0; z-index: 9;
-  display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;
-  padding: 10px var(--inner-pad);
-  background: rgba(255,255,255,0.85);
-  backdrop-filter: blur(8px);
-  border-bottom: 1px solid rgba(0,0,0,0.06);
-  border-radius: 0 0 16px 16px;
-  box-shadow: 0 8px 18px rgba(0,0,0,.06);
-}
-.jumpbar a{
-  padding: 6px 12px; border-radius: 999px;
-  text-decoration: none; color: #2e7d32; border: 1px solid rgba(0,0,0,0.12);
-  background: #fff; font-size: .92rem; transition: all .15s ease;
-}
-.jumpbar a:hover{ background:#e8f5e9; }
-.jumpbar a.active{ background:#2e7d32; color:#fff; border-color:#2e7d32; }
 
 /* ========= Sections ========= */
 .section-grid{
   margin: 24px auto 0;
   display: grid;
-  grid-template-columns: minmax(280px, 420px) 1fr; /* aside | content */
+  grid-template-columns: minmax(280px, 420px) 1fr;
   gap: var(--gap);
   align-items: start;
 }
@@ -464,7 +358,7 @@ function switchWaterMode(mode) {
 .aside:hover .title-underline::after{ transform: scaleX(1); }
 .lead{ margin-top: 4px; }
 
-/* ========= Info cards ========= */
+/* ========= Info cards (保留样式，方便以后复用) ========= */
 .info-cards{
   margin-top: 10px;
   display: grid;
@@ -522,24 +416,7 @@ function switchWaterMode(mode) {
 /* heights */
 .shade-card     :deep(.map-wrap){ height: 64vh !important; }
 .water-card     :deep(.map-wrap){ height: 60vh !important; }
-.fountains-card :deep(.map-wrap){ height: 62vh !important; }
 .route-card     :deep(.cool-route-wrap){ height: 52vh !important; }
-
-/* 2) WATER: side-by-side on desktop */
-.water-grid{
-  display: grid;
-  grid-template-columns: 1.6fr 1fr;
-  gap: var(--gap);
-  align-items: stretch;
-}
-.water-card :deep(.block){ max-width: none !important; padding: 0 !important; }
-.water-card :deep(.map-wrap){ height: 60vh; }
-.fountains-card{ display:flex; flex-direction: column; }
-.subhead{ margin: 6px 8px 10px; color:#1b5e20; font-size:1.05rem; font-weight:800; }
-.fountains-card :deep(.map-wrap){ height: 100%; min-height: 40vh; }
-
-/* 3) ROUTE: keep compact */
-.route-card :deep(.cool-route-wrap){ height: 54vh; }
 
 /* Footer */
 .footer {
@@ -548,17 +425,11 @@ function switchWaterMode(mode) {
   text-align: center;
   padding: 30px 0;
 }
+.footer p { margin: 0; font-size: 1rem; }
 
-.footer p {
-  margin: 0;
-  font-size: 1rem;
-}
-
-/* Responsive */
 @media (max-width: 1200px){
   .shade-card     :deep(.map-wrap){ height: 50vh !important; }
   .water-card     :deep(.map-wrap){ height: 46vh !important; }
-  .fountains-card :deep(.map-wrap){ height: 46vh !important; }
   .route-card     :deep(.cool-route-wrap){ height: 54vh !important; }
 }
 
@@ -601,319 +472,73 @@ function switchWaterMode(mode) {
 .s1{ left: 12%; top: 28%; animation-delay: .2s }
 .s2{ left: 22%; top: 18%; animation-delay: 1.2s }
 .s3{ left: 32%; top: 26%; animation-delay: 2.0s }
-@keyframes blobFloat{ 0%,100%{ transform: translateY(0) } 50%{ transform: translateY(-18px) } }
 
-.parallax{ list-style:none; margin:0; padding:0; display:grid; gap:10px; align-content:center; }
-.chip{
-  display:flex; align-items:center; gap:8px; padding:10px 12px;
-  background:#f4fbf6; border:1px solid rgba(0,0,0,.06); border-radius: 14px;
-  transform: translate3d(var(--parX,0), var(--parY,0), 0) rotateX(var(--tiltY,0)) rotateY(var(--tiltX,0));
-  transition: transform .12s ease, background .12s ease;
-}
-.chip span{ display:inline-grid; place-items:center; width:28px; height:28px; border-radius: 999px; background:#e8f5e9; }
-
-/* ========= Hero wave (animated, no overflow) ========= */
 .wave{ display:block; width:100%; height:90px; margin-top:8px; z-index:1; overflow: hidden; }
 .wave path{ fill:#e8f5e9; }
 
 @media (prefers-reduced-motion: no-preference){
-  @keyframes spark{
-    0%{ transform: translateY(0) scale(.8); opacity: 0; }
-    15%{ opacity: 1; }
-    70%{ transform: translateY(-28px) scale(1.05); opacity: .9; }
-    100%{ transform: translateY(-36px) scale(.9); opacity: 0; }
-  }
-  @keyframes waveBob{
-    0%,100%{ transform: translateX(0) }
-    50%{ transform: translateX(-22px) }
-  }
-  .wave path{
-    transform-origin: 50% 50%;
-    animation: waveBob 7.5s ease-in-out infinite;
-  }
+  @keyframes waveBob{ 0%,100%{ transform: translateX(0) } 50%{ transform: translateX(-22px) } }
+  .wave path{ transform-origin: 50% 50%; animation: waveBob 7.5s ease-in-out infinite; }
 }
 
-.page{
-  /* bigger, always-visible side space */
-  padding-inline: clamp(10px, 4vw, 20px);
-}
-
-/* 2) Center the inner content and give it its own breathing room */
-
-.page > section,
-.page > nav{
+.page{ padding-inline: clamp(10px, 4vw, 20px); }
+.page > section, .page > nav{
   max-width: var(--page-max);
   margin-inline: auto;
-  /* inner space inside the centered block */
   padding-inline: clamp(16px, 3.5vw, 32px);
 }
-
-/* 3) Make every “card” sit off the edges too */
-.content.card{
-  margin-inline: clamp(4px, 1vw, 22px); /* adds visible margin around cards */
-  border-radius: var(--card-radius);
-}
-
-/* 4) Safety: ensure map wrappers don’t overflow and hug the edges */
-.content.card :deep(.map-wrap){
-  width: 100%;
-  border-radius: 14px;
-  overflow: hidden;
-}
-
-/* 5) Optional: if a child sets width:100vw anywhere, neutralize it inside the page */
+.content.card{ margin-inline: clamp(4px, 1vw, 22px); border-radius: var(--card-radius); }
+.content.card :deep(.map-wrap){ width: 100%; border-radius: 14px; overflow: hidden; }
 .page [style*="100vw"]{ width: 100% !important; }
 
-.hero {
-  max-width: none !important;   /* ignore page limit */
-  padding-inline: 0 !important; /* no inner padding */
-  margin-inline: 0 !important;  /* stretch full width */
-  width: 100vw;                 /* span viewport */
-}
-/* Full-bleed utility: cancels page gutters & child padding */
-.full-bleed{
-  /* ignore the child max-width/padding set by `.page > section, header, nav` */
-  max-width: none !important;
-  padding-inline: 0 !important;
-
-  /* pull outward to cancel the .page side gutters */
-  margin-inline: calc(var(--gutter) * -1);
-
-  /* ensure it spans the viewport on huge screens too */
-  width: auto;
-}
-
-/* Make the content truly edge-to-edge */
-.full-bleed .content.card{
-  margin-inline: 0;
-  border-radius: 0;
-  box-shadow: none;
-  border-left: 0;
-  border-right: 0;
-}
-
-/* Hero specific: remove rounding and make the wave full width */
+.hero { max-width: none !important; padding-inline: 0 !important; margin-inline: 0 !important; width: 100vw; }
+.full-bleed{ max-width: none !important; padding-inline: 0 !important; margin-inline: calc(var(--gutter) * -1); width: auto; }
+.full-bleed .content.card{ margin-inline: 0; border-radius: 0; box-shadow: none; border-left: 0; border-right: 0; }
 .fancy-hero{ border-radius: 0 !important; }
 .fancy-hero .hero-inner{ border-radius: 0; }
-.fancy-hero .wave{
-  width: 100vw; max-width: none;
-  position: relative; left: 50%; transform: translateX(-50%);
-}
-/* Make ONLY the hero truly full-bleed (ignores parent padding/max-width) */
+.fancy-hero .wave{ width: 100vw; max-width: none; position: relative; left: 50%; transform: translateX(-50%); }
 .page > header.hero{
-  /* escape the page’s gutters */
-  position: relative;
-  left: 50%;
-  right: 50%;
-  margin-left: -50vw !important;
-  margin-right: -50vw !important;
-
-  /* span the viewport */
-  width: 100vw !important;
-  max-width: 100vw !important;
-
-  /* remove inner padding added by the centering rule */
-  padding-left: 0 !important;
-  padding-right: 0 !important;
+  position: relative; left: 50%; right: 50%;
+  margin-left: -50vw !important; margin-right: -50vw !important;
+  width: 100vw !important; max-width: 100vw !important;
+  padding-left: 0 !important; padding-right: 0 !important;
 }
+.hero .hero-inner{ border: 0; border-radius: 0; box-shadow: none; }
+.hero .wave{ width: 100vw !important; max-width: 100vw !important; position: relative; left: 50%; transform: translateX(-50%); }
 
-/* Optional: remove the inset card look so edges really touch */
-.hero .hero-inner{
+/* ===== Bigger hero type ===== */
+.headline-xl{ font-weight: 900; line-height:1.05; letter-spacing:-.02em; font-size:clamp(32px,4.6vw,64px); margin:2px 0 8px; }
+.lede-xl{ font-size:clamp(16px,1.6vw,20px); color:#365a3d; max-width:48ch; margin-bottom:clamp(14px,2.2vw,18px); }
+.grad{ background: linear-gradient(90deg, #2e7d32 0%, #0d47a1 85%); -webkit-background-clip: text; background-clip:text; color:transparent; }
+
+.hero-grid{ display:grid; grid-template-columns: 1.15fr 0.85fr; align-items:center; gap:clamp(12px,3vw,24px); padding-block: clamp(22px, 6vw, 48px); }
+@media (max-width: 900px){ .hero-grid{ grid-template-columns:1fr; } }
+
+/* Buttons */
+.cta-row{
+  display:flex; gap:10px; flex-wrap:wrap; margin-top: 14px;
+}
+.btn{
+  appearance: none;
   border: 0;
-  border-radius: 0;
-  box-shadow: none;
+  padding: 10px 16px;
+  border-radius: 999px;
+  font-weight: 800;
+  cursor: pointer;
 }
-
-/* Ensure the wave is also full width */
-.hero .wave{
-  width: 100vw !important;
-  max-width: 100vw !important;
-  position: relative;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-/* Make the entire route section full-bleed */
-.page > section#route{
-  position: relative;
-  left: 50%;
-  right: 50%;
-  margin-left: -50vw;
-  margin-right: -50vw;
-  width: 100vw !important;
-  max-width: 100vw !important;
-  padding: 0 !important;   /* no inner padding */
-}
-#route .route-card :deep(.cool-route-wrap){
-  height: 100vh !important;  /* take full browser height */
-  width: 100% !important;
-}
-
-/* ===== Bigger, bolder hero type ===== */
-.headline-xl{
-  font-weight: 900;
-  line-height: 1.05;
-  letter-spacing: -0.02em;
-  /* scales nicely from mobile to desktop */
-  font-size: clamp(32px, 4.6vw, 64px);
-  margin: 2px 0 8px;
-}
-.lede-xl{
-  font-size: clamp(16px, 1.6vw, 20px);
-  color: #365a3d;
-  max-width: 48ch;
-  margin-bottom: clamp(14px, 2.2vw, 18px);
-}
-.grad{
-  background: linear-gradient(90deg, #2e7d32 0%, #0d47a1 85%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-/* ===== Primary/soft buttons (hero only) ===== */
 .btn-primary{
-  background: #2e7d32; color:#fff; border: 1px solid #2e7d32;
-  padding: 10px 16px; border-radius: 999px; font-weight: 700;
+  color: #fff;
+  background: #2e7d32;
+  border: 1px solid #2e7d32;
   box-shadow: 0 10px 24px rgba(46,125,50,.25);
 }
 .btn-primary:hover{ filter: brightness(1.05); transform: translateY(-1px); }
 .btn-soft{
-  background: #ffffff; color:#2e7d32; border:1px solid rgba(46,125,50,.25);
-  padding: 10px 16px; border-radius: 999px; font-weight: 700;
+  color:#2e7d32;
+  background:#fff;
+  border:1px solid rgba(46,125,50,.25);
+  box-shadow: 0 6px 18px rgba(0,0,0,.08);
 }
-.cta-row{ display:flex; gap:10px; flex-wrap:wrap; }
-
-/* ===== Hero layout: copy left, graphics right ===== */
-.hero-grid{
-  display:grid;
-  grid-template-columns: 1.15fr 0.85fr;
-  align-items:center;
-  gap: clamp(12px, 3vw, 24px);
-  padding-block: clamp(22px, 6vw, 48px);
-}
-.hero-right{ display:grid; gap: 14px; align-content:center; }
-
-/* ===== Segmented quick nav (replaces those 3 small pills at the very top) ===== */
-.mode-switch{
-  display:grid;
-  grid-template-columns: repeat(3, minmax(0,1fr));
-  gap: 10px;
-  padding: 10px;
-  border-radius: 16px;
-  background: linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.86));
-  border: 1px solid rgba(0,0,0,.06);
-  box-shadow: 0 14px 36px rgba(0,0,0,.10);
-}
-.mode-switch .seg{
-  display:flex; align-items:center; justify-content:center; gap:8px;
-  padding: 10px 12px;
-  border-radius: 12px;
-  text-decoration:none;
-  border: 1px solid rgba(0,0,0,.08);
-  background:#f7fbf8;
-  color:#275e2b; font-weight: 800;
-  transition: transform .12s ease, background .12s ease, border-color .12s ease;
-}
-.mode-switch .seg:hover{ transform: translateY(-1px); background:#eef7f0; }
-.mode-switch .seg.primary{
-  background:#2e7d32; color:#fff; border-color:#2e7d32;
-  box-shadow: 0 10px 22px rgba(46,125,50,.25);
-}
-.mode-switch .seg i{ font-style: normal; }
-
-/* Stack nicely on small screens */
-@media (max-width: 900px){
-  .hero-grid{ grid-template-columns: 1fr; }
-  .mode-switch{ grid-template-columns: 1fr; }
-}
-
-/* ===== Tweak existing hero visuals so it feels more “graphic” ===== */
-.fancy-hero .hero-inner{
-  border-radius: 0; /* flat card inside full-bleed */
-  background:
-    radial-gradient(1100px 320px at -10% -20%, rgba(13,71,161,0.08), transparent 60%),
-    radial-gradient(1000px 300px at 120% 0%, rgba(46,125,50,0.10), transparent 60%),
-    #ffffff;
-}
-
-/* Keep your chips but give them a bit more presence next to big type */
-.chip{ font-weight: 600; }
-.chip span{ width:30px; height:30px; }
-
-/* Optional: keep the sticky jumpbar, but it’s no longer your primary CTA.
-   If you want it to feel subtler, lower its contrast a touch: */
-.jumpbar{ background: rgba(255,255,255,0.78); }
-.fancy-hero .hero-inner{
-  padding: clamp(20px, 8vw, 30px) clamp(24px, 6vw, 64px);
-}
-
-.hero-copy{
-  padding-block: clamp(12px, 3vw, 32px);
-}
-
-.cta-row{
-  margin-top: clamp(16px, 3vw, 36px);
-}
-
-/* give the right-side chips & mode switch more breathing room */
-.hero-right{
-  gap: clamp(18px, 3vw, 32px);
-  padding-block: clamp(12px, 2vw, 28px);
-}
-
-/* Bigger, bolder hero (kept from previous step) */
-.headline-xl{ font-weight:900; line-height:1.05; letter-spacing:-.02em;
-  font-size:clamp(32px,4.6vw,64px); margin:2px 0 8px; }
-.lede-xl{ font-size:clamp(16px,1.6vw,20px); color:#365a3d; max-width:48ch; margin-bottom:clamp(14px,2.2vw,18px); }
-.grad{ background:linear-gradient(90deg,#2e7d32 0%,#0d47a1 85%); -webkit-background-clip:text; background-clip:text; color:transparent; }
-
-.hero-grid{
-  display:grid; grid-template-columns: 1.1fr 0.9fr; align-items:center;
-  gap: clamp(14px,3vw,28px);
-  padding: clamp(36px,8vw,88px) clamp(24px,6vw,64px);
-}
-@media (max-width: 900px){ .hero-grid{ grid-template-columns:1fr; } }
-
-.cta-row{ display:flex; gap:10px; flex-wrap:wrap; margin-top: clamp(16px,3vw,28px); }
-.btn-primary{
-  background:#2e7d32; color:#fff; border:1px solid #2e7d32; padding:10px 16px; border-radius:999px;
-  font-weight:700; box-shadow:0 10px 24px rgba(46,125,50,.25); transition:transform .12s ease, filter .12s ease;
-}
-.btn-primary:hover{ filter:brightness(1.05); transform:translateY(-1px); }
-.btn-soft{
-  background:#fff; color:#2e7d32; border:1px solid rgba(46,125,50,.25); padding:10px 16px; border-radius:999px; font-weight:700;
-}
-
-/* Two-segment switch — small footprint */
-.mode-switch.small{ margin-top:12px; padding:8px; }
-.mode-switch.small .seg{ padding:8px 10px; font-weight:800; }
-.mode-switch{ display:grid; grid-template-columns: repeat(2, minmax(0,1fr));
-  gap:10px; border-radius:16px; background:linear-gradient(180deg,rgba(255,255,255,.92),rgba(255,255,255,.86));
-  border:1px solid rgba(0,0,0,.06); box-shadow:0 14px 36px rgba(0,0,0,.10); }
-.mode-switch .seg{
-  display:flex; align-items:center; justify-content:center; gap:8px;
-  padding:10px 12px; border-radius:12px; text-decoration:none;
-  border:1px solid rgba(0,0,0,.08); background:#f7fbf8; color:#275e2b;
-  transition:transform .12s ease, background .12s ease, border-color .12s ease;
-}
-.mode-switch .seg:hover{ transform:translateY(-1px); background:#eef7f0; }
-.mode-switch .seg i{ font-style:normal; }
-
-/* Animated route illustration */
-.hero-graphic{ display:grid; place-items:center; }
-.route-illo{
-  width: min(520px, 100%);
-  height: auto;
-  filter: drop-shadow(0 16px 36px rgba(0,0,0,.10));
-}
-
-/* Optional GIF/Lottie slot if you use it */
-.hero-gif{ width:140px; height:auto; position:absolute; right:14px; bottom:14px; }
-
-/* Respect reduced-motion */
-@media (prefers-reduced-motion: reduce){
-  .route-illo animateMotion { display:none; } /* stop dot motion */
-}
+.btn-soft:hover{ transform: translateY(-1px); }
 
 </style>

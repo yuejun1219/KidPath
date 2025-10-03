@@ -5,198 +5,163 @@
     <script>
       (function () {
         var KEY = 'kidpath_site_unlocked';
-        var PASS = 'Demo123!'; 
+        var PASS = 'Demo123!'; // demo 密码
 
-        function createRetroPasswordModal() {
-          // Create modal overlay
+        function createKidpathPasswordModal() {
+          // ====== overlay ======
           var overlay = document.createElement('div');
+          overlay.setAttribute('role','dialog');
+          overlay.setAttribute('aria-modal','true');
           overlay.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            position: fixed; inset: 0;
+            display: flex; align-items: center; justify-content: center;
+            background:
+              radial-gradient(1400px 300px at 50% -220px, rgba(94,53,177,.08), transparent 60%),
+              linear-gradient(180deg, #f8faf8 0%, #e8f5e8 100%);
             z-index: 10000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: 'Press Start 2P', monospace;
+            font-family: Segoe UI, system-ui, -apple-system, Arial, sans-serif;
           `;
 
-          // Create modal container
-          var modal = document.createElement('div');
-          modal.style.cssText = `
-            background: linear-gradient(135deg, #000000 0%, #1a1a2e 100%);
-            border: 3px solid #00ff41;
-            border-radius: 15px;
-            padding: 40px;
-            text-align: center;
-            box-shadow: 0 0 30px rgba(0, 255, 65, 0.5);
-            max-width: 500px;
-            width: 90%;
-            position: relative;
-            animation: modalGlow 2s ease-in-out infinite alternate;
+          // ====== modal card ======
+          var card = document.createElement('div');
+          card.style.cssText = `
+            width: min(520px, 92vw);
+            border-radius: 18px;
+            background: rgba(255,255,255,.86);
+            border: 1px solid rgba(46,125,50,.18);
+            box-shadow: 0 20px 60px rgba(46,125,50,.15);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 26px 24px 22px;
+            transform-origin: 50% 50%;
+            animation: kp-pop .28s ease-out;
           `;
 
-          // Add glow animation
+          // ====== styles ======
           var style = document.createElement('style');
           style.textContent = `
-            @keyframes modalGlow {
-              0% { box-shadow: 0 0 30px rgba(0, 255, 65, 0.5); }
-              100% { box-shadow: 0 0 50px rgba(0, 255, 65, 0.8); }
+            @media (prefers-reduced-motion: reduce){
+              * { animation: none !important; transition: none !important; }
             }
-            @keyframes pixelPulse {
-              0%, 100% { transform: scale(1); }
-              50% { transform: scale(1.05); }
+            @keyframes kp-pop { from { transform: scale(.96); opacity: 0 } to { transform: scale(1); opacity: 1 } }
+            @keyframes kp-shake {
+              0%,100%{ transform: translateX(0) }
+              20%{ transform: translateX(-6px) }
+              40%{ transform: translateX(6px) }
+              60%{ transform: translateX(-4px) }
+              80%{ transform: translateX(4px) }
             }
-            .pixel-text {
-              font-family: 'Press Start 2P', monospace;
-              color: #00ff41;
-              text-shadow: 0 0 10px rgba(0, 255, 65, 0.8);
+            .kp-title{
+              margin: 0 0 4px; font-weight: 900; letter-spacing: -.02em;
+              font-size: clamp(20px, 3.8vw, 28px); color:#1b5e20;
             }
-            .retro-input {
-              background: #000000;
-              border: 2px solid #00ff41;
-              color: #00ff41;
-              padding: 15px;
-              font-family: 'Press Start 2P', monospace;
-              font-size: 14px;
-              border-radius: 8px;
-              width: 100%;
-              margin: 20px 0;
-              text-align: center;
-              box-shadow: inset 0 0 10px rgba(0, 255, 65, 0.3);
+            .kp-sub{ margin:0 0 18px; color:#365a3d; font-size: 14px; }
+            .kp-help{ margin: 10px 0 0; font-size: 12px; color:#6b7280; }
+            .kp-row{ display:grid; gap:10px; grid-template-columns: 1fr auto; align-items:center; }
+            .kp-input{
+              width:100%; padding: 12px 14px;
+              border-radius: 12px; border:1px solid rgba(46,125,50,.25);
+              background:#fff; color:#1f2937; font-size:15px;
+              outline: none; transition: box-shadow .15s ease, border-color .15s ease;
             }
-            .retro-input:focus {
-              outline: none;
-              box-shadow: 0 0 20px rgba(0, 255, 65, 0.6);
+            .kp-input:focus{
+              border-color:#2e7d32;
+              box-shadow: 0 0 0 4px rgba(46,125,50,.15);
             }
-            .retro-button {
-              background: linear-gradient(135deg, #00ff41, #4ecdc4);
-              border: 2px solid #00ff41;
-              color: #000000;
-              padding: 15px 30px;
-              font-family: 'Press Start 2P', monospace;
-              font-size: 12px;
-              border-radius: 8px;
-              cursor: pointer;
-              margin: 10px;
-              transition: all 0.3s ease;
-              animation: pixelPulse 2s ease-in-out infinite;
+            .kp-btn{
+              appearance:none; border:1px solid #2e7d32; cursor:pointer;
+              border-radius: 12px; padding: 12px 16px; font-weight: 800;
+              background: linear-gradient(135deg, #2e7d32, #0d47a1);
+              color:#fff; box-shadow: 0 10px 24px rgba(46,125,50,.25);
+              transition: transform .12s ease, filter .12s ease;
+              white-space: nowrap;
             }
-            .retro-button:hover {
-              background: linear-gradient(135deg, #4ecdc4, #00ff41);
-              transform: translateY(-2px);
-              box-shadow: 0 5px 15px rgba(0, 255, 65, 0.4);
+            .kp-btn:hover{ transform: translateY(-1px); filter: brightness(1.05); }
+            .kp-error{
+              display:none; margin-top:8px; color:#c62828; font-size: 12px;
             }
-            .error-message {
-              color: #ff6b6b;
-              font-size: 10px;
-              margin-top: 10px;
-              animation: shake 0.5s ease-in-out;
+            .kp-brand{
+              display:flex; align-items:center; gap:10px; margin-bottom:10px;
+              color:#275e2b; font-weight:900; letter-spacing:.2px;
             }
-            @keyframes shake {
-              0%, 100% { transform: translateX(0); }
-              25% { transform: translateX(-5px); }
-              75% { transform: translateX(5px); }
+            .kp-badge{
+              display:inline-grid; place-items:center;
+              width:36px; height:36px; border-radius:12px;
+              background: #e8f5e9; color:#2e7d32; font-weight:900;
+              box-shadow: inset 0 0 0 1px rgba(46,125,50,.22);
+            }
+            .kp-footer{
+              margin-top:14px; text-align:center; font-size:12px; color:#7a8b80;
             }
           `;
           document.head.appendChild(style);
 
-          // Create content
-          modal.innerHTML = `
-            <div class="pixel-text" style="font-size: 24px; margin-bottom: 20px;">
-              🌱 KIDPATH 🌱
+          // ====== content ======
+          card.innerHTML = `
+            <div class="kp-brand">
+              <div class="kp-badge">🌱</div>
+              <div>KidPath · Protected Preview</div>
             </div>
-            <div class="pixel-text" style="font-size: 14px; margin-bottom: 30px;">
-              ACCESS GRANTED
+            <h2 class="kp-title">Enter access code</h2>
+            <p class="kp-sub">This preview is gated. Please enter the demo code to continue.</p>
+
+            <div class="kp-row">
+              <input id="kpPass" type="password" class="kp-input" placeholder="Access code" autocomplete="off" />
+              <button id="kpBtn" class="kp-btn">Unlock</button>
             </div>
-            <div class="pixel-text" style="font-size: 10px; margin-bottom: 20px; color: #4ecdc4;">
-              Enter security clearance code:
-            </div>
-            <input type="password" id="passwordInput" class="retro-input" placeholder="••••••••" autocomplete="off">
-            <div id="errorMessage" class="error-message" style="display: none;"></div>
-            <div style="margin-top: 30px;">
-              <button id="submitBtn" class="retro-button">AUTHENTICATE</button>
-            </div>
-            <div class="pixel-text" style="font-size: 8px; margin-top: 20px; color: #666;">
-              Helping Families Walk with Confidence
-            </div>
+            <div id="kpErr" class="kp-error">Incorrect code. Please try again.</div>
+
+            <div class="kp-footer">Helping families walk with confidence</div>
           `;
 
-          overlay.appendChild(modal);
+          overlay.appendChild(card);
           document.body.appendChild(overlay);
 
-          // Focus input
-          var input = document.getElementById('passwordInput');
+          // ====== interactions ======
+          var input = card.querySelector('#kpPass');
+          var btn   = card.querySelector('#kpBtn');
+          var err   = card.querySelector('#kpErr');
           input.focus();
 
-          // Handle submit
-          function handleSubmit() {
-            var password = input.value;
-            var errorDiv = document.getElementById('errorMessage');
-            
-            if (password === PASS) {
+          function submit() {
+            var ok = input.value === PASS;
+            if (ok) {
               localStorage.setItem(KEY, '1');
-              overlay.style.animation = 'fadeOut 0.5s ease-out forwards';
-              setTimeout(() => {
+              overlay.style.transition = 'opacity .25s ease, transform .25s ease';
+              overlay.style.opacity = '0';
+              overlay.style.transform = 'scale(.98)';
+              setTimeout(function(){
                 document.body.removeChild(overlay);
                 document.head.removeChild(style);
-              }, 500);
+              }, 250);
             } else {
-              errorDiv.textContent = '❌ ACCESS DENIED - Invalid credentials';
-              errorDiv.style.display = 'block';
+              err.style.display = 'block';
+              card.style.animation = 'kp-shake .36s ease';
+              setTimeout(function(){ card.style.animation = '' }, 360);
               input.value = '';
               input.focus();
-              input.style.borderColor = '#ff6b6b';
-              setTimeout(() => {
-                input.style.borderColor = '#00ff41';
-              }, 1000);
             }
           }
 
-          // Event listeners
-          document.getElementById('submitBtn').addEventListener('click', handleSubmit);
-          input.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-              handleSubmit();
-            }
+          btn.addEventListener('click', submit);
+          input.addEventListener('keydown', function(e){
+            if (e.key === 'Enter') submit();
           });
-
-          // Add fade out animation
-          var fadeStyle = document.createElement('style');
-          fadeStyle.textContent = `
-            @keyframes fadeOut {
-              to { opacity: 0; transform: scale(0.9); }
-            }
-          `;
-          document.head.appendChild(fadeStyle);
         }
 
         try {
           if (!localStorage.getItem(KEY)) {
-            // Wait for fonts to load
-            document.addEventListener('DOMContentLoaded', function() {
-              // Load Press Start 2P font
-              var link = document.createElement('link');
-              link.href = 'https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap';
-              link.rel = 'stylesheet';
-              document.head.appendChild(link);
-              
-              // Wait a bit for font to load, then show modal
-              setTimeout(createRetroPasswordModal, 500);
+            document.addEventListener('DOMContentLoaded', function () {
+              createKidpathPasswordModal();
             });
           }
         } catch (e) {
-          // Fallback to basic prompt
           var input = window.prompt('Password:');
-          if (input !== PASS) {
-            document.write('<style>body{display:none;}</style>');
-          }
+          if (input !== PASS) { document.write('<style>body{display:none;}</style>'); }
         }
       })();
-    </script>
+  </script>
+
 
     <meta charset="UTF-8">
     <link rel="icon" href="/images/favicon..svg" type="image/svg+xml">
