@@ -7,7 +7,6 @@ import * as turf from '@turf/turf'
 const props = defineProps({
   parksUrl:  { type: String, required: true }, // e.g. https://.../parks.geojson
   treesUrl:  { type: String, required: true }, // e.g. https://.../trees.geojson
-  grassUrl:  { type: String, default: '' },    // optional (visual only)
   basemap:   { type: String, default: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json' },
   showSidebar: { type: Boolean, default: false } // Control sidebar visibility
 })
@@ -32,7 +31,6 @@ const treeWeight  = computed(() => 1 - parkWeight.value)
 
 let parksFC  = null
 let treesFC  = null
-let grassFC  = null // visual only
 
 const routes = ref([])           // [{id, feature, distance, duration, shadeScore}]
 const bestRouteId = ref(null)
@@ -40,6 +38,10 @@ const showResultsPanel = ref(false)
 const showAddressPanel = ref(false)
 const startAddress = ref('')
 const endAddress = ref('')
+
+// Trees lazy-loading controls
+const treesAdded = ref(false)
+const treesVisible = ref(false) // default off to save bandwidth/rendering
 
 const hasPoints = computed(() => Array.isArray(start.value) && Array.isArray(end.value))
 
@@ -309,8 +311,7 @@ async function initMap(){
   map.on('load', async () => {
     // Sources
     map.addSource('parks', { type:'geojson', data: props.parksUrl })
-    if (props.grassUrl) map.addSource('grass', { type:'geojson', data: props.grassUrl })
-    map.addSource('trees', { type:'geojson', data: props.treesUrl })
+    // trees source will be added lazily when zoom >= 15 or when explicitly enabled
 
     map.addSource('start',      { type:'geojson', data:{ type:'FeatureCollection', features: [] } })
     map.addSource('end',        { type:'geojson', data:{ type:'FeatureCollection', features: [] } })
@@ -320,12 +321,7 @@ async function initMap(){
     // Retro green layers
     map.addLayer({ id:'parks-fill', type:'fill', source:'parks', paint:{ 'fill-color':'#00ff41', 'fill-opacity':0.4 } })
     map.addLayer({ id:'parks-line', type:'line', source:'parks', paint:{ 'line-color':'#00ff41', 'line-width':2 } })
-    if (props.grassUrl){
-      map.addLayer({ id:'grass-fill', type:'fill', source:'grass', paint:{ 'fill-color':'#00ff41', 'fill-opacity':0.3 } })
-    }
-    map.addLayer({ id:'trees-circles', type:'circle', source:'trees', paint:{
-      'circle-radius': 3, 'circle-color':'#00ff41', 'circle-opacity':0.8, 'circle-stroke-color':'#000', 'circle-stroke-width':1
-    }})
+    // Trees layer will be added lazily with visibility controlled by treesVisible
 
     // Retro routing layers
     map.addLayer({ id:'routes-all-line', type:'line', source:'routes-all', paint:{
@@ -357,18 +353,48 @@ async function initMap(){
 
     // Preload datasets for scoring & build indexes
     try {
-      const [p, t] = await Promise.all([
-        fetch(props.parksUrl).then(r => r.json()),
-        fetch(props.treesUrl).then(r => r.json())
-      ])
+      // Only preload parks initially; trees are heavy so defer until needed
+      const p = await fetch(props.parksUrl).then(r => r.json())
       parksFC = toFC(p)
-      treesFC = toFC(t)
       buildParkBoxes(parksFC)
-      buildTreeGrid(treesFC.features)
-      if (props.grassUrl) grassFC = toFC(await fetch(props.grassUrl).then(r => r.json()))
     } catch (e){
       console.warn('Failed to preload greens:', e)
     }
+
+    // Lazy add trees when zoomed in enough
+    const ensureTrees = async () => {
+      if (!treesAdded.value && (treesVisible.value || map.getZoom() >= 15)) {
+        try {
+          // Fetch trees once
+          if (!treesFC) {
+            const t = await fetch(props.treesUrl).then(r => r.json())
+            treesFC = toFC(t)
+            buildTreeGrid(treesFC.features)
+          }
+          if (!map.getSource('trees')) {
+            map.addSource('trees', { type:'geojson', data: treesFC })
+          }
+          if (!map.getLayer('trees-circles')) {
+            map.addLayer({ id:'trees-circles', type:'circle', source:'trees', paint:{
+              'circle-radius': 3, 'circle-color':'#00ff41', 'circle-opacity':0.8, 'circle-stroke-color':'#000', 'circle-stroke-width':1
+            }})
+          }
+          map.setLayoutProperty('trees-circles', 'visibility', treesVisible.value ? 'visible' : 'none')
+          treesAdded.value = true
+        } catch (e){ console.warn('Failed to add trees layer:', e) }
+      } else if (treesAdded.value && map.getLayer('trees-circles')) {
+        // Update visibility based on toggle
+        map.setLayoutProperty('trees-circles', 'visibility', treesVisible.value && map.getZoom() >= 15 ? 'visible' : 'none')
+      }
+    }
+
+    // Initial call and on zoom changes
+    ensureTrees()
+    map.on('zoomend', ensureTrees)
+    // Expose a simple keyboard toggle (T) without changing UI layout
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 't' || e.key === 'T') { treesVisible.value = !treesVisible.value; ensureTrees() }
+    })
   })
 }
 

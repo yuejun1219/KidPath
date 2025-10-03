@@ -71,7 +71,7 @@ const validateNearbyAmenities = (req, res, next) => {
 
 // Validate bbox amenities parameters
 const validateBboxAmenities = (req, res, next) => {
-  const { bbox, category, limit } = req.query;
+  const { bbox, category, limit, fields, zoom } = req.query;
   const errors = [];
 
   // Validate bounding box
@@ -100,6 +100,19 @@ const validateBboxAmenities = (req, res, next) => {
     req.validatedLimit = limitValidation.value;
   }
 
+  // Parse optional fields (comma-separated)
+  if (typeof fields === 'string' && fields.trim().length > 0) {
+    req.validatedFields = fields.split(',').map(s => s.trim()).filter(Boolean);
+  }
+
+  // Parse optional zoom
+  if (zoom !== undefined) {
+    const z = Number(zoom);
+    if (Number.isFinite(z) && z >= 0 && z <= 22) {
+      req.validatedZoom = z;
+    }
+  }
+
   if (errors.length > 0) {
     return res.status(HTTP_STATUS.BAD_REQUEST).json({
       success: false,
@@ -114,11 +127,12 @@ const validateBboxAmenities = (req, res, next) => {
 
 // Validate search amenities parameters
 const validateSearchAmenities = (req, res, next) => {
-  const { name, category, limit } = req.query;
+  const { name, q, category, limit } = req.query;
   const errors = [];
 
   // Validate search name
-  const nameValidation = validateSearchName(name);
+  const queryName = q !== undefined ? q : name;
+  const nameValidation = validateSearchName(queryName);
   if (!nameValidation.isValid) {
     errors.push(...nameValidation.errors);
   } else {

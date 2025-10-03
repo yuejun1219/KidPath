@@ -13,14 +13,24 @@ class PlaygroundService {
   // get playgrounds by season with shade coverage
   async getPlaygroundsBySeason(season = SEASONS.SUMMER) {
     try {
+      console.log('🔍 [DEBUG] PlaygroundService.getPlaygroundsBySeason called with season:', season);
+      console.log('🔍 [DEBUG] Using pool from database.js');
+      
       const orderBy = ORDER_BY_SEASON[season] || ORDER_BY_SEASON[SEASONS.SUMMER];
       const finalQuery = `${getPlaygroundsWithShadeQuery} ${orderBy}`;
       
       console.log(`fetch ${season} playground data...`);
+      console.log('🔍 [DEBUG] About to execute query with pool...');
       const result = await pool.query(finalQuery, [BUFFER_RADIUS]);
+      console.log('🔍 [DEBUG] Query executed successfully, rows returned:', result.rows.length);
       
       return result.rows;
     } catch (error) {
+      console.error('🔍 [DEBUG] PlaygroundService.getPlaygroundsBySeason error details:');
+      console.error('Error message:', error.message);
+      console.error('Error code:', error.code);
+      console.error('Error severity:', error.severity);
+      console.error('Full error object:', error);
       console.error('PlaygroundService.getPlaygroundsBySeason error:', error);
       throw new Error(`get ${season} playground data failed: ${error.message}`);
     }
