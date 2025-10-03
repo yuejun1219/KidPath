@@ -70,16 +70,14 @@ router.get('/trees', async (req, res) => {
 // GET /api/v1/geojson/all - Get all GeoJSON data
 router.get('/all', async (req, res) => {
   try {
-    const [parks, trees, grass] = await Promise.all([
+    const [parks, trees] = await Promise.all([
       getGeoJSONData('parks.geojson'),
-      getGeoJSONData('trees.geojson'),
-      getGeoJSONData('grass.geojson')
+      getGeoJSONData('trees.geojson')
     ]);
     
     res.json({
       parks,
-      trees,
-      grass
+      trees
     });
   } catch (error) {
     res.status(500).json({

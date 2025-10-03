@@ -47,21 +47,14 @@ router.get('/api', (req, res) => {
       geojson: {
         parks: '/api/v1/geojson/parks',
         trees: '/api/v1/geojson/trees',
-        grass: '/api/v1/geojson/grass',
         all: '/api/v1/geojson/all'
       },
       comfort: {
-        tree_coverage: '/api/v1/comfort/tree-coverage',
-        amenities: '/api/v1/comfort/amenities',
-        analyze_segment: '/api/v1/comfort/analyze-segment',
-        seasonal_recommendations: '/api/v1/comfort/seasonal-recommendations'
+        tree_coverage: '/api/v1/comfort/tree-coverage'
       },
       poi: {
         along_route: '/api/v1/poi/along-route',
         comfort_along_route: '/api/v1/poi/comfort-along-route',
-        in_bbox: '/api/v1/poi/in-bbox',
-        categories: '/api/v1/poi/categories',
-        nearby: '/api/v1/poi/nearby',
         route_amenities_summary: '/api/v1/poi/route-amenities-summary'
       }
     },

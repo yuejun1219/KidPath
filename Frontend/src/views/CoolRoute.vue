@@ -6,7 +6,6 @@
       @toggle-sidebar="showSidebar = !showSidebar"
       parksUrl="https://api.kidpath.me/api/v1/geojson/parks"
       treesUrl="https://api.kidpath.me/api/v1/geojson/trees"
-      grassUrl="https://api.kidpath.me/api/v1/geojson/grass"
     />
   </div>
 </template>

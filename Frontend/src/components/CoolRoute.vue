@@ -7,7 +7,6 @@ import * as turf from '@turf/turf'
 const props = defineProps({
   parksUrl:  { type: String, required: true }, // e.g. https://.../parks.geojson
   treesUrl:  { type: String, required: true }, // e.g. https://.../trees.geojson
-  grassUrl:  { type: String, default: '' },    // optional (visual only)
   basemap:   { type: String, default: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json' },
   showSidebar: { type: Boolean, default: false } // Control sidebar visibility
 })
@@ -32,7 +31,6 @@ const treeWeight  = computed(() => 1 - parkWeight.value)
 
 let parksFC  = null
 let treesFC  = null
-let grassFC  = null // visual only
 
 const routes = ref([])           // [{id, feature, distance, duration, shadeScore}]
 const bestRouteId = ref(null)
@@ -313,7 +311,6 @@ async function initMap(){
   map.on('load', async () => {
     // Sources
     map.addSource('parks', { type:'geojson', data: props.parksUrl })
-    if (props.grassUrl) map.addSource('grass', { type:'geojson', data: props.grassUrl })
     // trees source will be added lazily when zoom >= 15 or when explicitly enabled
 
     map.addSource('start',      { type:'geojson', data:{ type:'FeatureCollection', features: [] } })
@@ -324,9 +321,6 @@ async function initMap(){
     // Retro green layers
     map.addLayer({ id:'parks-fill', type:'fill', source:'parks', paint:{ 'fill-color':'#00ff41', 'fill-opacity':0.4 } })
     map.addLayer({ id:'parks-line', type:'line', source:'parks', paint:{ 'line-color':'#00ff41', 'line-width':2 } })
-    if (props.grassUrl){
-      map.addLayer({ id:'grass-fill', type:'fill', source:'grass', paint:{ 'fill-color':'#00ff41', 'fill-opacity':0.3 } })
-    }
     // Trees layer will be added lazily with visibility controlled by treesVisible
 
     // Retro routing layers
@@ -363,7 +357,6 @@ async function initMap(){
       const p = await fetch(props.parksUrl).then(r => r.json())
       parksFC = toFC(p)
       buildParkBoxes(parksFC)
-      if (props.grassUrl) grassFC = toFC(await fetch(props.grassUrl).then(r => r.json()))
     } catch (e){
       console.warn('Failed to preload greens:', e)
     }
