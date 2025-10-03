@@ -4,7 +4,6 @@ const healthRoutes = require('./health');
 const aiRoutes = require('./aiRoutes');
 const amenitiesRoutes = require('./amenities');
 const geojsonRoutes = require('./geojson');
-const routeRoutes = require('./routes');
 const comfortRoutes = require('./comfort');
 const poiRoutes = require('./poi');
 
@@ -18,7 +17,6 @@ router.use(`${API_VERSION}/ai`, aiRoutes);
 router.use(`${API_VERSION}/seasonal-comfort`, seasonalComfortRoutes);
 router.use(`${API_VERSION}/amenities`, amenitiesRoutes);
 router.use(`${API_VERSION}/geojson`, geojsonRoutes);
-router.use(`${API_VERSION}/routes`, routeRoutes);
 router.use(`${API_VERSION}/comfort`, comfortRoutes);
 router.use(`${API_VERSION}/poi`, poiRoutes);
 router.use('/', healthRoutes);
@@ -43,17 +41,14 @@ router.get('/api', (req, res) => {
         categories: '/api/v1/amenities/categories',
         suggestions: '/api/v1/amenities/suggestions',
         popular: '/api/v1/amenities/popular',
-        by_id: '/api/v1/amenities/:id'
+        by_id: '/api/v1/amenities/:id',
+        filter: '/api/v1/amenities/filter'
       },
       geojson: {
         parks: '/api/v1/geojson/parks',
         trees: '/api/v1/geojson/trees',
         grass: '/api/v1/geojson/grass',
         all: '/api/v1/geojson/all'
-      },
-      routes: {
-        plan: '/api/v1/routes/plan',
-        season: '/api/v1/routes/season'
       },
       comfort: {
         tree_coverage: '/api/v1/comfort/tree-coverage',
@@ -66,7 +61,8 @@ router.get('/api', (req, res) => {
         comfort_along_route: '/api/v1/poi/comfort-along-route',
         in_bbox: '/api/v1/poi/in-bbox',
         categories: '/api/v1/poi/categories',
-        nearby: '/api/v1/poi/nearby'
+        nearby: '/api/v1/poi/nearby',
+        route_amenities_summary: '/api/v1/poi/route-amenities-summary'
       }
     },
     documentation: 'https://github.com/your-repo/seasonal-comfort-api'

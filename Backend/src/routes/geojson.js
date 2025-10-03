@@ -67,19 +67,6 @@ router.get('/trees', async (req, res) => {
   }
 });
 
-// GET /api/v1/geojson/grass
-router.get('/grass', async (req, res) => {
-  try {
-    const data = await getGeoJSONData('grass.geojson');
-    res.json(data);
-  } catch (error) {
-    res.status(500).json({
-      error: 'Failed to fetch grass data',
-      message: error.message
-    });
-  }
-});
-
 // GET /api/v1/geojson/all - Get all GeoJSON data
 router.get('/all', async (req, res) => {
   try {
