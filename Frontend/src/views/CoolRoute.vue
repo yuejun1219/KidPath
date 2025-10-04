@@ -4,18 +4,22 @@
       v-if="ready"
       :showSidebar="showSidebar"
       @toggle-sidebar="showSidebar = !showSidebar"
-      parksUrl="https://api.kidpath.me/api/v1/geojson/parks"
-      treesUrl="https://api.kidpath.me/api/v1/geojson/trees"
+      :parksUrl="parksUrl"
+      :treesUrl="treesUrl"
     />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import CoolRoute from '@/components/CoolRoute.vue'
 
 const ready = ref(false)
 const showSidebar = ref(false) // Start with sidebar hidden, will be controlled by mobile toggle
+
+// Use production API directly
+const parksUrl = 'https://api.kidpath.me/api/v1/geojson/parks'
+const treesUrl = 'https://api.kidpath.me/api/v1/geojson/trees'
 
 onMounted(() => {
   // Delay to ensure smooth page transition
