@@ -25,7 +25,7 @@ const findPOIsAlongRoute = async (routeGeometry, maxDistance = 0.1) => {
         WHERE ST_DWithin(
           geom, 
           ST_GeomFromText($1, 4326), 
-          $2
+          $2 / 111000.0
         )
         ORDER BY distance
       `;
@@ -72,7 +72,7 @@ const findComfortPOIsAlongRoute = async (routeGeometry, maxDistance = 0.1) => {
         WHERE ST_DWithin(
           geom, 
           ST_GeomFromText($1, 4326), 
-          $2
+          $2 / 111000.0
         )
         AND category IN ('playground', 'fountain', 'toilet', 'library', 'community_centre', 'park')
         ORDER BY distance

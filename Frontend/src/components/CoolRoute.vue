@@ -32,7 +32,7 @@ const treeWeight  = computed(() => 1 - parkWeight.value)
 let parksFC  = null
 let treesFC  = null
 
-const routes = ref([])           // [{id, feature, distance, duration, shadeScore}]
+const routes = ref([])           // [{id, feature, distance, duration, shadeScore, amenities}]
 const bestRouteId = ref(null)
 const showResultsPanel = ref(false)
 const showAddressPanel = ref(false)
@@ -42,6 +42,10 @@ const endAddress = ref('')
 // Trees lazy-loading controls
 const treesAdded = ref(false)
 const treesVisible = ref(false) // default off to save bandwidth/rendering
+
+// Amenities controls
+const amenitiesVisible = ref(true) // default on
+const amenitiesAdded = ref(false)
 
 const hasPoints = computed(() => Array.isArray(start.value) && Array.isArray(end.value))
 
@@ -272,7 +276,7 @@ async function computeRoutes(){
     const out = alts.map((r, idx) => {
       const feat = turf.feature(r.geometry, { id:`r${idx}`, distance:r.distance, duration:r.duration })
       const s = shadeScore(feat)
-      return { id:`r${idx}`, feature:feat, distance:r.distance, duration:r.duration, shadeScore:s }
+      return { id:`r${idx}`, feature:feat, distance:r.distance, duration:r.duration, shadeScore:s, amenities: [] }
     })
     routes.value = out
 
@@ -281,6 +285,11 @@ async function computeRoutes(){
         .map(rt => ({ id:rt.id, score: routeScoreForRanking(rt) }))
         .sort((a,b) => b.score - a.score)
       bestRouteId.value = ranked[0].id
+      
+      // Fetch amenities for ALL routes
+      for (const route of routes.value) {
+        await fetchRouteAmenities(route)
+      }
     } else {
       bestRouteId.value = null
     }
@@ -298,11 +307,32 @@ async function computeRoutes(){
 
 /* ---------- Map ---------- */
 async function initMap(){
+  // Try to get user's current location first
+  let center = [144.9631, -37.8136] // Melbourne CBD as fallback
+  let zoom = 12
+  
+  try {
+    console.log('Attempting to get current location...')
+    const position = await new Promise((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(resolve, reject, {
+        enableHighAccuracy: true,
+        timeout: 10000, // 增加到10秒
+        maximumAge: 0 // 不使用缓存，强制获取新位置
+      })
+    })
+    center = [position.coords.longitude, position.coords.latitude]
+    zoom = 15 // Zoom in more when using current location
+    console.log('✅ Successfully got current location:', center)
+  } catch (error) {
+    console.log('❌ Failed to get current location:', error.code, error.message)
+    console.log('Using default location (Melbourne CBD)')
+  }
+
   map = new MapLibreMap({
     container: mapEl.value,
     style: props.basemap,
-    center: [144.9631, -37.8136], // Melbourne CBD
-    zoom: 12,
+    center: center,
+    zoom: zoom,
     // Retro video game aesthetic
     renderWorldCopies: false,
     attributionControl: true
@@ -317,6 +347,7 @@ async function initMap(){
     map.addSource('end',        { type:'geojson', data:{ type:'FeatureCollection', features: [] } })
     map.addSource('routes-all', { type:'geojson', data:{ type:'FeatureCollection', features: [] } })
     map.addSource('route-best', { type:'geojson', data:{ type:'FeatureCollection', features: [] } })
+    map.addSource('amenities',  { type:'geojson', data:{ type:'FeatureCollection', features: [] } })
 
     // Retro green layers
     map.addLayer({ id:'parks-fill', type:'fill', source:'parks', paint:{ 'fill-color':'#00ff41', 'fill-opacity':0.4 } })
@@ -344,6 +375,97 @@ async function initMap(){
       'circle-radius':8, 'circle-color':'#ff0000', 'circle-stroke-color':'#000', 'circle-stroke-width':3
     }})
 
+    // Add initial circle layer
+    map.addLayer({ 
+      id:'amenities-markers', 
+      type:'circle', 
+      source:'amenities', 
+      paint: {
+        'circle-radius': 8,
+        'circle-color': [
+          'case',
+          ['==', ['get', 'category'], 'toilet'], '#ff6b6b',
+          ['==', ['get', 'category'], 'playground'], '#4ecdc4',
+          ['==', ['get', 'category'], 'library'], '#45b7d1',
+          '#ff6b6b' // default
+        ],
+        'circle-opacity': 0.8,
+        'circle-stroke-color': '#000',
+        'circle-stroke-width': 2
+      },
+      layout: {
+        'visibility': amenitiesVisible.value ? 'visible' : 'none'
+      }
+    })
+    
+    // Load images using fetch and convert to ImageData
+    const loadImages = async () => {
+      console.log('Starting to load images...')
+      
+      try {
+        // Load toilet icon
+        console.log('Loading toilet.png...')
+        const toiletResponse = await fetch('/images/toilet.png')
+        const toiletBlob = await toiletResponse.blob()
+        const toiletImage = await createImageBitmap(toiletBlob)
+        map.addImage('toilet-icon', toiletImage)
+        console.log('Toilet icon loaded and added successfully')
+        
+        // Load playground icon
+        console.log('Loading playground1.png...')
+        const playgroundResponse = await fetch('/images/playground1.png')
+        const playgroundBlob = await playgroundResponse.blob()
+        const playgroundImage = await createImageBitmap(playgroundBlob)
+        map.addImage('playground-icon', playgroundImage)
+        console.log('Playground icon loaded and added successfully')
+        
+        // Load library icon
+        console.log('Loading library.png...')
+        const libraryResponse = await fetch('/images/library.png')
+        const libraryBlob = await libraryResponse.blob()
+        const libraryImage = await createImageBitmap(libraryBlob)
+        map.addImage('library-icon', libraryImage)
+        console.log('Library icon loaded and added successfully')
+        
+        console.log('All images loaded successfully!')
+        return true
+      } catch (error) {
+        console.error('Failed to load images:', error)
+        return false
+      }
+    }
+    
+    // Load images and update layer with delay
+    setTimeout(async () => {
+      const success = await loadImages()
+      if (success) {
+        console.log('All images loaded successfully, updating to symbol layer')
+        if (map.getLayer('amenities-markers')) {
+          map.removeLayer('amenities-markers')
+        }
+        map.addLayer({ 
+          id:'amenities-markers', 
+          type:'symbol', 
+          source:'amenities', 
+          layout: {
+            'icon-image': [
+              'case',
+              ['==', ['get', 'category'], 'toilet'], 'toilet-icon',
+              ['==', ['get', 'category'], 'playground'], 'playground-icon',
+              ['==', ['get', 'category'], 'library'], 'library-icon',
+              'toilet-icon' // default
+            ],
+            'icon-size': 0.8,
+            'icon-allow-overlap': true,
+            'visibility': amenitiesVisible.value ? 'visible' : 'none'
+          }
+        })
+        console.log('Symbol layer added successfully')
+      } else {
+        console.warn('Images failed to load, keeping circle layer')
+      }
+    }, 1000) // 1 second delay
+
     // Click to pick
     map.on('click', (e) => {
       const lngLat = [e.lngLat.lng, e.lngLat.lat]
@@ -353,24 +475,23 @@ async function initMap(){
 
     // Preload datasets for scoring & build indexes
     try {
-      // Only preload parks initially; trees are heavy so defer until needed
-      const p = await fetch(props.parksUrl).then(r => r.json())
+      // Load both parks and trees for scoring, but trees layer visibility is controlled separately
+      const [p, t] = await Promise.all([
+        fetch(props.parksUrl).then(r => r.json()),
+        fetch(props.treesUrl).then(r => r.json())
+      ])
       parksFC = toFC(p)
+      treesFC = toFC(t)
       buildParkBoxes(parksFC)
+      buildTreeGrid(treesFC.features)
     } catch (e){
       console.warn('Failed to preload greens:', e)
     }
 
-    // Lazy add trees when zoomed in enough
-    const ensureTrees = async () => {
-      if (!treesAdded.value && (treesVisible.value || map.getZoom() >= 15)) {
+    // Add trees layer (data already loaded, just control visibility)
+    const ensureTrees = () => {
+      if (!treesAdded.value && treesFC) {
         try {
-          // Fetch trees once
-          if (!treesFC) {
-            const t = await fetch(props.treesUrl).then(r => r.json())
-            treesFC = toFC(t)
-            buildTreeGrid(treesFC.features)
-          }
           if (!map.getSource('trees')) {
             map.addSource('trees', { type:'geojson', data: treesFC })
           }
@@ -379,12 +500,14 @@ async function initMap(){
               'circle-radius': 3, 'circle-color':'#00ff41', 'circle-opacity':0.8, 'circle-stroke-color':'#000', 'circle-stroke-width':1
             }})
           }
-          map.setLayoutProperty('trees-circles', 'visibility', treesVisible.value ? 'visible' : 'none')
+          // Default hidden, show only when user toggles or zooms in
+          map.setLayoutProperty('trees-circles', 'visibility', 'none')
           treesAdded.value = true
         } catch (e){ console.warn('Failed to add trees layer:', e) }
       } else if (treesAdded.value && map.getLayer('trees-circles')) {
-        // Update visibility based on toggle
-        map.setLayoutProperty('trees-circles', 'visibility', treesVisible.value && map.getZoom() >= 15 ? 'visible' : 'none')
+        // Update visibility based on toggle and zoom
+        const shouldShow = treesVisible.value && map.getZoom() >= 15
+        map.setLayoutProperty('trees-circles', 'visibility', shouldShow ? 'visible' : 'none')
       }
     }
 
@@ -405,23 +528,47 @@ function applyPreset(name){
   else if (name==='cool'){ shadeWeight.value = 0.9; parkWeight.value = 0.5 }
 }
 
-function selectBest(id){
+function setParkWeight(value){
+  parkWeight.value = value
+  console.log(`Park weight set to ${value === 1 ? '100% Parks' : '100% Street trees'}`)
+}
+
+async function selectBest(id){
   bestRouteId.value = id
   const best = routes.value.find(r => r.id===id)
   setSourceData('route-best', best ? { type:'FeatureCollection', features:[best.feature] } : turf.featureCollection([]))
+  
+  // Fetch amenities for selected route
+  if (best) {
+    await fetchRouteAmenities(best)
+  }
 }
 
 function useMyLocation(){
-  if (!navigator.geolocation) return alert('Geolocation not available')
+  console.log('🔍 Manual location request triggered')
+  if (!navigator.geolocation) {
+    console.log('❌ Geolocation not available')
+    return alert('Geolocation not available')
+  }
+  
+  console.log('📍 Requesting location permission...')
   navigator.geolocation.getCurrentPosition(
     (pos) => {
+      console.log('✅ Location obtained:', pos.coords.longitude, pos.coords.latitude)
       const lngLat = [pos.coords.longitude, pos.coords.latitude]
       if (picking.value === 'start') start.value = lngLat
       else end.value = lngLat
       map && map.flyTo({ center: lngLat, zoom: 15 })
     },
-    () => alert('Could not get your location'),
-    { enableHighAccuracy:true, timeout:8000 }
+    (error) => {
+      console.log('❌ Location error:', error.code, error.message)
+      let errorMsg = 'Could not get your location'
+      if (error.code === 1) errorMsg = 'Location access denied. Please allow location access and try again.'
+      else if (error.code === 2) errorMsg = 'Location unavailable. Please check your GPS/network connection.'
+      else if (error.code === 3) errorMsg = 'Location request timed out. Please try again.'
+      alert(errorMsg)
+    },
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
   )
 }
 
@@ -435,6 +582,12 @@ function clearPoints(){
   setSourceData('end',   turf.featureCollection([]))
   setSourceData('routes-all', turf.featureCollection([]))
   setSourceData('route-best', turf.featureCollection([]))
+  
+  // Clear amenities from map and routes
+  setSourceData('amenities', turf.featureCollection([]))
+  routes.value.forEach(route => {
+    route.amenities = []
+  })
 }
 
 function openInGoogleMaps(route){
@@ -532,6 +685,131 @@ function clearAddresses() {
   end.value = null
   setSourceData('start', turf.featureCollection([]))
   setSourceData('end', turf.featureCollection([]))
+  
+  // Clear amenities from map and routes
+  setSourceData('amenities', turf.featureCollection([]))
+  routes.value.forEach(route => {
+    route.amenities = []
+  })
+  routes.value = []
+  bestRouteId.value = null
+}
+
+/* ---------- Amenities ---------- */
+async function fetchRouteAmenities(route) {
+  if (!route || !route.feature || !route.feature.geometry) return
+  
+  try {
+    const response = await fetch('https://api.kidpath.me/api/v1/poi/along-route', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        lineString: route.feature.geometry.coordinates,
+        categories: ['toilet', 'playground', 'library'],
+        maxDistance: 500, // 500 meters
+        buffer: 500 // 500 meters
+      })
+    })
+    
+    if (response.ok) {
+      const data = await response.json()
+      route.amenities = data.data?.pois || []
+      updateAmenitiesOnMap(route.amenities)
+    } else {
+      console.warn('Failed to fetch amenities:', response.status, response.statusText)
+    }
+  } catch (e) {
+    console.warn('Failed to fetch amenities:', e)
+  }
+}
+
+function updateAmenitiesOnMap(amenities) {
+  if (!map || !amenities) {
+    console.log('updateAmenitiesOnMap: map or amenities not available', { map: !!map, amenities: amenities?.length })
+    return
+  }
+  
+  console.log('updateAmenitiesOnMap: updating with', amenities.length, 'amenities')
+  
+  // Convert amenities to GeoJSON
+  const features = amenities.map(amenity => {
+    // Handle both coordinate formats: lon/lat fields or geometry.coordinates
+    let coordinates
+    if (amenity.lon && amenity.lat) {
+      coordinates = [amenity.lon, amenity.lat]
+    } else if (amenity.geometry && amenity.geometry.coordinates) {
+      coordinates = amenity.geometry.coordinates
+    } else {
+      console.warn('Amenity missing coordinates:', amenity)
+      return null
+    }
+    
+    return {
+      type: 'Feature',
+      geometry: {
+        type: 'Point',
+        coordinates: coordinates
+      },
+      properties: {
+        id: amenity.amenity_id,
+        name: amenity.name,
+        category: amenity.category,
+        type: amenity.category
+      }
+    }
+  }).filter(f => f !== null)
+  
+  const geoJson = { type: 'FeatureCollection', features }
+  console.log('updateAmenitiesOnMap: setting source data with', features.length, 'features')
+  console.log('updateAmenitiesOnMap: sample feature:', features[0])
+  console.log('updateAmenitiesOnMap: amenitiesVisible.value:', amenitiesVisible.value)
+  
+  setSourceData('amenities', geoJson)
+  
+  // Ensure layer is visible after updating data
+  if (map && map.getLayer('amenities-markers')) {
+    console.log('updateAmenitiesOnMap: setting layer visibility to', amenitiesVisible.value ? 'visible' : 'none')
+    map.setLayoutProperty('amenities-markers', 'visibility', amenitiesVisible.value ? 'visible' : 'none')
+  } else {
+    console.warn('updateAmenitiesOnMap: amenities-markers layer not found!')
+  }
+}
+
+function toggleAmenities() {
+  amenitiesVisible.value = !amenitiesVisible.value
+  if (map && map.getLayer('amenities-markers')) {
+    map.setLayoutProperty('amenities-markers', 'visibility', amenitiesVisible.value ? 'visible' : 'none')
+  }
+}
+
+function getAmenitiesByCategory(amenities) {
+  const grouped = {}
+  amenities.forEach(amenity => {
+    const category = amenity.category
+    if (!grouped[category]) {
+      grouped[category] = { category, count: 0 }
+    }
+    grouped[category].count++
+  })
+  return Object.values(grouped)
+}
+
+function getAmenityIcon(category) {
+  const icons = {
+    'toilet': '🚻',
+    'playground': '🎠',
+    'library': '📚'
+  }
+  return icons[category] || '📍'
+}
+
+function getAmenityName(category) {
+  const names = {
+    'toilet': 'Toilet',
+    'playground': 'Playground',
+    'library': 'Library'
+  }
+  return names[category] || category
 }
 
 /* ---------- Lifecycle ---------- */
@@ -632,8 +910,8 @@ watch([shadeWeight, parkWeight], () => {
       <span class="value">{{ Math.round(parkWeight*100) }}% parks</span>
     </div>
     <div class="mini-legend">
-      <span class="chip park">Parks</span>
-      <span class="chip tree">Street trees</span>
+      <span class="chip park" @click="setParkWeight(1)">Parks</span>
+      <span class="chip tree" @click="setParkWeight(0)">Street trees</span>
     </div>
   </div>
 </div>
@@ -658,6 +936,13 @@ watch([shadeWeight, parkWeight], () => {
         </button>
       </div>
 
+      <!-- Amenities Toggle Button -->
+      <div v-if="routes.length" class="amenities-toggle">
+        <button @click="toggleAmenities" class="toggle-btn">
+          {{ amenitiesVisible ? 'HIDE FACILITIES' : 'SHOW FACILITIES' }}
+        </button>
+      </div>
+
       <div v-else class="hint">
         Click the map to set <strong>{{ picking==='start' ? 'Start' : 'End' }}</strong>.
       </div>
@@ -678,7 +963,7 @@ watch([shadeWeight, parkWeight], () => {
       :key="r.id"
       class="route-item"
       :class="{best: r.id===bestRouteId}"
-      @click="bestRouteId=r.id; setSourceData('route-best', {type:'FeatureCollection', features:[r.feature]})"
+      @click="selectBest(r.id)"
     >
       <div class="row1">
         <strong>{{ r.id===bestRouteId ? 'COOLEST' : 'ALTERNATIVE' }}</strong>
@@ -687,6 +972,13 @@ watch([shadeWeight, parkWeight], () => {
       <div class="row2">
         <span>{{ km(r.distance) }} KM</span>
         <span>{{ min(r.duration) }} MIN</span>
+      </div>
+      <div v-if="r.amenities && r.amenities.length" class="row2.5">
+        <div class="amenities-list">
+          <span v-for="amenity in getAmenitiesByCategory(r.amenities)" :key="amenity.category" class="amenity-item">
+            {{ getAmenityIcon(amenity.category) }} {{ getAmenityName(amenity.category) }} x{{ amenity.count }}
+          </span>
+        </div>
       </div>
       <div class="row3">
         <button @click.stop="openInGoogleMaps(r)" class="google-maps-btn">
@@ -1070,6 +1362,9 @@ watch([shadeWeight, parkWeight], () => {
 
 /* Results Toggle Button */
 .results-toggle{ margin-top:16px; }
+
+/* Amenities Toggle Button */
+.amenities-toggle{ margin-top:16px; }
 .toggle-btn{
   width:100%; padding:12px 16px; border:3px solid #000; background:#00ff41;
   color:#000; font-family: 'Press Start 2P', monospace; font-size:.5rem;
@@ -1123,6 +1418,18 @@ watch([shadeWeight, parkWeight], () => {
 .row1 strong{ font-size:.5rem; text-transform: uppercase; }
 .score{ font-size:.5rem; font-weight:normal; text-transform: uppercase; }
 .row2{ display:flex; gap:16px; font-size:.45rem; text-transform: uppercase; margin-bottom:8px; }
+.row2\.5{ margin-bottom:8px; }
+.amenities-list{ display:flex; flex-wrap:wrap; gap:8px; }
+.amenity-item{ 
+  font-size:.4rem; 
+  color:#333; 
+  background:#f0f0f0; 
+  padding:2px 6px; 
+  border:1px solid #ccc; 
+  border-radius:0;
+  font-family: 'Press Start 2P', monospace;
+  text-transform: uppercase;
+}
 .row3{ margin-top:8px; }
 .google-maps-btn{
   width:100%; padding:8px 12px; border:2px solid #000; background:#fff;
@@ -1317,6 +1624,13 @@ watch([shadeWeight, parkWeight], () => {
   font-family: 'Press Start 2P', monospace;
   text-transform: uppercase;
   box-shadow:2px 2px 0 #000;
+  cursor: pointer;
+  transition: all 0.1s;
+  display: inline-block;
+}
+.chip:hover{
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 #000;
 }
 .chip.park{ 
   background:#00ff41; 
