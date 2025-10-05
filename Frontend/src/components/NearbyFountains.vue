@@ -297,12 +297,7 @@ async function loadAmenities() {
 
       const url = `${API_BASE}/api/v1/amenities/bbox?bbox=${bbox}&category=${selectedAmenityType.value}&limit=50&_t=${Date.now()}`
 
-      const response = await fetch(url, {
-        headers: {
-          'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache'
-        }
-      })
+      const response = await fetch(url)
       if (response.ok) {
         const data = await response.json()
         console.info('[NearbyFountains] bbox ok', { url, count: data?.data?.features?.length ?? 0 })
