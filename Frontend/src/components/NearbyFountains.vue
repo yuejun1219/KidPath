@@ -305,6 +305,7 @@ async function loadAmenities() {
       })
       if (response.ok) {
         const data = await response.json()
+        console.info('[NearbyFountains] bbox ok', { url, count: data?.data?.features?.length ?? 0 })
 
         const rawFeatures = data.data?.features || []
         const filteredFeatures = rawFeatures.filter(feature => {
@@ -324,10 +325,12 @@ async function loadAmenities() {
           }))
         }
       } else {
+        console.error('[NearbyFountains] bbox failed', { url, status: response.status, statusText: response.statusText })
         fountains.value = { type: 'FeatureCollection', features: [] }
       }
     }
   } catch (error) {
+    console.error('[NearbyFountains] loadAmenities error', error)
     fountains.value = { type: 'FeatureCollection', features: [] }
   } finally {
     loading.value = false
