@@ -17,9 +17,9 @@ import CoolRoute from '@/components/CoolRoute.vue'
 const ready = ref(false)
 const showSidebar = ref(false) // Start with sidebar hidden, will be controlled by mobile toggle
 
-// Use production API directly
-const parksUrl = 'https://api.kidpath.me/api/v1/geojson/parks'
-const treesUrl = 'https://api.kidpath.me/api/v1/geojson/trees'
+// 直接使用 S3 资源，避免后端代理抖动导致整页失败
+const parksUrl = 'https://kidpath-geojson.s3.ap-southeast-2.amazonaws.com/parks.geojson'
+const treesUrl = 'https://kidpath-geojson.s3.ap-southeast-2.amazonaws.com/trees.geojson'
 
 onMounted(() => {
   // Delay to ensure smooth page transition
