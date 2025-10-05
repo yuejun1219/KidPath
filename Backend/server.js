@@ -33,7 +33,6 @@ app.use(cors({
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  // Allow common request headers often sent by browsers during CORS preflight and fetch
   allowedHeaders: [
     'Content-Type',
     'Authorization',
@@ -49,9 +48,6 @@ app.use(cors({
   preflightContinue: false,
   maxAge: 600
 }));
-
-// Ensure explicit handling of preflight requests
-app.options('*', cors());
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
