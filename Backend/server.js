@@ -25,16 +25,33 @@ const port = process.env.PORT || DEFAULT_CONFIG.PORT;
 // middleware
 app.use(cors({
   origin: [
-    'http://localhost:5173',      // local test
-    'http://localhost:5174',      // local test (alternative port)
-    'https://www.kidpath.me',     // Vercel production
-    'https://kidpath.me',         // root production
-    'https://api.kidpath.me'      // API domain
+    'http://localhost:5173',
+    'http://localhost:5174',
+    'https://www.kidpath.me',
+    'https://kidpath.me',
+    'https://api.kidpath.me'
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+  // Allow common request headers often sent by browsers during CORS preflight and fetch
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'X-Requested-With',
+    'Accept',
+    'Accept-Language',
+    'Cache-Control',
+    'Pragma',
+    'Origin'
+  ],
+  exposedHeaders: ['Content-Length', 'Content-Type'],
+  optionsSuccessStatus: 204,
+  preflightContinue: false,
+  maxAge: 600
 }));
+
+// Ensure explicit handling of preflight requests
+app.options('*', cors());
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
