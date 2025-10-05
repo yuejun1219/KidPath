@@ -458,10 +458,10 @@ async function initMap(){
             // Make all amenity icons the same visual size
             'icon-size': [
               'case',
-              ['==', ['get', 'category'], 'toilet'], 0.6,
-              ['==', ['get', 'category'], 'playground'], 0.6,
-              ['==', ['get', 'category'], 'library'], 0.6,
-              0.6
+              ['==', ['get', 'category'], 'toilet'], 0.8,
+              ['==', ['get', 'category'], 'playground'], 0.2,
+              ['==', ['get', 'category'], 'library'], 0.2,
+              0.8
             ],
             'icon-allow-overlap': true,
             'visibility': amenitiesVisible.value ? 'visible' : 'none'
