@@ -37,6 +37,11 @@ const router = createRouter({
       name: 'NearbyFountains',
       component: () => import('../views/NearbyFountainsPage.vue')
     },
+    // ✅ 重定向到综合设施页面
+    {
+      path: '/nearby-amenities',
+      redirect: { name: 'NearbyFountains' }
+    },
     // 可选别名，老链接可跳转
     { path: '/water/nearby', redirect: { name: 'NearbyFountains' } }
   ],
