@@ -114,6 +114,9 @@ const FOUNTAINS_PATH = 'https://kidpath-geojson.s3.ap-southeast-2.amazonaws.com/
 const FOUNTAIN_ICON_URL = '/icons/fountain.png'
 const DEFAULT_VIEW = { center: [144.9631, -37.8136], zoom: 12, pitch: 50, bearing: 0 }
 const BASEMAP_STYLE = 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'
+// API base: accept both https://api.kidpath.me and https://api.kidpath.me/api/v1
+const RAW_API_BASE = import.meta.env.VITE_API_BASE || ''
+const API_BASE = RAW_API_BASE.replace(/\/$/, '').replace(/\/api(\/v\d+)?$/, '')
 
 // 设施类型配置
 const amenityTypes = ref([
@@ -292,7 +295,7 @@ async function loadAmenities() {
         lat + latOffset
       ].join(',')
 
-      const url = `/api/v1/amenities/bbox?bbox=${bbox}&category=${selectedAmenityType.value}&limit=50&_t=${Date.now()}`
+      const url = `${API_BASE}/api/v1/amenities/bbox?bbox=${bbox}&category=${selectedAmenityType.value}&limit=50&_t=${Date.now()}`
 
       const response = await fetch(url, {
         headers: {
