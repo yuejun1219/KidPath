@@ -4,10 +4,11 @@ const express = require('express');
 const router = express.Router();
 const { 
   findPOIsAlongRouteController, 
-  findComfortPOIsAlongRouteController, 
+  findComfortPOIsAlongRouteController,
   findPOIsInBboxController,
   getPOICategoriesController,
-  findNearbyPOIsController 
+  findNearbyPOIsController,
+  getRouteAmenitiesSummaryController
 } = require('../controllers/poiController');
 const { validateCoordinates, validateBbox } = require('../middleware/validation');
 
@@ -17,5 +18,6 @@ router.post('/comfort-along-route', findComfortPOIsAlongRouteController);
 router.get('/in-bbox', validateBbox, findPOIsInBboxController);
 router.get('/categories', getPOICategoriesController);
 router.get('/nearby', validateCoordinates, findNearbyPOIsController);
+router.post('/route-amenities-summary', getRouteAmenitiesSummaryController);
 
 module.exports = router;

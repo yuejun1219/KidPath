@@ -4,19 +4,22 @@
       v-if="ready"
       :showSidebar="showSidebar"
       @toggle-sidebar="showSidebar = !showSidebar"
-      parksUrl="https://api.kidpath.me/api/v1/geojson/parks"
-      treesUrl="https://api.kidpath.me/api/v1/geojson/trees"
-      grassUrl="https://api.kidpath.me/api/v1/geojson/grass"
+      :parksUrl="parksUrl"
+      :treesUrl="treesUrl"
     />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import CoolRoute from '@/components/CoolRoute.vue'
 
 const ready = ref(false)
 const showSidebar = ref(false) // Start with sidebar hidden, will be controlled by mobile toggle
+
+// 直接使用 S3 资源，避免后端代理抖动导致整页失败
+const parksUrl = 'https://kidpath-geojson.s3.ap-southeast-2.amazonaws.com/parks.geojson'
+const treesUrl = 'https://kidpath-geojson.s3.ap-southeast-2.amazonaws.com/trees.geojson'
 
 onMounted(() => {
   // Delay to ensure smooth page transition

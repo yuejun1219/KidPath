@@ -5,13 +5,14 @@
 
     <div
   class="panel"
-  :style="collapsed && isNarrow ? 'transform: translateY(calc(100% - 44px)); max-height: 44px;' : ''"
+  :class="{ collapsed }"
+  :style="collapsed && isNarrow ? 'transform: translateY(calc(100% - 34px)); max-height: 34px;' : ''"
 >
- <button class="sheet-toggle" @click="collapsed = true" aria-label="Collapse panel">
-      ▼
+ <button class="sheet-toggle" @click="togglePanel" aria-label="Collapse panel">
+      {{ collapsed ? '▲' : '▼' }}
     </button>
 
-      <h3>Tree Canopy</h3>
+      <h3 @click="togglePanel" style="cursor: pointer; user-select: none;">Tree Canopy</h3>
 
       <div class="row">
         <label>Taller bars show more tree cover.</label>
@@ -531,6 +532,18 @@ watch([extrudeX, selectedIds], () => setDeckLayers())
 
 .panel { position: absolute; top: 12px; left: 12px; background: rgba(255,255,255,0.94); backdrop-filter: blur(6px); border-radius: 14px; padding: 14px 16px; box-shadow: 0 10px 24px rgba(0,0,0,0.12); font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; width: 340px; max-height: calc(100% - 24px); overflow: auto; }
 .panel h3 { font-size: 1.05rem; margin: 0 0 8px; color: #1b5e20; letter-spacing: .2px; }
+/* collapsed on desktop: keep only header area visible */
+.panel.collapsed{ max-height: 34px; overflow: hidden; padding: 6px 12px; }
+.panel.collapsed .row,
+.panel.collapsed .legend,
+.panel.collapsed .section,
+.panel.collapsed .hint,
+.panel.collapsed .buttons,
+.panel.collapsed .controls,
+.panel.collapsed .rank-list,
+.panel.collapsed .compare,
+.panel.collapsed .compare-actions,
+.panel.collapsed .tiny-muted{ display: none !important; }
 
 .row { display: flex; align-items: center; gap: 10px; font-size: .92rem; margin: 8px 0; }
 .row input[type="range"] { flex: 1; accent-color: #7c4dff; }
@@ -591,6 +604,7 @@ watch([extrudeX, selectedIds], () => setDeckLayers())
     border-radius: 14px;
     box-shadow: 0 12px 28px rgba(0,0,0,.18);
   }
+  .panel.collapsed{ transform: translateY(calc(100% - 44px)); max-height: 44px; }
   .rank-list{ max-height: 160px; }          /* prevent super tall lists on phones */
   .controls .slider-row{ font-size: .8rem; }
 }

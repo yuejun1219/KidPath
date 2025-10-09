@@ -1,5 +1,15 @@
 require('dotenv').config();
 
+// Debug: Log environment variables at startup
+console.log('🔍 [DEBUG] Server startup - Environment variables:');
+console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('DB_HOST:', process.env.DB_HOST);
+console.log('DB_NAME:', process.env.DB_NAME);
+console.log('DB_USER:', process.env.DB_USER);
+console.log('DB_PASSWORD:', process.env.DB_PASSWORD ? '***已设置***' : '❌未设置');
+console.log('AMEN_DB_NAME:', process.env.AMEN_DB_NAME);
+console.log('AMEN_DB_PASSWORD:', process.env.AMEN_DB_PASSWORD ? '***已设置***' : '❌未设置');
+
 const aiRoutes = require("./src/routes/aiRoutes");
 const express = require('express');
 const cors = require('cors');
@@ -9,6 +19,7 @@ const { errorHandler, notFoundHandler } = require('./src/middleware/errorHandler
 const { DEFAULT_CONFIG } = require('./src/utils/constants');
 const logger = require('./src/utils/logger');
 const playgrRoutes = require('./src/routes/playgr');  
+// const logger = require('./src/utils/logger'); // Temporarily disabled for debugging
 
 const app = express();
 const port = process.env.PORT || DEFAULT_CONFIG.PORT;
@@ -16,15 +27,28 @@ const port = process.env.PORT || DEFAULT_CONFIG.PORT;
 // middleware
 app.use(cors({
   origin: [
-    'http://localhost:5173',      // local test
-    'http://localhost:5174',      // local test (alternative port)
-    'https://www.kidpath.me',     // Vercel production
-    'https://kidpath.me',         // root production
-    'https://api.kidpath.me'      // API domain
+    'http://localhost:5173',
+    'http://localhost:5174',
+    'https://www.kidpath.me',
+    'https://kidpath.me',
+    'https://api.kidpath.me'
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'X-Requested-With',
+    'Accept',
+    'Accept-Language',
+    'Cache-Control',
+    'Pragma',
+    'Origin'
+  ],
+  exposedHeaders: ['Content-Length', 'Content-Type'],
+  optionsSuccessStatus: 204,
+  preflightContinue: false,
+  maxAge: 600
 }));
 
 app.use(express.json());
@@ -32,7 +56,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // log all requests
 app.use((req, res, next) => {
-  logger.info(`${req.method} ${req.url}`, {
+  console.log(`${req.method} ${req.url}`, {
     method: req.method,
     url: req.url,
     ip: req.ip,
@@ -55,14 +79,14 @@ const startServer = async () => {
     // test database connection
     const dbConnected = await testConnection();
     if (!dbConnected) {
-      logger.warn('Database connection failed');
+      console.warn('Database connection failed');
     } else {
-      logger.info('Database connected successfully');
+      console.log('Database connected successfully');
     }
 
     // start express server
     const server = app.listen(port, () => {
-      logger.info('Seasonal Comfort API server started', {
+      console.log('Seasonal Comfort API server started', {
         port: port,
         environment: process.env.NODE_ENV || 'development',
         endpoints: {
@@ -91,24 +115,24 @@ const startServer = async () => {
 
     // graceful shutdown
     const gracefulShutdown = async (signal) => {
-      logger.info(`Received ${signal} signal, shutting down...`);
+      console.log(`Received ${signal} signal, shutting down...`);
       
       server.close(async () => {
-        logger.info('HTTP server closed');
+        console.log('HTTP server closed');
         
         try {
           await closePool();
-          logger.info('Database pool closed');
+          console.log('Database pool closed');
           process.exit(0);
         } catch (error) {
-          logger.error('Graceful shutdown failed', { error: error.message });
+          console.error('Graceful shutdown failed', { error: error.message });
           process.exit(1);
         }
       });
 
       // force exit if not closed in time
       setTimeout(() => {
-        logger.error('Forcing shutdown due to timeout');
+        console.error('Forcing shutdown due to timeout');
         process.exit(1);
       }, 10000);
     };
@@ -119,12 +143,12 @@ const startServer = async () => {
 
     // handle uncaught exceptions and unhandled rejections
     process.on('uncaughtException', (error) => {
-      logger.error('Uncaught exception', { error: error.message, stack: error.stack });
+      console.error('Uncaught exception', { error: error.message, stack: error.stack });
       gracefulShutdown('uncaughtException');
     });
 
     process.on('unhandledRejection', (reason, promise) => {
-      logger.error('Unhandled promise rejection', { 
+      console.error('Unhandled promise rejection', { 
         reason: reason?.message || reason, 
         stack: reason?.stack,
         promise: promise.toString()
@@ -133,7 +157,7 @@ const startServer = async () => {
     });
 
   } catch (error) {
-    logger.error('Server start failed', { error: error.message, stack: error.stack });
+    console.error('Server start failed', { error: error.message, stack: error.stack });
     process.exit(1);
   }
 };

@@ -215,6 +215,9 @@ const formatBboxAsGeoJSON = (amenities, metadata = {}) => {
   const categoryBreakdown = firstRow.category_breakdown || [];
   const totalInBbox = firstRow.total_in_bbox || 0;
 
+  const requestedFields = Array.isArray(metadata.fields) ? new Set(metadata.fields) : null;
+  const zoom = metadata.zoom;
+
   const features = amenities.map(amenity => {
     // Parse geometry if it's a string
     let geometry;
@@ -227,17 +230,35 @@ const formatBboxAsGeoJSON = (amenities, metadata = {}) => {
       geometry = null;
     }
 
+    // Optionally drop geometry precision for low zoom
+    if (geometry && zoom !== undefined && zoom < 12 && geometry.type === 'Point') {
+      // reduce precision to ~5 dp to shrink payload
+      const [x,y] = geometry.coordinates;
+      geometry.coordinates = [Number(x.toFixed(5)), Number(y.toFixed(5))];
+    }
+
+    const baseProps = {
+      amenity_id: amenity.amenity_id,
+      category: amenity.category,
+      name: amenity.name,
+      opening_hours: amenity.opening_hours,
+      wheelchair: amenity.wheelchair,
+      lon: amenity.lon,
+      lat: amenity.lat
+    };
+
+    // Slim fields if requested
+    let properties = baseProps;
+    if (requestedFields && requestedFields.size > 0) {
+      properties = {};
+      for (const key of Object.keys(baseProps)) {
+        if (requestedFields.has(key)) properties[key] = baseProps[key];
+      }
+    }
+
     return {
       type: 'Feature',
-      properties: {
-        amenity_id: amenity.amenity_id,
-        category: amenity.category,
-        name: amenity.name,
-        opening_hours: amenity.opening_hours,
-        wheelchair: amenity.wheelchair,
-        lon: amenity.lon,
-        lat: amenity.lat
-      },
+      properties,
       geometry: geometry
     };
   });

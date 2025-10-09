@@ -11,7 +11,8 @@ const {
   getAmenityCategoriesController,
   getAmenityByIdController,
   getSearchSuggestionsController,
-  getPopularSearchTermsController
+  getPopularSearchTermsController,
+  filterAmenitiesController
 } = require('../controllers/amenitiesController');
 
 // Import validation middleware
@@ -38,6 +39,10 @@ router.get('/suggestions', getSearchSuggestionsController);
 
 // GET /api/amenities/popular - Get popular search terms
 router.get('/popular', getPopularSearchTermsController);
+
+// GET /api/amenities/filter - Advanced amenities filter (Epic 6)
+// IMPORTANT: place this BEFORE '/:id' so it doesn't get captured as an ID
+router.get('/filter', filterAmenitiesController);
 
 // GET /api/amenities/:id - Get amenity by ID
 router.get('/:id', getAmenityByIdController);

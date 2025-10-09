@@ -1,6 +1,6 @@
 <template>
   <header class="header">
-    <button class="hamburger" :class="{ 'hamburger-dark': isComfortMattersPage }" @click="toggleMenu">
+    <button class="hamburger" :class="{ 'hamburger-dark': isComfortMattersPage }" @click="toggleMenu" ref="hamburgerEl">
       <div class="hamburger-line"></div>
       <div class="hamburger-line"></div>
       <div class="hamburger-line"></div>
@@ -13,8 +13,8 @@
     </router-link>
 
     <!-- Sliding Navigation Menu -->
-    <div class="nav-overlay" :class="{ 'nav-open': menuOpen }" @click="closeMenu">
-      <div class="nav-menu" @click.stop>
+    <div class="nav-overlay" :class="{ 'nav-open': menuOpen }" @click.self="closeMenu" @mousedown.self="closeMenu" @touchstart.self="closeMenu">
+      <div class="nav-menu" @click.stop ref="menuEl">
         <button class="nav-close" @click="closeMenu">×</button>
         
       <div class="nav-logo">
@@ -27,6 +27,7 @@
           <router-link to="/comfort-insights" class="nav-link" @click="handleNavigation">Weather Insights</router-link>
           <router-link to="/seasonal-comfort" class="nav-link" @click="handleNavigation">Seasonal Guide</router-link>
           <router-link to="/shade-quest" class="nav-link" @click="handleNavigation">Shade Quest</router-link>
+          <router-link to="/nearby-fountains" class="nav-link" @click="handleNavigation">Nearby Amenities</router-link>
           <router-link to="/comfort-matters" class="nav-link" @click="handleNavigation">Comfort Matters</router-link>
           <router-link to="/about" class="nav-link" @click="handleNavigation">About</router-link>
         </nav>
@@ -49,6 +50,8 @@ import { useRoute, useRouter } from 'vue-router'
 const route = useRoute()
 const router = useRouter()
 const menuOpen = ref(false)
+const menuEl = ref(null)
+const hamburgerEl = ref(null)
 const isScrolled = ref(false)
 
 
@@ -89,10 +92,27 @@ const handleScroll = () => {
 
 onMounted(() => {
   window.addEventListener('scroll', handleScroll)
+  // 点击页面任意空白（非侧栏、非汉堡按钮）时关闭侧栏
+  const onGlobalDown = (e) => {
+    if (!menuOpen.value) return
+    const target = e.target
+    if (menuEl.value && menuEl.value.contains(target)) return
+    if (hamburgerEl.value && hamburgerEl.value.contains(target)) return
+    menuOpen.value = false
+  }
+  document.addEventListener('mousedown', onGlobalDown)
+  document.addEventListener('touchstart', onGlobalDown, { passive: true })
+  // 保存以便卸载
+  window.__nav_onGlobalDown = onGlobalDown
 })
 
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
+  if (window.__nav_onGlobalDown) {
+    document.removeEventListener('mousedown', window.__nav_onGlobalDown)
+    document.removeEventListener('touchstart', window.__nav_onGlobalDown)
+    window.__nav_onGlobalDown = null
+  }
 })
 </script>
 

@@ -4,6 +4,18 @@ import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import NearbyFountains from '@/components/NearbyFountains.vue'
 import AskAiWidget from '@/components/AskAiWidget.vue'
 
+/* 设施类型：与组件内保持一致的 key 集合 */
+const amenityTypes = [
+  { key: 'fountain', name: 'Fountains', icon: '🚰' },
+  { key: 'toilet', name: 'Toilets', icon: '🚽' },
+  { key: 'playground', name: 'Playgrounds', icon: '🛝' },
+  { key: 'library', name: 'Libraries', icon: '📚' },
+  { key: 'community_centre', name: 'Community Centers', icon: '🏛️' }
+]
+
+/* 当前选择（驱动子组件） */
+const amenityKey = ref('fountain')
+
 /* 让地图在首帧后再挂载，避免尺寸测量出错 */
 const ready = ref(false)
 function nudgeResize(times = 2){
@@ -36,27 +48,40 @@ const API_BASE = import.meta.env.VITE_API_BASE
 </script>
 
 <template>
-  <main class="page">
+  <div class="page">
     <header class="page-header">
-      <h1 class="title">Nearby Drinking Fountains</h1>
-      <p class="subtitle">
-        Set a center (your location, map center, or click the map) and find drinking fountains within your chosen radius.
+      <h1 class="title">Find Nearby Amenities</h1>
+      <p class="intro">
+        Set a center (your location, map center, or click the map) and find selected amenities within your chosen radius.
       </p>
     </header>
 
-    <section class="content card fountains-card">
-      <NearbyFountains v-if="ready" />
+    <!-- 独立筛选工具条 -->
+    <div class="amenity-filter-toolbar" role="toolbar" aria-label="Amenity filters">
+      <div class="filter-title">Filter by:</div>
+      <div class="amenity-type-buttons">
+        <button
+          v-for="type in amenityTypes"
+          :key="type.key"
+          :class="['type-btn', { active: amenityKey === type.key }]"
+          @click="amenityKey = type.key"
+        >
+          <span class="icon">{{ type.icon }}</span>
+          <span class="text">{{ type.name }}</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 地图组件：只做内容（不带标题/筛选 UI），由 amenityKey 驱动 -->
+    <section class="fountains-card">
+      <NearbyFountains :amenity-key="amenityKey" />
     </section>
 
-    <!-- 右下角 AI -->
-    <AskAiWidget
-      :api-base="API_BASE"
-      placement="bottom-right"
-      title="Ask-AI · Water Nearby"
-      placeholder="Ask about taps, refill spots, parks…"
-    />
-  </main>
+    <AskAiWidget class="ask-ai" />
+  </div>
 </template>
+
+
 
 <style scoped>
 .page{
@@ -72,25 +97,83 @@ const API_BASE = import.meta.env.VITE_API_BASE
 .title{
   margin: 0 0 6px;
   font-size: clamp(24px, 3.2vw, 32px);
-  color: #1b5e20;
-  font-weight: 900;
-  letter-spacing: -.01em;
+  line-height: 1.2;
+  color: #1B5E20;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-weight: 700;
 }
-.subtitle{
+.intro{
   margin: 0;
-  color:#4a5f52;
+  color: #394e42;
+  font-size: clamp(14px, 1.2vw, 16px);
+  line-height: 1.55;
 }
-.content.card{
-  max-width:1140px;
-  margin: 12px auto 0;
+
+/* 独立筛选工具条（与组件无关） */
+.amenity-filter-toolbar{
+  max-width: 1140px;
+  margin: 10px auto 18px;
   background:#fff;
-  border:1px solid rgba(0,0,0,.06);
+  padding:12px 16px;
+  border-radius:12px;
+  box-shadow:0 4px 8px rgba(0,0,0,.08);
+  display:flex; align-items:center; gap:12px;
+}
+.filter-title{
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px; 
+  color: #666; 
+  white-space: nowrap;
+  font-weight: 500;
+}
+.amenity-type-buttons{ 
+  display: flex; 
+  flex-wrap: wrap; 
+  gap: 8px; 
+}
+.type-btn{
+  display: flex; 
+  align-items: center; 
+  gap: 6px;
+  padding: 8px 16px; 
+  border: 1px solid #e1e5e9; 
+  background: #fff; 
+  border-radius: 8px;
+  cursor: pointer; 
+  transition: all 0.2s ease;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+  font-size: 14px; 
+  white-space: nowrap;
+  font-weight: 500;
+}
+.type-btn:hover{ 
+  border-color: #2c5530; 
+  transform: translateY(-1px); 
+  box-shadow: 0 4px 12px rgba(44, 85, 48, 0.15); 
+}
+.type-btn.active{ 
+  background: #2c5530; 
+  border-color: #2c5530; 
+  color: #fff; 
+  font-weight: 600; 
+}
+.type-btn .icon{ 
+  font-size: 16px; 
+}
+.type-btn .text{ 
+  font-size: 14px; 
+}
+
+/* 包住组件的卡片壳（只负责外观高度/阴影） */
+.fountains-card{
+  max-width: 1140px;
+  margin: 0 auto;
   border-radius:18px;
   box-shadow: 0 18px 40px rgba(0,0,0,.10), 0 6px 14px rgba(0,0,0,.06);
   padding:10px;
 }
 .fountains-card :deep(.map-wrap){
-  height: 70vh !important;   /* 页面独立版给更高的可视高度 */
+  height: 70vh !important;
   border-radius: 14px;
   overflow: hidden;
   box-shadow: 0 10px 24px rgba(0,0,0,.08);
@@ -98,4 +181,7 @@ const API_BASE = import.meta.env.VITE_API_BASE
 @media (max-width: 1200px){
   .fountains-card :deep(.map-wrap){ height: 60vh !important; }
 }
+
+/* Ask AI 小挂件 */
+.ask-ai{ display:block; max-width:1140px; margin:18px auto 0; }
 </style>
