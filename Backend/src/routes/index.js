@@ -7,6 +7,7 @@ const geojsonRoutes = require('./geojson');
 const routeRoutes = require('./routes');
 const comfortRoutes = require('./comfort');
 const poiRoutes = require('./poi');
+const playgrRoutes = require('./playgr');
 
 const router = express.Router();
 
@@ -22,6 +23,7 @@ router.use(`${API_VERSION}/routes`, routeRoutes);
 router.use(`${API_VERSION}/comfort`, comfortRoutes);
 router.use(`${API_VERSION}/poi`, poiRoutes);
 router.use('/', healthRoutes);
+router.use(`${API_VERSION}/playgr`, playgrRoutes);
 
 // API root endpoint
 router.get('/api', (req, res) => {

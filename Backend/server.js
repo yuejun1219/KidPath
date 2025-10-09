@@ -8,6 +8,7 @@ const { testConnection, closePool } = require('./src/config/database');
 const { errorHandler, notFoundHandler } = require('./src/middleware/errorHandler');
 const { DEFAULT_CONFIG } = require('./src/utils/constants');
 const logger = require('./src/utils/logger');
+const playgrRoutes = require('./src/routes/playgr');  
 
 const app = express();
 const port = process.env.PORT || DEFAULT_CONFIG.PORT;
@@ -46,6 +47,7 @@ app.use('/', routes);
 // error handlers
 app.use(notFoundHandler);
 app.use(errorHandler);
+app.use('/playgr', playgrRoutes);  
 
 // start server
 const startServer = async () => {

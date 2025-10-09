@@ -1,16 +1,45 @@
-const { chatWithGemini } = require("../services/aiService");
+const { chatWithText, chatWithVoice, chatWithPhoto } = require("../services/aiService");
 
-async function chat(req, res) {
+// 文本
+async function chatText(req, res) {
   try {
     const { message } = req.body;
     if (!message) return res.status(400).json({ error: "message is required" });
 
-    const reply = await chatWithGemini(message);
-    res.json({ reply });
+    const reply = await chatWithText(message);
+    res.json(reply);
   } catch (err) {
-    console.error("Gemini error:", err);
-    res.status(500).json({ error: "Gemini API error" });
+    console.error("GPT text error:", err);
+    res.status(500).json({ error: "GPT text API error" });
   }
 }
 
-module.exports = { chat };
+// 语音
+async function chatVoice(req, res) {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: "audio file is required" });
+    }
+
+    const reply = await chatWithVoice(req.file.buffer, req.file.originalname);
+    res.json({ reply });
+  } catch (err) {
+    console.error("GPT voice error:", err);
+    res.status(500).json({ error: "GPT voice API error" });
+  }
+}
+
+// 图片
+async function chatPhoto(req, res) {
+  try {
+    if (!req.file) return res.status(400).json({ error: "image file is required" });
+
+    const reply = await chatWithPhoto(req.file.buffer);
+    res.json(reply);
+  } catch (err) {
+    console.error("GPT photo error:", err);
+    res.status(500).json({ error: "GPT photo API error" });
+  }
+}
+
+module.exports = { chatText, chatVoice, chatPhoto };
