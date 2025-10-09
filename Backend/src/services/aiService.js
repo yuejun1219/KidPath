@@ -1,10 +1,9 @@
 const OpenAI = require("openai");
-const fs = require("fs");
 const { findPlaygroundsByKeyword } = require("../queries/playgr");
-const { toFile } = require('openai'); // 这是关键！
-console.log("🔑 OPENAI_API_KEY loaded:", !!process.env.OPENAI_API_KEY);
+const { toFile } = require('openai');
+console.log("OPENAI_API_KEY loaded:", !!process.env.OPENAI_API_KEY);
 
-// 初始化 OpenAI 客户端
+// initialize OpenAI client
 const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 // === System instruction ===
@@ -23,36 +22,36 @@ Tone: warm, reassuring, and clear. Use short paragraphs and bullets when helpful
 // === Text Chat ===
 async function chatWithText(message) {
   try {
-    const response = await client.responses.create({
-      model: "gpt-4o-mini", // 可换成 gpt-4o / gpt-4.1
-      input: [
+    const response = await client.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
         { role: "system", content: systemInstruction },
         { role: "user", content: buildUserPrompt(message) },
       ],
       temperature: 0.4,
-      top_p: 0.9,              // ✅ 改正确
-      max_output_tokens: 256,  // ✅ 限制回答简短
+      top_p: 0.9,
+      max_tokens: 256,
     });
 
-    return response.output_text;
+    return response.choices[0].message.content;
   } catch (error) {
     console.error("chatWithText error:", error.message);
     throw error;
   }
 }
 
-// === Voice Chat === (语音转录 → 文本 → GPT)
+// === Voice Chat === (voice -> text -> GPT)
 
 
 
 async function chatWithVoice(audioBuffer, originalName = "audio.wav") {
   try {
-    // 1. 使用 OpenAI 官方的 toFile 函数
+    // 1. toFile function
     const file = await toFile(audioBuffer, originalName, {
       type: 'audio/wav',
     });
 
-    // 2. 转录语音
+    // 2. voice -> text
     const transcription = await client.audio.transcriptions.create({
       file: file,
       model: "whisper-1",
@@ -60,13 +59,16 @@ async function chatWithVoice(audioBuffer, originalName = "audio.wav") {
 
     const transcript = transcription.text;
 
-    // 3. 用文字继续 GPT 对话
+    // 3. text -> GPT
     const response = await client.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
         { role: "system", content: systemInstruction },
         { role: "user", content: transcript }
-      ]
+      ],
+      temperature: 0.4,
+      top_p: 0.9,
+      max_tokens: 256,
     });
 
     return response.choices[0].message.content;
@@ -80,12 +82,12 @@ async function chatWithVoice(audioBuffer, originalName = "audio.wav") {
 
 
 
-// === Photo Chat === (图片识别 → DB 查询)
+// === Photo Chat === (photo check -> DB query)
 async function chatWithPhoto(imageBuffer) {
   try {
     const base64Image = imageBuffer.toString("base64");
 
-    // Step 1: 用 GPT 识别 playground 关键词
+    // Step 1: use GPT to find playground keyword
     const visionResponse = await client.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
@@ -104,15 +106,17 @@ async function chatWithPhoto(imageBuffer) {
           ],
         },
       ],
+      temperature: 0.1,
+      max_tokens: 50,
     });
 
     const keyword = visionResponse.choices[0].message.content.trim().split(/\s+/)[0].toLowerCase();
     console.log("Extracted keyword:", keyword);
 
-    // Step 2: 查数据库
+    // Step 2: query DB for playgrounds with this keyword
     const results = await findPlaygroundsByKeyword(keyword, 5);
 
-    // Step 3: 返回结构化结果
+    // Step 3: return structured response
     return {
       keyword,
       summary: `I found ${results.length} playgrounds with a ${keyword} in Melbourne CBD area.`,
