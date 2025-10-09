@@ -6,13 +6,13 @@ const { chatText, chatVoice, chatPhoto } = require("../controllers/aiController"
 
 const router = express.Router();
 
-// 文本接口
+// text endpoint
 router.post("/text", chatText);
 
-// 语音接口
+// voice endpoint
 router.post("/voice", upload.single("audio"), chatVoice);
 
-// 图片接口
+// photo endpoint
 router.post("/photo", upload.single("image"), chatPhoto);
 
 module.exports = router;

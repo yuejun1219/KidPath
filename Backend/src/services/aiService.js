@@ -1,3 +1,6 @@
+const { File } = require("node:buffer");
+globalThis.File = File;
+
 const OpenAI = require("openai");
 const { findPlaygroundsByKeyword } = require("../queries/playgr");
 const { toFile } = require('openai');
