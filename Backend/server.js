@@ -17,7 +17,7 @@ const routes = require('./src/routes');
 const { testConnection, closePool } = require('./src/config/database');
 const { errorHandler, notFoundHandler } = require('./src/middleware/errorHandler');
 const { DEFAULT_CONFIG } = require('./src/utils/constants');
-const logger = require('./src/utils/logger');
+// const logger = require('./src/utils/logger');
 const playgrRoutes = require('./src/routes/playgr');  
 // const logger = require('./src/utils/logger'); // Temporarily disabled for debugging
 
