@@ -77,9 +77,11 @@
     </div>
 
     <!-- 右下角 Ask-AI 浮窗 -->
-    <AskAiWidget :api-base="API_BASE" />
-    <!-- 如需自定义位置/标题（你的组件支持的话）：
-         <AskAiWidget :api-base="API_BASE" placement="bottom-right" title="Ask-AI · Comfort" /> -->
+    <KidPathChat
+      title="Ask-AI · Comfort"
+      placeholder="Ask about shade, UV, water taps…"
+/>
+
   </div>
 </template>
 
@@ -89,13 +91,13 @@ import ParentTips from '@/components/ParentTips.vue'
 import HeatSafetyQuiz from '@/components/HeatSafetyQuiz.vue'
 import EarlySigns from '@/components/EarlySigns.vue'
 import ComfortEducationChat from '@/components/ComfortEducationChat.vue'
-import AskAiWidget from '@/components/AskAiWidget.vue'
+import KidPathChat from '@/components/KidPathChat.vue'
+
 
 const activeComponent = ref(null)
 const closeModal = () => (activeComponent.value = null)
 
-// 从环境变量里把后端地址传给组件
-const API_BASE = import.meta.env.VITE_API_BASE
+
 </script>
 
 <style scoped>

@@ -139,14 +139,11 @@
       </aside>
 
       <!-- 右下角浮动 AI 组件（可在任意页面复用） -->
-      <AskAiWidget
+      <KidPathChat
         title="Ask-AI · Comfort Education"
-        btnText="Ask-AI"
-        :endpoint="`${API_BASE}/ai/chat`"
-        replyKey="reply"
         placeholder="Ask something like: Why are kids more vulnerable to heat?"
-        hint="Focus: Melbourne CBD · safety & comfort (heat, UV, pollen, shade)"
-      />
+/>
+
     </section>
 
     <!-- Footer -->
@@ -162,7 +159,8 @@
 import { ref, onMounted, watch, computed, nextTick } from 'vue'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
-import AskAiWidget from '@/components/AskAiWidget.vue'
+import KidPathChat from '@/components/KidPathChat.vue'
+
 
 const season = ref('summer')
 const loading = ref(false)

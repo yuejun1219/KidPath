@@ -2,7 +2,8 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import NearbyFountains from '@/components/NearbyFountains.vue'
-import AskAiWidget from '@/components/AskAiWidget.vue'
+import KidPathChat from '@/components/KidPathChat.vue'
+
 
 /* 设施类型：与组件内保持一致的 key 集合 */
 const amenityTypes = [
@@ -43,8 +44,6 @@ onBeforeUnmount(() => {
   document.removeEventListener('visibilitychange', onVisChange)
 })
 
-/* AI 悬浮按钮用的 API 基址 */
-const API_BASE = import.meta.env.VITE_API_BASE
 </script>
 
 <template>
@@ -77,7 +76,11 @@ const API_BASE = import.meta.env.VITE_API_BASE
       <NearbyFountains :amenity-key="amenityKey" />
     </section>
 
-    <AskAiWidget class="ask-ai" />
+    <KidPathChat class="ask-ai"
+      title="Ask-AI · Comfort Insights"
+      placeholder="Ask about shade, UV, water taps…"
+/>
+
   </div>
 </template>
 

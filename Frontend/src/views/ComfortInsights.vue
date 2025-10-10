@@ -5,7 +5,8 @@ import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import CanopySection from './CanopySection.vue'
 import WaterAccess from '@/components/WaterAccess.vue'
 import WeatherInsights from '@/components/WeatherInsights.vue'
-import AskAiWidget from '@/components/AskAiWidget.vue'
+import KidPathChat from '@/components/KidPathChat.vue'
+
 
 /* ---------- cross-section plumbing ---------- */
 const selectedSuburbs = ref([])
@@ -107,8 +108,6 @@ function scrollToSection(id) {
   if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
-/* ---------- API base for AskAiWidget ---------- */
-const API_BASE = import.meta.env.VITE_API_BASE
 </script>
 
 <template>
@@ -266,9 +265,7 @@ const API_BASE = import.meta.env.VITE_API_BASE
     </footer>
 
     <!-- 右下角 AI -->
-    <AskAiWidget
-      :api-base="API_BASE"
-      placement="bottom-right"
+    <KidPathChat
       title="Ask-AI · Comfort Insights"
       placeholder="Ask about shade, UV, water taps…"
     />

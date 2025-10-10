@@ -197,7 +197,11 @@
     </section>
 
     <!-- 右下角 Ask-AI 浮窗 -->
-    <AskAiWidget :api-base="API_BASE" />
+    <KidPathChat
+      title="Ask-AI · Comfort Insights"
+      placeholder="Ask about shade, UV, water taps…"
+/>
+
   </div>
 </template>
 
@@ -205,9 +209,9 @@
 import { onMounted, computed } from 'vue'
 import { useComfortData } from '@/composables/useComfortData'
 import { format } from 'date-fns'
-import AskAiWidget from '@/components/AskAiWidget.vue'
+import KidPathChat from '@/components/KidPathChat.vue'
 
-const API_BASE = import.meta.env.VITE_API_BASE
+
 
 const {
   uvIndex,
