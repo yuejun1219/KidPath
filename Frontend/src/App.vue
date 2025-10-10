@@ -1,6 +1,6 @@
 <script setup>
 import NavBar from './components/NavBar.vue'
-import KidPathChat from './components/KidPathChat.vue'
+
 </script>
 
 <template>
@@ -11,7 +11,7 @@ import KidPathChat from './components/KidPathChat.vue'
         <component :is="Component" :key="route.path" />
       </transition>
     </router-view>
-    <KidPathChat />
+    
   </div>
 </template>
 

@@ -29,6 +29,7 @@
           <router-link to="/shade-quest" class="nav-link" @click="handleNavigation">Shade Quest</router-link>
           <router-link to="/nearby-fountains" class="nav-link" @click="handleNavigation">Nearby Amenities</router-link>
           <router-link to="/comfort-matters" class="nav-link" @click="handleNavigation">Comfort Matters</router-link>
+          <router-link class="nav-link" to="/assistant">Assistant</router-link>
           <router-link to="/about" class="nav-link" @click="handleNavigation">About</router-link>
         </nav>
         
