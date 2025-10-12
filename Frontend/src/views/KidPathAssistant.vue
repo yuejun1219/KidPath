@@ -98,7 +98,6 @@ function tryParseJSON(x){
   try { return JSON.parse(s) } catch { return null }
 }
 function formatPhotoPayload(p){
-  // 只要有 keyword / summary / recommendations 就格式化
   if (!p || (typeof p !== 'object')) return null
   if (!('summary' in p) && !('keyword' in p) && !('recommendations' in p)) return null
   const keyword = p.keyword ?? '-'
@@ -113,16 +112,13 @@ function formatPhotoPayload(p){
   return renderMD(`**Keyword:** ${keyword}\n\n**Summary:** ${summary}\n\n**Suggestions:**\n${lines || '- No items'}`)
 }
 function pushSmart(payload, { isPhoto = false } = {}){
-  // 1) 优先把照片分析结构格式化
   const maybeObj = tryParseJSON(payload) ?? payload
   const photoHtml = formatPhotoPayload(maybeObj)
   if (isPhoto && photoHtml){
     msgs.value.push({ role:'assistant', text:'', html: photoHtml }); return
   }
-  // 2) 后端直接返回 html 字段
   const html = maybeObj?.html
   if (html){ msgs.value.push({ role:'assistant', text:'', html }); return }
-  // 3) 常规 reply/content
   const txt = maybeObj?.reply ?? maybeObj?.content ?? (typeof maybeObj === 'string' ? maybeObj : JSON.stringify(maybeObj))
   msgs.value.push({ role:'assistant', text:'', html: renderMD(txt) })
 }
@@ -143,7 +139,7 @@ async function sendText(){
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
     const ct = (resp.headers.get('content-type') || '').toLowerCase()
     const data = ct.includes('application/json') ? await resp.json() : await resp.text()
-    pushSmart(data)  // 普通文本不做 photo 特殊格式化
+    pushSmart(data)
   }catch(e){ console.error(e); error.value='Failed to get AI reply.' }
   finally{ loading.value=false; scrollToBottom() }
 }
@@ -162,7 +158,6 @@ async function sendPhoto(){
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
     const ct = (resp.headers.get('content-type') || '').toLowerCase()
     const data = ct.includes('application/json') ? await resp.json() : await resp.text()
-    // ✅ 无论 content-type，统一走智能格式化
     pushSmart(data, { isPhoto: true })
   }catch(e){ console.error(e); error.value='Photo upload failed.' }
   finally{ loading.value=false; scrollToBottom() }
@@ -185,7 +180,7 @@ async function sendVoiceBlob(blob){
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
     const ct = (resp.headers.get('content-type') || '').toLowerCase()
     const data = ct.includes('application/json') ? await resp.json() : await resp.text()
-    pushSmart(data) // 语音回包按普通文本渲染
+    pushSmart(data)
   }catch(e){ console.error(e); error.value='Voice send failed.' }
   finally{ loading.value=false; scrollToBottom() }
 }
@@ -239,6 +234,22 @@ onBeforeUnmount(() => {
 .bubble{ max-width:min(80%,720px); border:1px solid #e6efe3; border-radius:14px; padding:10px 12px; line-height:1.55; font-size:15px; background:#fff; }
 .msg-row.user .bubble{ background:#edfce0; color:#355f34; border-top-right-radius:6px; }
 .msg-row.assistant .bubble{ background:#fff; color:#2f3d2c; border-top-left-radius:6px; }
+
+/* ===== Markdown 内容美化（与 KidPathChat 保持一致） ===== */
+.bubble :where(p, ul, ol, pre, blockquote, table){ margin: .5rem 0; line-height: 1.6; }
+.bubble :where(ul, ol){ padding-left: 1.5rem; list-style-position: outside; }
+.bubble ul{ list-style-type: disc; }
+.bubble ul ul{ list-style-type: circle; }
+.bubble ul ul ul{ list-style-type: square; }
+.bubble ol{ list-style-type: decimal; }
+.bubble ol ol{ list-style-type: lower-alpha; }
+.bubble ol ol ol{ list-style-type: lower-roman; }
+.bubble li{ margin: .25rem 0; }
+.bubble li > :where(p, ul, ol){ margin-top:.2rem; margin-bottom:.2rem; }
+.bubble pre{ background:#f6f8fa; border:1px solid #e5e7eb; border-radius:8px; padding:10px 14px; overflow-x:auto; }
+.bubble code{ font-family: ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:.92em; background:#f6f8fa; border:1px solid #e5e7eb; border-radius:4px; padding:2px 4px; }
+.bubble blockquote{ border-left:3px solid #d1e3d4; padding-left:.8rem; margin:.6rem 0; color:#47524b; background:#f8fbf7; border-radius:6px; }
+
 :deep(.hljs){ background:#f6f8fa; padding:10px; border-radius:8px; }
 
 /* loading dots */

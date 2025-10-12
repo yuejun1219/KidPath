@@ -344,4 +344,59 @@ watch(open, v => { if (v) scrollToBottom() })
 :deep(.hljs){ background:#f6f8fa; padding:10px; border-radius:8px; }
 
 .ai-error{ color:#b00020; font-size:12px; padding:4px 10px 10px; }
+
+/* ===== Markdown 内容格式美化 ===== */
+.ai-bubble :where(p, ul, ol, pre, blockquote, table){
+  margin: 0.5rem 0;
+  line-height: 1.6;
+}
+
+.ai-bubble :where(ul, ol){
+  padding-left: 1.5rem;
+  list-style-position: outside;
+}
+
+.ai-bubble ul { list-style-type: disc; }
+.ai-bubble ul ul { list-style-type: circle; }
+.ai-bubble ul ul ul { list-style-type: square; }
+
+.ai-bubble ol { list-style-type: decimal; }
+.ai-bubble ol ol { list-style-type: lower-alpha; }
+.ai-bubble ol ol ol { list-style-type: lower-roman; }
+
+.ai-bubble li {
+  margin: 0.25rem 0;
+}
+
+.ai-bubble li > :where(p, ul, ol){
+  margin-top: 0.2rem;
+  margin-bottom: 0.2rem;
+}
+
+.ai-bubble pre {
+  background: #f6f8fa;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 10px 14px;
+  overflow-x: auto;
+}
+
+.ai-bubble code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.92em;
+  background: #f6f8fa;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  padding: 2px 4px;
+}
+
+.ai-bubble blockquote {
+  border-left: 3px solid #d1e3d4;
+  padding-left: 0.8rem;
+  margin: 0.6rem 0;
+  color: #47524b;
+  background: #f8fbf7;
+  border-radius: 6px;
+}
+
 </style>
