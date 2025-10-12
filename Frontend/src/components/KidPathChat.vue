@@ -9,7 +9,7 @@
   <div v-if="open" class="ai-chat-panel">
     <header class="ai-chat-header">
       <span>{{ title }}</span>
-      <button class="ai-close" @click="open = false">✕</button>
+      <button class="ai-close" @click="closePanel">✕</button>
     </header>
 
     <!-- 消息区 -->
@@ -31,40 +31,19 @@
     <!-- 统一输入栏（ChatGPT 风格） -->
     <form class="input-bar" @submit.prevent="sendText">
       <!-- 左：选择图片 -->
-      <button
-        type="button"
-        class="icon-btn"
-        aria-label="Attach image"
-        @click="imagePicker?.click()"
-        :disabled="loading"
-      >＋</button>
-      <input
-        ref="imagePicker"
-        type="file"
-        accept="image/*"
-        class="hidden"
-        @change="onPickImage"
-      />
+      <button type="button" class="icon-btn" aria-label="Attach image"
+              @click="imagePicker?.click()" :disabled="loading">＋</button>
+      <input ref="imagePicker" type="file" accept="image/*" class="hidden" @change="onPickImage" />
 
       <!-- 中：文本输入 -->
-      <input
-        v-model.trim="input"
-        class="text-input"
-        :placeholder="placeholder"
-        :disabled="loading"
-        @keydown.enter.exact.prevent="sendText"
-      />
+      <input v-model.trim="input" class="text-input" :placeholder="placeholder"
+             :disabled="loading" @keydown.enter.exact.prevent="sendText" />
 
       <!-- 右：麦克风（点一下开始录音/再点停止并发送） -->
-      <button
-        type="button"
-        class="icon-btn mic"
-        :class="{ rec: isRecording }"
-        aria-label="Record voice"
-        @click="toggleRecording"
-        :disabled="loading || micBusy"
-        title="Tap to start/stop recording"
-      >
+      <button type="button" class="icon-btn mic" :class="{ rec: isRecording }"
+              aria-label="Record voice" @click="toggleRecording"
+              :disabled="loading || (!isRecording && micBusy)"
+              title="Tap to start/stop recording">
         <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
           <path d="M12 14a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 14 0h-2Zm-5 7v2m-4 0h8"
                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -79,7 +58,7 @@
 </template>
 
 <script setup>
-import { ref, nextTick, onMounted } from 'vue'
+import { ref, nextTick, onMounted, onBeforeUnmount, watch } from 'vue'
 import MarkdownIt from 'markdown-it'
 import hljs from 'highlight.js'
 import 'highlight.js/styles/github.css'
@@ -104,7 +83,43 @@ function getMD () {
   })
   return _md
 }
-function renderMD(text){ return getMD().render(String(text || '')) }
+const renderMD = (t)=>getMD().render(String(t||''))
+
+/* ---------- Helpers (统一智能渲染) ---------- */
+function tryParseJSON(x){
+  if (x && typeof x === 'object') return x
+  if (typeof x !== 'string') return null
+  const s = x.trim()
+  if (!s || (s[0] !== '{' && s[0] !== '[')) return null
+  try { return JSON.parse(s) } catch { return null }
+}
+function formatPhotoPayload(p){
+  if (!p || typeof p !== 'object') return null
+  if (!('summary' in p) && !('keyword' in p) && !('recommendations' in p)) return null
+  const keyword = p.keyword ?? '-'
+  const summary = p.summary ?? '-'
+  const list = Array.isArray(p.recommendations) ? p.recommendations : []
+  const lines = list.map((it, i)=>{
+    const name = it?.name ?? `Item ${i+1}`
+    const features = it?.features ? String(it.features) : ''
+    const shade = it?.shade ? ` _(shade: ${it.shade})_` : ''
+    return `- **${name}** — ${features}${shade}`
+  }).join('\n')
+  return renderMD(`**Keyword:** ${keyword}\n\n**Summary:** ${summary}\n\n**Suggestions:**\n${lines || '- No items'}`)
+}
+function pushSmart(payload, { isPhoto=false } = {}){
+  const maybeObj = tryParseJSON(payload) ?? payload
+  if (isPhoto){
+    const html = formatPhotoPayload(maybeObj)
+    if (html){ msgs.value.push({ role:'assistant', text:'', html }); return }
+  }
+  const html = maybeObj?.[props.htmlKey]
+  if (html){ msgs.value.push({ role:'assistant', text:'', html }); return }
+  const txt = maybeObj?.[props.replyKey] ?? maybeObj?.[props.contentKey] ??
+              (typeof maybeObj === 'string' ? maybeObj : JSON.stringify(maybeObj))
+  msgs.value.push({ role:'assistant', text:'', html: renderMD(txt) })
+}
+function scrollToBottom(){ nextTick(()=>{ if (scrollEl.value) scrollEl.value.scrollTop = scrollEl.value.scrollHeight }) }
 
 /* ---------- Props ---------- */
 const props = defineProps({
@@ -114,7 +129,6 @@ const props = defineProps({
   hint: { type: String, default: '' },
   greeting: { type: String, default: "Hi! Ask me comfort & safety questions for Melbourne CBD." },
 
-  // 直接走你后端 /ai/*，API_BASE 由 .env*.local 提供
   textEndpoint:  { type: String, default: `${import.meta.env.VITE_API_BASE || ''}/ai/text` },
   voiceEndpoint: { type: String, default: `${import.meta.env.VITE_API_BASE || ''}/ai/voice` },
   photoEndpoint: { type: String, default: `${import.meta.env.VITE_API_BASE || ''}/ai/photo` },
@@ -139,51 +153,28 @@ const imageFile = ref(null)
 /* 录音相关 */
 const isRecording = ref(false)
 const micBusy = ref(false)
-let mediaRecorder = null
-let mediaStream = null
-let chunks = []
-
-/* ---------- Helpers ---------- */
-function scrollToBottom(){
-  nextTick(() => { if (scrollEl.value) scrollEl.value.scrollTop = scrollEl.value.scrollHeight })
-}
-function pushAssistantFromData(data){
-  const html = data?.[props.htmlKey]
-  if (html){ msgs.value.push({ role:'assistant', text:'', html }); return }
-  const txt = data?.[props.replyKey] ?? data?.[props.contentKey] ?? (typeof data === 'string' ? data : JSON.stringify(data))
-  msgs.value.push({ role:'assistant', text:'', html: renderMD(txt) })
-}
+let mediaRecorder = null, mediaStream = null, chunks = []
 
 /* ---------- Text ---------- */
 async function sendText(){
   if (!input.value || loading.value) return
   error.value = ''
-  const text = input.value
-  input.value = ''
+  const text = input.value; input.value = ''
   msgs.value.push({ role:'user', text, html:null })
   scrollToBottom()
 
   try{
     loading.value = true
     const resp = await fetch(props.textEndpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method:'POST', headers:{ 'Content-Type':'application/json' },
       body: JSON.stringify({ message: text, prompt: text })
     })
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
     const ct = (resp.headers.get('content-type') || '').toLowerCase()
-    if (ct.includes('application/json')){
-      pushAssistantFromData(await resp.json())
-    } else {
-      pushAssistantFromData({ [props.contentKey]: await resp.text() })
-    }
-  } catch(e){
-    console.error(e)
-    error.value = 'Failed to get AI reply.'
-  } finally {
-    loading.value = false
-    scrollToBottom()
-  }
+    const data = ct.includes('application/json') ? await resp.json() : await resp.text()
+    pushSmart(data)
+  }catch(e){ console.error(e); error.value='Failed to get AI reply.' }
+  finally{ loading.value=false; scrollToBottom() }
 }
 
 /* ---------- Image ---------- */
@@ -196,112 +187,86 @@ async function sendPhoto(){
 
   try{
     loading.value = true
-    const fd = new FormData()
-    fd.append('image', imageFile.value)
+    const fd = new FormData(); fd.append('image', imageFile.value)
     const resp = await fetch(props.photoEndpoint, { method:'POST', body: fd })
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
     const ct = (resp.headers.get('content-type') || '').toLowerCase()
-    if (ct.includes('application/json')){
-      const data = await resp.json()
-      if (data && data.summary){
-        const list = Array.isArray(data.recommendations)
-          ? data.recommendations.map(p => `- **${p.name}** — ${p.features || ''}${p.shade ? ` _(shade: ${p.shade})_` : ''}`).join('\n')
-          : ''
-        const mdText = `**Keyword:** ${data.keyword || '-'}\n\n**Summary:** ${data.summary}\n\n**Suggestions:**\n${list || '- No items'}`
-        pushAssistantFromData({ [props.contentKey]: mdText })
-      } else {
-        pushAssistantFromData(data)
-      }
-    } else {
-      pushAssistantFromData({ [props.contentKey]: await resp.text() })
-    }
-  } catch(e){
-    console.error(e)
-    error.value = 'Photo upload failed.'
-  } finally {
-    loading.value = false
-    scrollToBottom()
-  }
+    const data = ct.includes('application/json') ? await resp.json() : await resp.text()
+    pushSmart(data, { isPhoto:true })
+  }catch(e){ console.error(e); error.value='Photo upload failed.' }
+  finally{ loading.value=false; scrollToBottom() }
 }
 
 /* ---------- Voice（点按录音） ---------- */
 function cleanupStream(){
-  if (mediaStream) {
-    mediaStream.getTracks().forEach(t => t.stop())
-    mediaStream = null
-  }
-  mediaRecorder = null
-  chunks = []
+  if (mediaStream){ mediaStream.getTracks().forEach(t=>t.stop()); mediaStream = null }
+  mediaRecorder = null; chunks = []
 }
-async function sendVoiceBlob(blob) {
+async function sendVoiceBlob(blob){
   error.value = ''
-  msgs.value.push({ role: 'user', text: '🎤 Voice message…', html: null })
+  msgs.value.push({ role:'user', text:'🎤 Voice message…', html:null })
   scrollToBottom()
 
-  try {
+  try{
     loading.value = true
-    const fd = new FormData()
-    const ext = blob.type.includes('mp3') ? 'mp3'
-      : blob.type.includes('ogg') ? 'ogg'
-      : blob.type.includes('wav') ? 'wav'
-      : 'webm'
-    fd.append('audio', blob, `recording.${ext}`)
-
-    const resp = await fetch(props.voiceEndpoint, { method: 'POST', body: fd })
+    const ext = blob.type.includes('mp3') ? 'mp3' : blob.type.includes('ogg') ? 'ogg'
+              : blob.type.includes('wav') ? 'wav' : 'webm'
+    const fd = new FormData(); fd.append('audio', blob, `recording.${ext}`)
+    const resp = await fetch(props.voiceEndpoint, { method:'POST', body: fd })
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
     const ct = (resp.headers.get('content-type') || '').toLowerCase()
-    if (ct.includes('application/json')) {
-      pushAssistantFromData(await resp.json())
-    } else {
-      pushAssistantFromData({ [props.contentKey]: await resp.text() })
-    }
-  } catch (e) {
-    console.error(e)
-    error.value = 'Voice send failed.'
-  } finally {
-    loading.value = false
-    scrollToBottom()
-  }
+    const data = ct.includes('application/json') ? await resp.json() : await resp.text()
+    pushSmart(data)
+  }catch(e){ console.error(e); error.value='Voice send failed.' }
+  finally{ loading.value=false; scrollToBottom() }
 }
-async function startRecording() {
-  if (!navigator.mediaDevices?.getUserMedia) {
-    error.value = 'This browser does not support microphone recording.'
-    return
-  }
-  try {
+async function startRecording(){
+  if (!navigator.mediaDevices?.getUserMedia){ error.value='This browser does not support microphone recording.'; return }
+  try{
     micBusy.value = true
-    mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true })
+    mediaStream = await navigator.mediaDevices.getUserMedia({ audio:true })
     chunks = []
     mediaRecorder = new MediaRecorder(mediaStream)
-    mediaRecorder.ondataavailable = e => { if (e.data && e.data.size > 0) chunks.push(e.data) }
+    mediaRecorder.ondataavailable = e => { if (e.data && e.data.size>0) chunks.push(e.data) }
     mediaRecorder.onstop = async () => {
       const blob = new Blob(chunks, { type: chunks[0]?.type || 'audio/webm' })
       await sendVoiceBlob(blob)
       cleanupStream()
-      micBusy.value = false
     }
     mediaRecorder.start()
     isRecording.value = true
-  } catch (e) {
-    console.error(e)
-    error.value = 'Microphone permission denied.'
-    cleanupStream()
-    micBusy.value = false
-  }
+  }catch(e){ console.error(e); error.value='Microphone permission denied.'; cleanupStream() }
+  finally{ micBusy.value = false }
 }
-async function stopRecording() {
-  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-    mediaRecorder.stop()
-  }
-  isRecording.value = false
+async function stopRecording(){
+  try{ if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop() }
+  finally{ isRecording.value = false }
 }
-async function toggleRecording() {
-  if (loading.value || micBusy.value) return
+async function toggleRecording(){
+  if (loading.value) return
   if (isRecording.value) await stopRecording()
-  else await startRecording()
+  else if (!micBusy.value) await startRecording()
 }
 
-onMounted(scrollToBottom)
+/* ---------- Panel lifecycle ---------- */
+function closePanel(){
+  if (isRecording.value) stopRecording()
+  open.value = false
+}
+function onVis(){ if (document.visibilityState==='hidden' && isRecording.value) stopRecording() }
+
+onMounted(()=>{
+  document.addEventListener('visibilitychange', onVis)
+  scrollToBottom()
+})
+onBeforeUnmount(()=>{
+  document.removeEventListener('visibilitychange', onVis)
+  if (isRecording.value) stopRecording()
+  cleanupStream()
+})
+
+/* 打开面板时滚到底部 */
+watch(open, v => { if (v) scrollToBottom() })
 </script>
 
 <style scoped>
