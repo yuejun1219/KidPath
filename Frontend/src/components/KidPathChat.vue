@@ -12,7 +12,7 @@
       <button class="ai-close" @click="open = false">✕</button>
     </header>
 
-    <!-- 消息区（支持 Markdown 渲染 + 代码高亮） -->
+    <!-- 消息区 -->
     <main class="ai-chat-body" ref="scrollEl">
       <div v-for="(m, i) in msgs" :key="i" class="ai-msg" :class="m.role">
         <div class="ai-bubble">
@@ -28,7 +28,7 @@
       <div v-if="error" class="ai-error">{{ error }}</div>
     </main>
 
-    <!-- ✅ 统一输入栏（ChatGPT风格） -->
+    <!-- 统一输入栏（ChatGPT 风格） -->
     <form class="input-bar" @submit.prevent="sendText">
       <!-- 左：选择图片 -->
       <button
@@ -55,26 +55,21 @@
         @keydown.enter.exact.prevent="sendText"
       />
 
-      <!-- 右：上传语音 -->
+      <!-- 右：麦克风（点一下开始录音/再点停止并发送） -->
       <button
         type="button"
         class="icon-btn mic"
-        aria-label="Upload audio"
-        @click="audioPicker?.click()"
-        :disabled="loading"
+        :class="{ rec: isRecording }"
+        aria-label="Record voice"
+        @click="toggleRecording"
+        :disabled="loading || micBusy"
+        title="Tap to start/stop recording"
       >
         <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
           <path d="M12 14a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 14 0h-2Zm-5 7v2m-4 0h8"
                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
         </svg>
       </button>
-      <input
-        ref="audioPicker"
-        type="file"
-        accept="audio/*"
-        class="hidden"
-        @change="onPickAudio"
-      />
 
       <button class="send" type="submit" :disabled="loading || !input">Send</button>
     </form>
@@ -89,7 +84,7 @@ import MarkdownIt from 'markdown-it'
 import hljs from 'highlight.js'
 import 'highlight.js/styles/github.css'
 
-/* ---------- Markdown（放最上面，避免 TDZ） ---------- */
+/* ---------- Markdown（放最上，避免 TDZ） ---------- */
 let _md
 function getMD () {
   if (_md) return _md
@@ -134,13 +129,19 @@ const open = ref(false)
 const input = ref('')
 const loading = ref(false)
 const error = ref('')
+
 const msgs = ref([{ role: 'assistant', text: '', html: renderMD(props.greeting) }])
 const scrollEl = ref(null)
 
 const imagePicker = ref(null)
-const audioPicker = ref(null)
 const imageFile = ref(null)
-const audioFile = ref(null)
+
+/* 录音相关 */
+const isRecording = ref(false)
+const micBusy = ref(false)
+let mediaRecorder = null
+let mediaStream = null
+let chunks = []
 
 /* ---------- Helpers ---------- */
 function scrollToBottom(){
@@ -223,33 +224,81 @@ async function sendPhoto(){
   }
 }
 
-/* ---------- Voice ---------- */
-function onPickAudio(e){ audioFile.value = e.target.files?.[0] || null; if (audioFile.value) sendVoice() }
-async function sendVoice(){
-  if (!audioFile.value || loading.value) return
+/* ---------- Voice（点按录音） ---------- */
+function cleanupStream(){
+  if (mediaStream) {
+    mediaStream.getTracks().forEach(t => t.stop())
+    mediaStream = null
+  }
+  mediaRecorder = null
+  chunks = []
+}
+async function sendVoiceBlob(blob) {
   error.value = ''
-  msgs.value.push({ role:'user', text:'🎤 Sent a voice message…', html:null })
+  msgs.value.push({ role: 'user', text: '🎤 Voice message…', html: null })
   scrollToBottom()
 
-  try{
+  try {
     loading.value = true
     const fd = new FormData()
-    fd.append('audio', audioFile.value)
-    const resp = await fetch(props.voiceEndpoint, { method:'POST', body: fd })
+    const ext = blob.type.includes('mp3') ? 'mp3'
+      : blob.type.includes('ogg') ? 'ogg'
+      : blob.type.includes('wav') ? 'wav'
+      : 'webm'
+    fd.append('audio', blob, `recording.${ext}`)
+
+    const resp = await fetch(props.voiceEndpoint, { method: 'POST', body: fd })
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
     const ct = (resp.headers.get('content-type') || '').toLowerCase()
-    if (ct.includes('application/json')){
+    if (ct.includes('application/json')) {
       pushAssistantFromData(await resp.json())
     } else {
       pushAssistantFromData({ [props.contentKey]: await resp.text() })
     }
-  } catch(e){
+  } catch (e) {
     console.error(e)
-    error.value = 'Voice upload failed.'
+    error.value = 'Voice send failed.'
   } finally {
     loading.value = false
     scrollToBottom()
   }
+}
+async function startRecording() {
+  if (!navigator.mediaDevices?.getUserMedia) {
+    error.value = 'This browser does not support microphone recording.'
+    return
+  }
+  try {
+    micBusy.value = true
+    mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true })
+    chunks = []
+    mediaRecorder = new MediaRecorder(mediaStream)
+    mediaRecorder.ondataavailable = e => { if (e.data && e.data.size > 0) chunks.push(e.data) }
+    mediaRecorder.onstop = async () => {
+      const blob = new Blob(chunks, { type: chunks[0]?.type || 'audio/webm' })
+      await sendVoiceBlob(blob)
+      cleanupStream()
+      micBusy.value = false
+    }
+    mediaRecorder.start()
+    isRecording.value = true
+  } catch (e) {
+    console.error(e)
+    error.value = 'Microphone permission denied.'
+    cleanupStream()
+    micBusy.value = false
+  }
+}
+async function stopRecording() {
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+    mediaRecorder.stop()
+  }
+  isRecording.value = false
+}
+async function toggleRecording() {
+  if (loading.value || micBusy.value) return
+  if (isRecording.value) await stopRecording()
+  else await startRecording()
 }
 
 onMounted(scrollToBottom)
@@ -301,6 +350,16 @@ onMounted(scrollToBottom)
 }
 .icon-btn:hover{ background:#f3f4f6; }
 .icon-btn:disabled{ opacity:.6; cursor:not-allowed; }
+/* 录音中效果 */
+.icon-btn.mic.rec{
+  color:#fff;
+  background:#ef4444;
+  animation:pulse 1s infinite;
+}
+@keyframes pulse{
+  0%{ box-shadow:0 0 0 0 rgba(239,68,68,.45); }
+  100%{ box-shadow:0 0 0 12px rgba(239,68,68,0); }
+}
 .send{
   border:none; background:#2e7d32; color:#fff; font-weight:800; padding:10px 16px; border-radius:999px;
 }
