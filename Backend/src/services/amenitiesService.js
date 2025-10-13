@@ -1,5 +1,3 @@
-// Service layer for amenities data operations
-
 // Use dedicated amenities pool (seasonal_comfort_db / comfort schema)
 const { amenitiesPool } = require('../config/amenitiesDatabase');
 const { 
@@ -12,18 +10,17 @@ const {
   getPopularSearchTermsQuery
 } = require('../queries/amenities');
 
-// Get nearby amenities using the DS team's function
+// Get nearby amenities
 const getNearbyAmenities = async (lat, lon, radius, categories, limit) => {
   try {
     const client = await amenitiesPool.connect();
     
     try {
-      // Use default categories if none provided (as per DS documentation)
       const categoriesToUse = categories && categories.length > 0 
         ? categories 
         : ['playground','toilet','library','community_centre','park'];
       
-      // Call the DS team's function: comfort.nearby_amenities(p_lat, p_lon, p_categories, p_radius_m, p_limit)
+      // Call the function: comfort.nearby_amenities(p_lat, p_lon, p_categories, p_radius_m, p_limit)
       const result = await client.query(getNearbyAmenitiesQuery, [
         lat,           // $1: latitude
         lon,           // $2: longitude  
