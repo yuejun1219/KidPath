@@ -129,7 +129,7 @@ function scrollToSection(id) {
             Plan <strong>shade-first</strong> routes and find <strong>nearby drinking water</strong>, all in one place.
           </p>
 
-          <!-- 这里改成两个按钮 -->
+          <!-- two buttons -->
           <div class="cta-row">
             <button class="btn btn-primary" @click="scrollToSection('shade')">🌳 Shade</button>
             <button class="btn btn-soft" @click="scrollToSection('water')">🚰 Water</button>
@@ -227,7 +227,7 @@ function scrollToSection(id) {
             Overview
           </button>
 
-          <!-- Nearby 走独立页面（保持你之前的路由设置） -->
+          <!-- Nearby -->
           <router-link class="tab" to="/nearby-fountains">Nearby</router-link>
         </div>
 
@@ -255,8 +255,6 @@ function scrollToSection(id) {
       </div>
     </section>
 
-    <!-- ✅ 已删除整块 Route/Shade Quest Section -->
-
     <!-- Footer -->
     <footer class="footer">
       <div class="container">
@@ -264,7 +262,7 @@ function scrollToSection(id) {
       </div>
     </footer>
 
-    <!-- 右下角 AI -->
+    <!-- AI chat-->
     <KidPathChat
       title="Ask-AI · Comfort Insights"
       placeholder="Ask about shade, UV, water taps…"
