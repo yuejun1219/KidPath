@@ -3,7 +3,7 @@
   <div class="assistant-page">
     <header class="assistant-header">
       <h1>KidPath Assistant</h1>
-      <p class="sub">Ask comfort & safety questions for Melbourne CBD. Text, image, or voice — all here.</p>
+      <p class="sub">Ask comfort & safety questions for Melbourne CBD. Text, image, or voice — all here. Upload a photo of any facility, and we’ll recommend parks that have it.</p>
     </header>
 
     <main class="chat-main" ref="scrollEl">
