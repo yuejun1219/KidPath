@@ -1,9 +1,8 @@
-// src/services/poiService.js
 // Points of Interest service for route-based searches
 
 const { amenitiesPool } = require('../config/amenitiesDatabase');
 
-// Find POIs along a route
+// Find POIs along a route: playgrounds, toilets, libraries.
 const findPOIsAlongRoute = async (routeGeometry, maxDistance = 0.1) => {
   try {
     const client = await amenitiesPool.connect();
@@ -26,7 +25,7 @@ const findPOIsAlongRoute = async (routeGeometry, maxDistance = 0.1) => {
           geom, 
           ST_GeomFromText($1, 4326), 
           $2 / 111000.0
-        )
+        ) AND category IN ('toilet','playground','library')
         ORDER BY distance
       `;
       
@@ -51,7 +50,7 @@ const findPOIsAlongRoute = async (routeGeometry, maxDistance = 0.1) => {
   }
 };
 
-// Find comfort POIs along a route (playgrounds, fountains, etc.)
+// Find comfort POIs along a route (playgrounds, toilets, libraries.)
 const findComfortPOIsAlongRoute = async (routeGeometry, maxDistance = 0.1) => {
   try {
     const client = await amenitiesPool.connect();

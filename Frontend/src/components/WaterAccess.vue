@@ -59,43 +59,55 @@
   <div ref="mapEl" class="map"></div>
 
   <!-- the panel sits ON TOP of the map, not around it -->
-  <div class="panel micro" :class="{ collapsed: collapsed && isNarrow }">
+  <div class="panel micro" :class="{ collapsed: !microOpen }">
     <!-- collapse toggle INSIDE the panel -->
-    <button class="sheet-toggle" @click="collapsed = true" aria-label="Collapse panel">▼</button>
+    <button
+      class="sheet-toggle"
+      @click="toggleMicro"
+      :aria-expanded="microOpen ? 'true' : 'false'"
+      aria-controls="micro-panel-body"
+      aria-label="Collapse panel"
+    >
+      {{ microOpen ? '▼' : '▲' }}
+    </button>
 
     <div class="row micro-title">🏆 Explore suburbs <span v-if="rankedTotal">· 249</span></div>
-    <div class="controls">
-      <input class="search" v-model.trim="search" placeholder="🔍 Search suburb…" @keydown.stop />
-      <div class="chips">
-        <button class="chip" :class="{active: sortMode==='desc'}" @click="sortMode='desc'">Most</button>
-        <button class="chip" :class="{active: sortMode==='asc'}"  @click="sortMode='asc'">Least</button>
-      </div>
-      <div class="slider-row">
-        <span>Show</span>
-        <input type="range" min="5" max="50" step="5" v-model.number="limit" />
-        <span>{{ limit }}</span>
-      </div>
-    </div>
 
-    <div class="rank-list">
-      <div
-        v-for="item in rankedLimited"
-        :key="item.id"
-        class="rank-item"
-        :class="{selected: isSelected(item.id)}"
-        @click="toggleSelect(item.id)"
-        @dblclick.stop="zoomToItems([item.id])"
-      >
-        <div class="rank-name">
-          <span class="bullet" :style="{background: item.color}"></span>
-          {{ item.name }}
+    <div id="micro-panel-body" v-show="microOpen">
+      <div class="controls">
+        <input class="search" v-model.trim="search" placeholder="🔍 Search suburb…" @keydown.stop />
+        <div class="chips">
+          <button class="chip" :class="{active: sortMode==='desc'}" @click="sortMode='desc'">Most</button>
+          <button class="chip" :class="{active: sortMode==='asc'}"  @click="sortMode='asc'">Least</button>
         </div>
-        <div class="rank-value">{{ item.count }}</div>
+        <div class="slider-row">
+          <span>Show</span>
+          <input type="range" min="5" max="50" step="5" v-model.number="limit" />
+          <span>{{ limit }}</span>
+        </div>
       </div>
-      <div v-if="!loading && rankedLimited.length===0" class="muted">No suburbs match search.</div>
+
+      <div class="rank-list">
+        <div
+          v-for="item in rankedLimited"
+          :key="item.id"
+          class="rank-item"
+          :class="{selected: isSelected(item.id)}"
+          @click="toggleSelect(item.id)"
+          @dblclick.stop="zoomToItems([item.id])"
+        >
+          <div class="rank-name">
+            <span class="bullet" :style="{background: item.color}"></span>
+            {{ item.name }}
+          </div>
+          <div class="rank-value">{{ item.count }}</div>
+        </div>
+        <div v-if="!loading && rankedLimited.length===0" class="muted">No suburbs match search.</div>
+      </div>
+      <div class="row tiny muted">Last updated {{ lastSyncLabel }}</div>
     </div>
 
-    <div class="row tiny muted">Last updated {{ lastSyncLabel }}</div>
+    
   </div>
 
   <!-- floating expand button (only on mobile when collapsed) -->
@@ -119,6 +131,9 @@ import { MapboxOverlay } from '@deck.gl/mapbox'
 import { GeoJsonLayer, IconLayer } from '@deck.gl/layers'
 import { AmbientLight, DirectionalLight, LightingEffect } from '@deck.gl/core'
 import * as turf from '@turf/turf'
+
+const microOpen = ref(true)
+function toggleMicro(){ microOpen.value = !microOpen.value }
 
 /* ---------------- PATHS ---------------- */
 const GEOJSON_PATH   = 'https://kidpath-geojson.s3.ap-southeast-2.amazonaws.com/georef-australia-state-suburb.geojson'
@@ -191,22 +206,14 @@ function sheetPadding(){
 
 
 /* --------- robust: wait until container has size --------- */
-function waitForSized(el){
+function waitForSized(getter){
   return new Promise(resolve => {
-    if (el && el.clientWidth > 0 && el.clientHeight > 0) return resolve()
-    const ro = new ResizeObserver(() => {
-      if (el.clientWidth > 0 && el.clientHeight > 0) { ro.disconnect(); resolve() }
-    })
-    if (el) ro.observe(el)
-    // safety fallback – resolve soon anyway
-    let tries = 0
-    const tick = () => {
-      if (!el) return resolve()
-      if (el.clientWidth > 0 && el.clientHeight > 0) return resolve()
-      if (++tries < 60) requestAnimationFrame(tick) // ~1s
-      else resolve()
+    const check = () => {
+      const el = typeof getter === 'function' ? getter() : getter
+      if (el && el.clientWidth > 0 && el.clientHeight > 0) return resolve()
+      requestAnimationFrame(check)
     }
-    requestAnimationFrame(tick)
+    check()
   })
 }
 function nudgeResize(times = 2){
@@ -276,7 +283,11 @@ function loadSavedView(){
 const lastSyncLabel = computed(()=> lastSync.value ? new Date(lastSync.value).toLocaleString() : 'never')
 
 async function loadLocalFountains(){
-  const r = await fetch(FOUNTAINS_PATH); if(!r.ok) throw new Error(`Failed fountains ${r.status}`); fountains.value = await r.json(); lastSync.value = Date.now()
+  const r = await fetch(FOUNTAINS_PATH)
+  console.log('FOUNTAINS status:', r.status, r.ok)
+  if (!r.ok) throw new Error(`Fountains fetch failed: ${r.status}`)
+  fountains.value = await r.json()
+  lastSync.value = Date.now()
 }
 function suburbIdAt(lon,lat){
   const pt=[lon,lat]
@@ -383,22 +394,56 @@ function setDeckLayers(){
 /* ---------------- INIT ---------------- */
 async function init(){
   await nextTick()
-  await waitForSized(mapWrapEl.value || mapEl.value) // ✅ wait until visible/sized
+  await waitForSized(() => (mapWrapEl.value || mapEl.value)) // ✅ wait until visible/sized
 
   const start = loadSavedView() || DEFAULT_VIEW
+
+  let geoCenter = null
+
+  // 覆盖初始视图：优先用用户定位
+  let center = start.center
+  let zoom   = start.zoom
+  try {
+    const pos = await new Promise((res, rej) =>
+      navigator.geolocation.getCurrentPosition(res, rej, {
+        enableHighAccuracy: true, timeout: 10000, maximumAge: 0
+      })
+    )
+    center = [pos.coords.longitude, pos.coords.latitude]
+    zoom   = 15
+  } catch (e) {
+    // 用户拒绝/失败，保持默认 start
+  }
+
   map = new MapLibreMap({
     container: mapEl.value, style: BASEMAP_STYLE,
-    center: start.center, zoom: start.zoom, pitch: start.pitch, bearing: start.bearing,
+    center, zoom, pitch: start.pitch, bearing: start.bearing,
     attributionControl:true, antialias:true
   })
   deckOverlay = new MapboxOverlay({ interleaved:true })
   map.addControl(deckOverlay); map.on('moveend', saveView)
 
+  // 在这里新增：
+  map.on('load', () => {
+    // …如果你这里还有图层/数据加载代码，放在上面
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        geoCenter = [pos.coords.longitude, pos.coords.latitude]
+        map.flyTo({ center: geoCenter, zoom: 15 })
+        console.log('Fly to current location:', geoCenter)
+      },
+      (err) => { console.warn('Geolocation denied/failed:', err?.message) },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+    )
+  })
+
   // container size watcher -> keep map sized even if parent changes (tabs, layout)
   ro = new ResizeObserver(() => { if (map) map.resize() })
   ro.observe(mapWrapEl.value || mapEl.value)
 
-  const gjResp = await fetch(GEOJSON_PATH); if(!gjResp.ok) throw new Error(`GeoJSON ${gjResp.status}`)
+  const gjResp = await fetch(GEOJSON_PATH)
+  console.log('GEOJSON status:', gjResp.status, gjResp.ok)
+  if (!gjResp.ok) throw new Error(`GeoJSON fetch failed: ${gjResp.status}`)
   const gj = await gjResp.json()
   gj.features = (gj.features||[]).filter(f => f?.geometry && (f.geometry.type==='Polygon' || f.geometry.type==='MultiPolygon') && hasValidCoord(f.geometry))
   geojson.value = gj
@@ -407,7 +452,11 @@ async function init(){
   await loadLocalFountains()
   await countFountainsPerSuburb()
   setDeckLayers()
-  fitAll()
+  if (geoCenter) {
+    map.flyTo({ center: geoCenter, zoom: 15, duration: 800 })
+  } else {
+    fitAll()
+  }
   loading.value=false
 
   // small nudge after first paint
@@ -415,7 +464,7 @@ async function init(){
 }
 
 onMounted(()=>{
-  init().catch(err=>{ console.error(err); alert('Could not load water access. Please try again.') })
+  init().catch(err=>{ console.error('WaterAccess init failed:', err) })
   window.addEventListener('pageshow', onPageShow)
 })
 onBeforeUnmount(()=>{

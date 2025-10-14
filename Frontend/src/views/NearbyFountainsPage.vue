@@ -167,7 +167,6 @@ onBeforeUnmount(() => {
   font-size: 14px; 
 }
 
-/* 包住组件的卡片壳（只负责外观高度/阴影） */
 .fountains-card{
   max-width: 1140px;
   margin: 0 auto;
